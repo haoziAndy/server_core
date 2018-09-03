@@ -1,0 +1,64 @@
+#ifndef Z_NET_U_CONNECTION_H
+#define Z_NET_U_CONNECTION_H
+
+#include "msg_handler.h"
+#include <raknet/RakNetTypes.h> // RakNet::RakNetGUID
+
+namespace z {
+namespace net {
+
+class IUMsgHandler;
+
+// udp c连接类, 
+class UConnection
+{
+    // 8192 - 64
+    enum {recv_client_message_max_length = 8128 };
+public:
+    UConnection(int session_id, const RakNet::RakNetGUID& raknet_guid, IUMsgHandler* msg_handler);
+    virtual ~UConnection();
+    
+    /// 
+    void OnClose();
+
+    int32 OnRead(char* data, int32 length);
+
+    int session_id() const { return session_id_; }
+    const RakNet::RakNetGUID& raknet_guid() const {return raknet_guild_;}
+    uint64 user_id() const { return user_id_; }
+    void set_user_id(int64 _user_id) {user_id_ = _user_id;}
+    
+    void set_open_id(int64 _open_id) {open_id_ = _open_id;}
+    int64 open_id() const {return open_id_;}
+    void set_sid(int32 _sid) {sid_ = _sid;}
+    int32 sid() const {return sid_;}
+    
+    bool IsForwarding() const
+    {
+        return status_ > LoginStatus_PLAYER_LOGIN && status_ < LoginStatus_CLOSING;
+    }
+    int32 GetLoginStatus() const {return status_;}
+    int SetLoginStatus(LoginStatus status);
+
+    void SecondTimerHandler(const boost::system::error_code& ec);
+protected:
+    const RakNet::RakNetGUID raknet_guild_;
+    boost::asio::deadline_timer deadline_timer_; 
+
+    int32 session_id_;
+    int64 user_id_;
+    int64 open_id_;
+    int32 sid_;
+
+    IUMsgHandler* msg_handler_;
+
+    LoginStatus status_;
+
+    DISALLOW_COPY_AND_ASSIGN(UConnection);
+};
+
+
+} // namespace net
+} // namespace z
+
+#endif  // Z_NET_U_CONNECTION_H

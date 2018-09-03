@@ -1,0 +1,493 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{75707FD3-5939-446F-A79F-71BD16A192E7}</ProjectGuid>
+    <RootNamespace>contrib</RootNamespace>
+    <ProjectName>libzcontrib</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v140</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\..\lib\</OutDir>
+    <IncludePath>$(Solutiondir)\..\include;$(Solutiondir)\..\include\crypto;$(Solutiondir)\..\src;$(Solutiondir)\..\src\contrib;$(IncludePath)</IncludePath>
+    <LibraryPath>$(Solutiondir)..\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\..\lib\</OutDir>
+    <IntDir>d:\temp\$(SolutionName)\$(ProjectName)\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <AdditionalOptions>/D "HAVE_STDINT_H" %(AdditionalOptions)</AdditionalOptions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\contrib\pbjson\bin2ascii.h" />
+    <ClInclude Include="..\..\src\contrib\pbjson\pbjson.hpp" />
+    <ClInclude Include="..\..\src\contrib\pugiconfig.hpp" />
+    <ClInclude Include="..\..\src\contrib\pugixml.hpp" />
+    <ClInclude Include="..\..\src\contrib\raknet\AutopatcherPatchContext.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\AutopatcherRepositoryInterface.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\Base64Encoder.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\BitStream.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\CCRakNetSlidingWindow.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\CCRakNetUDT.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\CheckSum.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\CloudClient.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\CloudCommon.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\CloudServer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\CommandParserInterface.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\ConnectionGraph2.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\ConsoleServer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DataCompressor.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DirectoryDeltaTransfer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DR_SHA1.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_BinarySearchTree.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_BPlusTree.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_BytePool.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_ByteQueue.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_Hash.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_Heap.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_HuffmanEncodingTree.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_HuffmanEncodingTreeFactory.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_HuffmanEncodingTreeNode.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_LinkedList.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_List.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_Map.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_MemoryPool.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_Multilist.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_OrderedChannelHeap.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_OrderedList.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_Queue.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_QueueLinkedList.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_RangeList.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_Table.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_ThreadsafeAllocatingQueue.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_Tree.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DS_WeightedGraph.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\DynDNS.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\EmailSender.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\EmptyHeader.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\EpochTimeToString.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\Export.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\FileList.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\FileListNodeContext.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\FileListTransfer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\FileListTransferCBInterface.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\FileOperations.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\FormatString.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\FullyConnectedMesh2.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\Getche.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\Gets.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\GetTime.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\gettimeofday.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\GridSectorizer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\HTTPConnection.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\HTTPConnection2.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\IncrementalReadInterface.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\InternalPacket.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\Itoa.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\Kbhit.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\LinuxStrings.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\LocklessTypes.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\LogCommandParser.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\MessageFilter.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\MessageIdentifiers.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\MTUSize.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\NativeFeatureIncludes.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\NativeFeatureIncludesOverrides.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\NativeTypes.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\NatPunchthroughClient.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\NatPunchthroughServer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\NatTypeDetectionClient.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\NatTypeDetectionCommon.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\NatTypeDetectionServer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\NetworkIDManager.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\NetworkIDObject.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\PacketConsoleLogger.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\PacketFileLogger.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\PacketizedTCP.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\PacketLogger.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\PacketOutputWindowLogger.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\PacketPool.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\PacketPriority.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\PluginInterface2.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\PS3Includes.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\PS4Includes.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\Rackspace.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakAlloca.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakAssert.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakMemoryOverride.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakNetCommandParser.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakNetDefines.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakNetDefinesOverrides.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakNetSmartPtr.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakNetSocket.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakNetSocket2.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakNetStatistics.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakNetTime.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakNetTransport2.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakNetTypes.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakNetVersion.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakPeer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakPeerInterface.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakSleep.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakString.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakThread.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RakWString.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\Rand.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RandSync.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\ReadyEvent.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RefCountedObj.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RelayPlugin.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\ReliabilityLayer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\ReplicaEnums.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\ReplicaManager3.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\Router2.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\RPC4Plugin.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\SecureHandshake.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\SendToThread.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\SignaledEvent.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\SimpleMutex.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\SimpleTCPServer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\SingleProducerConsumer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\SocketDefines.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\SocketIncludes.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\SocketLayer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\StatisticsHistory.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\StringCompressor.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\StringTable.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\SuperFastHash.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\TableSerializer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\TCPInterface.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\TeamBalancer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\TeamManager.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\TelnetTransport.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\ThreadPool.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\ThreadsafePacketLogger.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\TransportInterface.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\TwoWayAuthentication.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\UDPForwarder.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\UDPProxyClient.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\UDPProxyCommon.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\UDPProxyCoordinator.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\UDPProxyServer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\VariableDeltaSerializer.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\VariableListDeltaTracker.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\VariadicSQLParser.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\VitaIncludes.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\WindowsIncludes.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\WSAStartupSingleton.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\XBox360Includes.h" />
+    <ClInclude Include="..\..\src\contrib\raknet\_FindFirst.h" />
+    <ClInclude Include="..\..\src\contrib\rapidjson\document.h" />
+    <ClInclude Include="..\..\src\contrib\rapidjson\filestream.h" />
+    <ClInclude Include="..\..\src\contrib\rapidjson\internal\pow10.h" />
+    <ClInclude Include="..\..\src\contrib\rapidjson\internal\stack.h" />
+    <ClInclude Include="..\..\src\contrib\rapidjson\internal\strfunc.h" />
+    <ClInclude Include="..\..\src\contrib\rapidjson\prettywriter.h" />
+    <ClInclude Include="..\..\src\contrib\rapidjson\rapidjson.h" />
+    <ClInclude Include="..\..\src\contrib\rapidjson\reader.h" />
+    <ClInclude Include="..\..\src\contrib\rapidjson\stringbuffer.h" />
+    <ClInclude Include="..\..\src\contrib\rapidjson\writer.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\contrib\crypto\3way.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\adler32.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\algebra.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\algparam.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\arc4.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\asn.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\authenc.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\base32.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\base64.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\basecode.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\bfinit.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\blowfish.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\blumshub.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\camellia.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\cast.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\casts.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\cbcmac.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\ccm.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\channels.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\cmac.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\cpu.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\crc.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\cryptlib.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\cryptlib_bds.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\default.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\des.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\dessp.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\dh.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\dh2.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\dll.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\dsa.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\eax.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\ec2n.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\eccrypto.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\ecp.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\elgamal.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\emsa2.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\eprecomp.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\esign.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\files.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\filters.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\fips140.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\fipstest.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\gcm.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\gf256.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\gf2n.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\gf2_32.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\gfpcrypt.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\gost.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\gzip.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\hex.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\hmac.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\hrtimer.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\ida.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\idea.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\integer.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\iterhash.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\luc.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\mars.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\marss.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\md2.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\md4.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\md5.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\misc.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\modes.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\mqueue.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\mqv.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\nbtheory.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\network.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\oaep.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\osrng.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\panama.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\pch.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\pkcspad.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\polynomi.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\pssr.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\pubkey.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\queue.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\rabin.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\randpool.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\rc2.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\rc5.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\rc6.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\rdtables.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\rijndael.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\ripemd.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\rng.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\rsa.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\rw.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\safer.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\salsa.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\seal.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\seed.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\serpent.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\sha.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\sha3.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\shacal2.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\shark.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\sharkbox.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\simple.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\skipjack.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\socketft.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\sosemanuk.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\square.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\squaretb.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\strciphr.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\tea.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\tftables.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\tiger.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\tigertab.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\trdlocal.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\ttmac.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\twofish.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\vmac.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\wait.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\wake.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\whrlpool.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\winpipes.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\xtr.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\xtrcrypt.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\zdeflate.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\zinflate.cpp" />
+    <ClCompile Include="..\..\src\contrib\crypto\zlib.cpp" />
+    <ClCompile Include="..\..\src\contrib\pbjson\pbjson.cpp" />
+    <ClCompile Include="..\..\src\contrib\pugixml.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\Base64Encoder.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\BitStream.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\CCRakNetSlidingWindow.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\CCRakNetUDT.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\CheckSum.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\CloudClient.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\CloudCommon.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\CloudServer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\CommandParserInterface.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\ConnectionGraph2.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\ConsoleServer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\DataCompressor.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\DirectoryDeltaTransfer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\DR_SHA1.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\DS_BytePool.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\DS_ByteQueue.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\DS_HuffmanEncodingTree.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\DS_Table.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\DynDNS.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\EmailSender.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\EpochTimeToString.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\FileList.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\FileListTransfer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\FileOperations.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\FormatString.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\FullyConnectedMesh2.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\Getche.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\Gets.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\GetTime.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\gettimeofday.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\GridSectorizer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\HTTPConnection.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\HTTPConnection2.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\IncrementalReadInterface.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\Itoa.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\LinuxStrings.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\LocklessTypes.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\LogCommandParser.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\MessageFilter.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\NatPunchthroughClient.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\NatPunchthroughServer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\NatTypeDetectionClient.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\NatTypeDetectionCommon.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\NatTypeDetectionServer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\NetworkIDManager.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\NetworkIDObject.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\PacketConsoleLogger.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\PacketFileLogger.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\PacketizedTCP.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\PacketLogger.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\PacketOutputWindowLogger.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\PluginInterface2.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\PS4Includes.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\Rackspace.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakMemoryOverride.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetCommandParser.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket2.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket2_360_720.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket2_Berkley.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket2_Berkley_NativeClient.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket2_NativeClient.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket2_PS3_PS4.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket2_PS4.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket2_Vita.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket2_WindowsStore8.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket2_Windows_Linux.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetSocket2_Windows_Linux_360.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetStatistics.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetTransport2.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakNetTypes.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakPeer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakSleep.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakString.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakThread.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RakWString.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\Rand.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RandSync.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\ReadyEvent.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RelayPlugin.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\ReliabilityLayer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\ReplicaManager3.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\Router2.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\RPC4Plugin.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\SecureHandshake.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\SendToThread.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\SignaledEvent.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\SimpleMutex.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\SocketLayer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\StatisticsHistory.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\StringCompressor.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\StringTable.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\SuperFastHash.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\TableSerializer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\TCPInterface.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\TeamBalancer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\TeamManager.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\TelnetTransport.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\ThreadsafePacketLogger.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\TwoWayAuthentication.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\UDPForwarder.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\UDPProxyClient.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\UDPProxyCoordinator.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\UDPProxyServer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\VariableDeltaSerializer.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\VariableListDeltaTracker.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\VariadicSQLParser.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\VitaIncludes.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\WSAStartupSingleton.cpp" />
+    <ClCompile Include="..\..\src\contrib\raknet\_FindFirst.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\..\src\contrib\raknet\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\src\contrib\raknet\RakNet.vcproj" />
+    <None Include="..\..\src\contrib\raknet\RakNet_vc8.vcproj" />
+    <None Include="..\..\src\contrib\raknet\RakNet_vc9.vcproj" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

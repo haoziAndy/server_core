@@ -1,0 +1,55 @@
+#ifndef GATE_STDAFX_H
+#define GATE_STDAFX_H
+
+#include <stdarg.h>
+
+#include <zmq.h>
+#include <zmq_utils.h>
+
+#include <google/protobuf/message.h>
+
+#include <boost/timer.hpp>
+#include <boost/progress.hpp>
+#include <boost/date_time.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/asio.hpp>
+#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/locks.hpp>
+#include <boost/pool/pool.hpp>
+#include <boost/pool/singleton_pool.hpp>
+#include <boost/format.hpp>
+#include <boost/random.hpp>
+
+#include <map>
+#include <list>
+#include <vector>
+#include <set>
+#include <queue>
+#include <unordered_map>
+#include <unordered_set>
+
+#include <iostream>
+#include <time.h>
+#include <string>
+
+#include <z/common/types.h>
+#include <z/common/singleton.h>
+
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
+#include <contrib/crypto/md5.h>
+#include <contrib/crypto/zlib.h>
+#include <contrib/crypto/gzip.h>
+#include <contrib/crypto/hex.h>
+#include <contrib/crypto/base64.h>
+
+
+#ifdef _WIN32
+#define snprintf sprintf_s
+#define localtime_r(a,b) localtime_s(b, a)
+#define gmtime_r(a,b) gmtime_s(b, a)
+#endif // _WIN32
+
+#endif //GATE_STDAFX_H
