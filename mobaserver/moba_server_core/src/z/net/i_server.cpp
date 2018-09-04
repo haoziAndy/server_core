@@ -51,7 +51,7 @@ int IServer::Init(const std::string& address, const std::string& port)
 #ifdef TCP_DEFER_ACCEPT
     {
         int on = 1;
-        if (setsockopt(acceptor_.native(), SOL_TCP, TCP_DEFER_ACCEPT, &on, sizeof(on)) < 0)
+        if (setsockopt(acceptor_.native_handle(), SOL_TCP, TCP_DEFER_ACCEPT, &on, sizeof(on)) < 0)
         {
             LOG_ERR("IServer::Init failed. setsockopt TCP_DEFER_ACCEPT failed");
             return -1;
