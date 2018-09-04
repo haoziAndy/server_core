@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "session_mgr.h"
 #include "z_server.h"
-#include <boost/random/random_device.hpp>
+#include <random>
 
 namespace z {
 namespace net {
@@ -17,8 +17,8 @@ std::string SessionMgr::GenRandomStr( int32 length )
         "!@#$%^&*()"
         "`~-_=+[{]}\\|;:'\",<.>/? ");
 
-    static boost::random::random_device rng;
-    static boost::random::uniform_int_distribution<> index_dist(0, chars.size() - 1);
+    static std::random_device rng;
+    static std::uniform_int_distribution<> index_dist(0, chars.size() - 1);
     
     std::string output;
     output.resize(length);
