@@ -1,9 +1,4 @@
 #include "stdafx.h"
-#include "z_server.h"
-#include "msg_handler.h"
-#include "msg_header.h"
-#include "c_server.h"
-#include "c_connection.h"
 #include "session_mgr.h"
 
 #ifdef _WIN32
