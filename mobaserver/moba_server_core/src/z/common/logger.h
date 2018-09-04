@@ -20,7 +20,7 @@ public:
     int Init(const std::string &server_name, const std::string &log_path, const int32 log_level);
     void Destroy();
 
-	void Logger::Log(const char* format, ...);
+	void Log(const char* format, ...);
 
     void Flush();
 
