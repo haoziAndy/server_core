@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "session_mgr.h"
 #include "z_server.h"
+#include <boost/random/random_device.hpp>
 
 namespace z {
 namespace net {
