@@ -68,3 +68,8 @@ endif()
 
 add_precompiled_header(${build_target} stdafx.h FORCEINCLUDE)
 #add_dependencies(${build_target} libzcommon)
+
+add_custom_command(TARGET ${build_target}
+          POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy libznet.a ${PROJECT_SOURCE_DIR}/../../../lib
+)

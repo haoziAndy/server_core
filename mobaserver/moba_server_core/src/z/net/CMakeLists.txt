@@ -67,3 +67,9 @@ set_target_properties(${build_target} PROPERTIES PREFIX "")
 
 add_precompiled_header(${build_target} stdafx.h FORCEINCLUDE)
 target_link_libraries(${build_target} ${ZLIB_DIR}/libzcommon.a)
+
+add_custom_command(TARGET ${build_target}
+          POST_BUILD
+          COMMAND ${CMAKE_COMMAND} -E copy libznet.a ${PROJECT_SOURCE_DIR}/../../../lib
+)
+
