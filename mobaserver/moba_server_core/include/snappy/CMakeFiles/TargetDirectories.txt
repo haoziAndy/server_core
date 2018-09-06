@@ -1,0 +1,9 @@
+/home/huang/server_core/mobaserver/moba_server_core/include/snappy/CMakeFiles/install/strip.dir
+/home/huang/server_core/mobaserver/moba_server_core/include/snappy/CMakeFiles/install/local.dir
+/home/huang/server_core/mobaserver/moba_server_core/include/snappy/CMakeFiles/install.dir
+/home/huang/server_core/mobaserver/moba_server_core/include/snappy/CMakeFiles/list_install_components.dir
+/home/huang/server_core/mobaserver/moba_server_core/include/snappy/CMakeFiles/rebuild_cache.dir
+/home/huang/server_core/mobaserver/moba_server_core/include/snappy/CMakeFiles/edit_cache.dir
+/home/huang/server_core/mobaserver/moba_server_core/include/snappy/CMakeFiles/test.dir
+/home/huang/server_core/mobaserver/moba_server_core/include/snappy/CMakeFiles/snappy_unittest.dir
+/home/huang/server_core/mobaserver/moba_server_core/include/snappy/CMakeFiles/snappy.dir
