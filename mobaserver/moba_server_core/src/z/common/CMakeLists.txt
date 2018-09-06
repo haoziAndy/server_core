@@ -71,5 +71,5 @@ add_precompiled_header(${build_target} stdafx.h FORCEINCLUDE)
 
 add_custom_command(TARGET ${build_target}
           POST_BUILD
-          COMMAND ${CMAKE_COMMAND} -E copy libznet.a ${PROJECT_SOURCE_DIR}/../../../lib
+          COMMAND ${CMAKE_COMMAND} -E copy libzcommon.a ${PROJECT_SOURCE_DIR}/../../../lib
 )
