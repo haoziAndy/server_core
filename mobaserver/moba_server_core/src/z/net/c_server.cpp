@@ -29,7 +29,7 @@ bool CCServer::Init( const std::string& address, const std::string& port, ICMsgH
     return true;
 }
 
-void CCServer::SendToSession( int session_id, uint64 user_id, SMsgHeader* msg )
+void CCServer::SendToSession( int session_id, const std::string & user_id, SMsgHeader* msg )
 {
     if (msg->length > 0xffff)
     {
@@ -49,12 +49,12 @@ void CCServer::SendToSession( int session_id, uint64 user_id, SMsgHeader* msg )
     SendToSession(session_id, user_id, cmsg);
 }
 
-void CCServer::SendToSession( int session_id, uint64 user_id, CMsgHeader* msg )
+void CCServer::SendToSession( int session_id, const std::string & user_id, CMsgHeader* msg )
 {
     auto it = connection_mgr_.find(session_id);
     if (it == connection_mgr_.end())
     {
-        LOG_DEBUG("Stop SendMsg[%d] to session[%d] user %" PRId64 ": not found client session",
+        LOG_DEBUG("Stop SendMsg[%d] to session[%d] user %s: not found client session",
             msg->msg_id, session_id, user_id);
         ZPOOL_FREE(msg);
         return;
@@ -62,11 +62,11 @@ void CCServer::SendToSession( int session_id, uint64 user_id, CMsgHeader* msg )
     CConnection* conn = static_cast<CConnection*>(it->second);
     if (!conn)
     {
-        LOG_ERR("NULL connection by player %" PRIu64, user_id);
+        LOG_ERR("NULL connection by player %s", user_id.c_str());
         ZPOOL_FREE(msg);
         return;
     }
-    if (conn->user_id() != user_id)
+    if (!user_id.empty() && conn->user_id() != user_id)
     {
         LOG_ERR("Stop SendMsg[%d] to session[%d]: user_id mismatched. need %" PRId64 ", get %" PRId64,
             msg->msg_id, session_id, user_id, conn->user_id());

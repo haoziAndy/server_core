@@ -31,8 +31,8 @@ public:
 
     boost::asio::ip::tcp::socket& socket() { return socket_;}
     int session_id() const { return session_id_; }
-    uint64 user_id() const { return user_id_; }
-    void set_user_id(int64 user_id) {user_id_ = user_id;}
+	std::string user_id() const { return user_id_; }
+    void set_user_id(const std::string &user_id) {user_id_ = user_id;}
 
     boost::asio::io_service& io_service() const;
 
@@ -65,7 +65,7 @@ protected:
     boost::asio::deadline_timer deadline_timer_; 
 
     int session_id_;
-    uint64 user_id_;
+	std::string user_id_;
 
     char read_data_[recv_buff_length];
     int32 read_size_;

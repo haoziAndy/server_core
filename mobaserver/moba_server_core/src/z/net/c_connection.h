@@ -33,8 +33,8 @@ public:
     void set_open_id(int64 open_id) {open_id_ = open_id;}
     int64 open_id() const {return open_id_;}
 
-    void set_server_group_id(int server_group_id) {server_group_id_ = server_group_id;}
-    int server_group_id() const {return server_group_id_;}
+    /*void set_server_group_id(int server_group_id) {server_group_id_ = server_group_id;}
+    int server_group_id() const {return server_group_id_;}*/
 
     void SetSessionData(boost::shared_ptr<SessionData>& data)
     {
@@ -57,7 +57,7 @@ public:
 private:
     LoginStatus status_;
     int64 open_id_;
-    int32 server_group_id_;
+    //int32 server_group_id_;
 
     int32 idle_count_;                  // 防止发呆, 每秒加1, 到某值就判定断开, 有消息读取置零
     int32 msg_count_;                   // 消息计数, 防止过多消息

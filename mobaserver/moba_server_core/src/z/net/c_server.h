@@ -38,9 +38,9 @@ public:
 
     void set_msg_names();
 
-    void SendToSession(int session_id, uint64 user_id, SMsgHeader* msg);
+    void SendToSession(int session_id, const std::string & user_id, SMsgHeader* msg);
 private:
-    void SendToSession(int session_id, uint64 user_id, CMsgHeader* msg);
+    void SendToSession(int session_id, const std::string & user_id, CMsgHeader* msg);
 
 private:
     z::net::ICMsgHandler* request_handler_;
