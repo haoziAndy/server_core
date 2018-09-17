@@ -49,10 +49,11 @@ int32 CConnection::OnRead( char* data, int32 length )
             break;        
 
         // error if session is waiting for server verify, should not recv more msg
-        if (status_ == LoginStatus_ACCOUNT_LOGIN)
+		//之后要打开
+       /* if (status_ == LoginStatus_ACCOUNT_LOGIN)
         {
             return -1;
-        }
+        }*/
 
         /// 字节序转换
         CMsgHeaderNtoh(msg);
