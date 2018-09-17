@@ -3,6 +3,8 @@
 
 // 短连接模式
 #define NON_PERSISTANCE_MODE 0
+#define PLAYRID_LEN 22
+#define ASYNC_REQ_LEN 22
 
 /*struct SMsgHeader
 {
@@ -39,8 +41,8 @@ struct SMsgHeader
 	int32    src_server_id;        // 消息来源 服务器id 
 	int32    dst_server_id;        // 为gate 登录sessionid
 	uint32    session_id;        // 为gate 登录sessionid
-	char    async_seq[22];   
-	char    player_id[22];   // 玩家未登录时，player_id为0
+	char    async_seq[ASYNC_REQ_LEN];
+	char    player_id[PLAYRID_LEN];   // 玩家未登录时，player_id为0
 };
 
 
@@ -54,18 +56,18 @@ struct CMsgHeader
     }
 #else
     CMsgHeader()
-        : length(0), msg_id(0), send_tick(0), checksum(0)
+        : length(0), msg_id(0)/*, send_tick(0), checksum(0)*/
     {}
 #endif
-    uint16 length;
-    uint16 msg_id; 
+	uint16 length;
+    uint16 msg_id;
 #if NON_PERSISTANCE_MODE
     uint64 openid;      // 
     uint16 checksum;    // 防止重放攻击    
     char key[16];       // session key
 #else
-    uint16 send_tick;
-    uint16 checksum;    // 防止重放攻击   
+   // uint16 send_tick;
+    //uint16 checksum;    // 防止重放攻击   
 #endif
 
 };
@@ -75,7 +77,7 @@ struct SCMsgHeader
         : length(0), msg_id(0)
     {}
 
-    uint16 length;
+	uint16 length;
     uint16 msg_id;     
 };
 
@@ -104,16 +106,20 @@ struct SCMsgHeader
 #  define CMsgHeaderNtoh(header) do {\
     header->length = boost::asio::detail::socket_ops::network_to_host_short(header->length);\
     header->msg_id = boost::asio::detail::socket_ops::network_to_host_short(header->msg_id);\
-    header->send_tick = boost::asio::detail::socket_ops::network_to_host_short(header->send_tick);\
-    header->checksum = boost::asio::detail::socket_ops::network_to_host_short(header->checksum);\
 } while (false)
+
+/*header->send_tick = boost::asio::detail::socket_ops::network_to_host_short(header->send_tick);
+header->checksum = boost::asio::detail::socket_ops::network_to_host_short(header->checksum);*/
 
 #  define CMsgHeaderHton(header) do {\
     header->length = boost::asio::detail::socket_ops::host_to_network_short(header->length);\
     header->msg_id = boost::asio::detail::socket_ops::host_to_network_short(header->msg_id);\
-    header->send_tick = boost::asio::detail::socket_ops::host_to_network_short(header->send_tick);\
-    header->checksum = boost::asio::detail::socket_ops::host_to_network_short(header->checksum);\
 } while (false)
+
+/* header->send_tick = boost::asio::detail::socket_ops::host_to_network_short(header->send_tick);
+header->checksum = boost::asio::detail::socket_ops::host_to_network_short(header->checksum);*/
+
+
 # endif // NON_PERSISTANCE_MODE
 
 #  define SCMsgHeaderNtoh(header) do {\
