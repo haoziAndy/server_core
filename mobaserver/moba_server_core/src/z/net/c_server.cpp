@@ -55,7 +55,7 @@ void CCServer::SendToSession( int session_id, const std::string & user_id, CMsgH
     if (it == connection_mgr_.end())
     {
         LOG_DEBUG("Stop SendMsg[%d] to session[%d] user %s: not found client session",
-            msg->msg_id, session_id, user_id);
+            msg->msg_id, session_id, user_id.c_str());
         ZPOOL_FREE(msg);
         return;
     }
