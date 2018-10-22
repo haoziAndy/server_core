@@ -1,48 +1,69 @@
 #include "stdafx.h"
 #include "error.h"
 #include "logger.h"
-#include "memory_pool.h"
-#include "boost/filesystem.hpp"
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/rotating_file_sink.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-
+#include "log4cplus/logger.h"
+#include "log4cplus/appender.h"
+#include "log4cplus/fileappender.h"
+#include "log4cplus/consoleappender.h"
+#include "log4cplus/loglevel.h"
+#include "log4cplus/loggingmacros.h"
+#include "log4cplus/configurator.h"
+#include "log4cplus/initializer.h"
+#include <climits>
 
 namespace z {
 namespace common {
 
-#ifdef _WIN32
-#define snprintf sprintf_s
-#endif
 
 enum
 {
 	log_buffer_size = 8192, 
-	rotating_size = 1048576 * 5,//5M
+	rotating_size = 1048576 * 10,//10M
 };
 
-Logger::Logger():
-	log_buffer_(nullptr)
-	, used_buffer_size_(0)
-{
-	log_buffer_ = static_cast<char*>(malloc(log_buffer_size));
-	datetime_str_[0] = '\0';
-	file_logger_ = nullptr;
+Logger::Logger() {
+
 }
+
 
 int Logger::Init( const std::string &server_name, const std::string &log_path,const int32 log_level )
 {
-	auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_st>();
-	if (!boost::filesystem::exists(log_path)) {
-		boost::filesystem::create_directories(log_path);
-	}
-	const std::string file_name = log_path + server_name + ".txt";
-	auto rotating_sink = std::make_shared<spdlog::sinks::rotating_file_sink_mt>(file_name, rotating_size,30);
-	std::vector<spdlog::sink_ptr> sinks{ console_sink, rotating_sink };
-	file_logger_ = std::make_shared<spdlog::logger>(server_name, sinks.begin(),sinks.end());
-	file_logger_->flush();
-	LOG_DEBUG("Success to run logger,server_name = %s,file = %s",server_name.c_str(), log_path.c_str());
-	spdlog::register_logger(file_logger_);
+	const std::string file_name = log_path + "/" + server_name;
+
+	log4cplus::tstring pattern = LOG4CPLUS_TEXT("%d{%m/%d/%y  %H:%M:%S}  [%l] - %m%n");
+	log4cplus::SharedAppenderPtr  Console(new log4cplus::ConsoleAppender());
+	
+
+	log4cplus::SharedAppenderPtr DebugAppender(new log4cplus::RollingFileAppender(LOG4CPLUS_TEXT(file_name + ".debug.log"), rotating_size, SHRT_MAX, true,true));
+	DebugAppender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(pattern)));
+	log4cplus::Logger DebugLogger = log4cplus::Logger::getInstance(DEBUG_S);
+	DebugLogger.addAppender(Console);
+	DebugLogger.addAppender(DebugAppender);
+
+	log4cplus::SharedAppenderPtr InfoAppender(new log4cplus::RollingFileAppender(LOG4CPLUS_TEXT(file_name + ".info.log"), rotating_size, SHRT_MAX, true, true));
+	InfoAppender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(pattern)));
+	log4cplus::Logger InfoLogger = log4cplus::Logger::getInstance(INFO_S);
+	InfoLogger.addAppender(Console);
+	InfoLogger.addAppender(InfoAppender);
+
+
+	log4cplus::SharedAppenderPtr WarnAppender(new log4cplus::RollingFileAppender(LOG4CPLUS_TEXT(file_name + ".warn.log"), rotating_size, SHRT_MAX, true, true));
+	WarnAppender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(pattern)));
+	log4cplus::Logger WarnLogger = log4cplus::Logger::getInstance(WARN_S);
+	WarnLogger.addAppender(Console);
+	WarnLogger.addAppender(WarnAppender);
+
+	log4cplus::SharedAppenderPtr ErrorAppender(new log4cplus::RollingFileAppender(LOG4CPLUS_TEXT(file_name + ".error.log"), rotating_size, SHRT_MAX, true, true));
+	ErrorAppender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(pattern)));
+	log4cplus::Logger ErrorLogger = log4cplus::Logger::getInstance(ERROR_S);
+	ErrorLogger.addAppender(Console);
+	ErrorLogger.addAppender(ErrorAppender);
+
+	log4cplus::SharedAppenderPtr FatalAppender(new log4cplus::RollingFileAppender(LOG4CPLUS_TEXT(file_name + ".fatal.log"), rotating_size, SHRT_MAX, true, true));
+	FatalAppender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(pattern)));
+	log4cplus::Logger FatalLogger = log4cplus::Logger::getInstance(FATAL_S);
+	FatalLogger.addAppender(Console);
+	FatalLogger.addAppender(FatalAppender);
     return 0;
 }
 
@@ -50,93 +71,8 @@ int Logger::Init( const std::string &server_name, const std::string &log_path,co
 
 void Logger::Destroy()
 {
-	file_logger_->info("Close logger");
-	file_logger_->flush();
 }
 
-
-void Logger::Flush()
-{
-	if (used_buffer_size_ == 0)
-		return;
-	file_logger_->flush();
-	used_buffer_size_ = 0;
-}
-
-void Logger::Log(const char* format, ...)
-{
-	int length = 0;
-	va_list ap;
-	va_start(ap, format);
-#ifdef _WIN32
-#pragma warning(disable: 4996)
-#endif
-	length = vsnprintf(0, 0, format, ap);
-#ifdef _WIN32
-#pragma warning(default: 4996)
-#endif
-	va_end(ap);
-
-	if (length <= 0 || length >= 0xFFFF)
-		return;
-	int32 avail_size = log_buffer_size - 10 - used_buffer_size_;
-	if (length > avail_size)
-	{
-		Flush();
-	}
-
-	if (length <= avail_size)
-	{
-		char* buff = log_buffer_ + used_buffer_size_ + 2;
-
-		va_start(ap, format);
-#ifdef _WIN32
-#pragma warning(disable: 4996)
-#endif
-		length = vsnprintf(buff, length + 1, format, ap);
-#ifdef _WIN32
-#pragma warning(default: 4996)
-#endif
-		va_end(ap);
-
-		if (buff[length - 1] != '\n')
-		{
-			buff[length] = '\n';
-			buff[length + 1] = '\0';
-			length += 1;
-		}
-		used_buffer_size_ += length + 2;
-		*reinterpret_cast<unsigned short *>(buff - 2) = length;
-		file_logger_->info(buff);
-		Flush();
-	}
-	else
-	{
-		// data ³¬³ö buff size 
-		char* o_buff = static_cast<char*>(ZPOOL_MALLOC(length + 10));
-		char* buff = o_buff + 2;
-		va_start(ap, format);
-#ifdef _WIN32
-#pragma warning(disable: 4996)
-#endif
-		length = vsnprintf(buff, length + 1, format, ap);
-#ifdef _WIN32
-#pragma warning(default: 4996)
-#endif
-		va_end(ap);
-
-		if (buff[length - 1] != '\n')
-		{
-			buff[length] = '\n';
-			buff[length + 1] = '\0';
-			length += 1;
-		}
-		*reinterpret_cast<unsigned short *>(buff - 2) = length;
-		file_logger_->info(o_buff);
-		Flush();
-		ZPOOL_FREE(reinterpret_cast<void*>(const_cast<char*>(o_buff)));
-	}
-}
 } //namespace common
 } //namespace z
 

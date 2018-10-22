@@ -16,7 +16,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzcommon", "common\common
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzcontrib", "contrib\contrib.vcxproj", "{75707FD3-5939-446F-A79F-71BD16A192E7}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EEA5EE80-3EC8-4C37-B312-5073AB38BFF7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testlib", "testlib\testlib.vcxproj", "{05A8154C-AF1F-49F0-8FBB-2BBEC85034C5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,6 +44,12 @@ Global
 		{75707FD3-5939-446F-A79F-71BD16A192E7}.Release|Win32.ActiveCfg = Release|Win32
 		{75707FD3-5939-446F-A79F-71BD16A192E7}.Release|Win32.Build.0 = Release|Win32
 		{75707FD3-5939-446F-A79F-71BD16A192E7}.Release|x64.ActiveCfg = Release|Win32
+		{05A8154C-AF1F-49F0-8FBB-2BBEC85034C5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{05A8154C-AF1F-49F0-8FBB-2BBEC85034C5}.Debug|Win32.Build.0 = Debug|Win32
+		{05A8154C-AF1F-49F0-8FBB-2BBEC85034C5}.Debug|x64.ActiveCfg = Debug|Win32
+		{05A8154C-AF1F-49F0-8FBB-2BBEC85034C5}.Release|Win32.ActiveCfg = Release|Win32
+		{05A8154C-AF1F-49F0-8FBB-2BBEC85034C5}.Release|Win32.Build.0 = Release|Win32
+		{05A8154C-AF1F-49F0-8FBB-2BBEC85034C5}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

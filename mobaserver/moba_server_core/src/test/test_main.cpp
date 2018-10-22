@@ -1,6 +1,13 @@
 #include "stdafx.h"
-#include <z/common/singleton.h>
-#include <z/common/memory_pool.h>
+#include "z/common/logger.h"
+#include <log4cplus/logger.h>
+#include <log4cplus/fileappender.h>
+#include <log4cplus/layout.h>
+#include <log4cplus/ndc.h>
+#include <log4cplus/helpers/loglog.h>
+#include <log4cplus/helpers/property.h>
+#include <log4cplus/loggingmacros.h>
+#include <log4cplus/initializer.h>
 
 #ifdef _WIN32
 #ifdef _DEBUG
@@ -13,10 +20,10 @@
 
 #pragma comment(lib, "libzcommon.lib")
 #pragma comment(lib, "libzcontrib.lib")
-#pragma comment(lib, "libznet.lib")
+#pragma comment(lib, "log4cplusD.lib")
 
 #endif //_WIN32
-class CostTick
+/*class CostTick
 {
 public:
     CostTick()
@@ -122,4 +129,13 @@ int main()
 
 
     return 0;
+}*/
+
+
+
+int main() {
+	log4cplus::initialize();
+	log4cplus::Initializer initializer;
+	LOGGER.Init("scene","./log",1);
+	return 0;
 }

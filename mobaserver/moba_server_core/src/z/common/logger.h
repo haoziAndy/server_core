@@ -1,38 +1,27 @@
 ﻿#ifndef Z_COMMON_LOGGER_H
 #define Z_COMMON_LOGGER_H
 
-namespace spdlog {
-	class logger;
-};
-
 namespace z {
 namespace common {
 
+
+#define  FATAL_S "Fatal"
+#define  ERROR_S "Error"
+#define  WARN_S "Warn"
+#define  INFO_S "Info"
+#define  DEBUG_S "Debug"
 /// thread-safe
 class Logger
 {
 public:
     ~Logger()
     {
-        Destroy();
     }
 
     int Init(const std::string &server_name, const std::string &log_path, const int32 log_level);
     void Destroy();
 
-	void Log(const char* format, ...);
-
-    void Flush();
-
-    char* datetime_str() {return datetime_str_;}
 private:
-	std::shared_ptr<spdlog::logger> file_logger_;
-
-private:
-
-	char datetime_str_[32];
-	char* log_buffer_;
-	int32 used_buffer_size_;
 
     Logger();
 
@@ -54,19 +43,13 @@ private:
 
 #define LOGGER Singleton<z::common::Logger>::instance()
 
-#define LOG_DEBUG_(format, ...) \
-    LOGGER.Log("%s %s %s %d %s %" PRIu64 " %" PRIu64 " %d:" format, LOGGER.datetime_str(), "debug", \
-    __FILE__, __LINE__, __PRETTY_FUNCTION__, GET_MSG_PLAYER(), GET_MSG_SEQ(), GET_MSG(), ##__VA_ARGS__)
+#define LOG4CPLUS(lv) log4cplus::Logger::getInstance(lv)
 
-#define LOG_FATAL(format, ...) LOG_DEBUG_(format, ##__VA_ARGS__)
-#define LOG_ERR(format, ...) LOG_DEBUG_( format, ##__VA_ARGS__)
-#define LOG_WARN(format, ...) LOG_DEBUG_( format, ##__VA_ARGS__)
-#define LOG_INFO(format, ...) LOG_DEBUG_(format, ##__VA_ARGS__)
-#ifndef NDEBUG
-#define LOG_DEBUG(format, ...) LOG_DEBUG_(format, ##__VA_ARGS__)
-#else
-#define LOG_DEBUG(format, ...) 
-#endif // NDEBUG
+#define LOG_FATAL(format, ...)  LOG4CPLUS_FATAL_FMT(LOG4CPLUS(FATAL_S),format, ##__VA_ARGS__)
+#define LOG_ERR(format, ...) LOG4CPLUS_ERROR_FMT(LOG4CPLUS(ERROR_S), format, ##__VA_ARGS__)
+#define LOG_WARN(format, ...) LOG4CPLUS_WARN_FMT( LOG4CPLUS(WARN_S),format, ##__VA_ARGS__)
+#define LOG_INFO(format, ...) LOG4CPLUS_INFO_FMT( LOG4CPLUS(INFO_S),format, ##__VA_ARGS__)
+#define LOG_DEBUG(format, ...) LOG4CPLUS_DEBUG_FMT( LOG4CPLUS(DEBUG_S),format, ##__VA_ARGS__)
 
 
 #endif //Z_COMMON_LOGGER_H

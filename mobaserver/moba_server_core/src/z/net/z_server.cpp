@@ -674,12 +674,6 @@ void ZServer::SecondTimerHandler( const boost::system::error_code& ec )
             {
                 last_trigger_sec = local_tm.tm_sec;
 
-                snprintf(LOGGER.datetime_str(), 25, "%04d-%02d-%02d %02d:%02d:%02d",
-                    local_tm.tm_year+1900, local_tm.tm_mon+1,
-                    local_tm.tm_mday, local_tm.tm_hour, local_tm.tm_min,
-                    local_tm.tm_sec);
-                LOGGER.Flush();
-
                 for (auto it=second_timer_functions_.begin(); it!=second_timer_functions_.end(); ++it)
                 {
                     auto& functor = *it;
