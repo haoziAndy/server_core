@@ -6,6 +6,9 @@
 #define PLAYRID_LEN 22
 #define ASYNC_REQ_LEN 22
 
+
+#define INNER_MSG_START_ID 50000
+
 /*struct SMsgHeader
 {
 SMsgHeader()

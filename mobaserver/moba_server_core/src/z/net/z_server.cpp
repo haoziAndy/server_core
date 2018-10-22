@@ -714,6 +714,43 @@ void ZServer::Daemon()
 #endif // _WIN32
 }
 
+void ZServer::PrintMsg(SMsgHeader* s_msg, const bool IsSend)
+{
+	if (s_msg == nullptr)
+	{
+		return;
+	}
+	const std::string s_note = (IsSend ? "SendMsg" : "RevMsg");
+	const auto msg_names = ZSERVER.msg_names();
+	if (msg_names != nullptr && s_msg->msg_id < INNER_MSG_START_ID)
+	{
+		const std::string &MsgName = (*msg_names)[s_msg->msg_id];
+		google::protobuf::Message* protobuf_msg = z::util::CreateMessageByTypeName(MsgName);
+		if (protobuf_msg != nullptr) {
+			if (protobuf_msg->ParseFromArray(s_msg + 1, s_msg->length)) {
+				PrintMsg(s_msg, protobuf_msg, IsSend);
+			}
+			else {
+				LOG_ERR("%s[MsgID = %d][Len = %d], cant serialize ", s_note.c_str(), s_msg->msg_id, s_msg->length);
+			}
+			delete protobuf_msg;
+			protobuf_msg = nullptr;
+		}
+	}
+}
+void ZServer::PrintMsg(SMsgHeader* header, const google::protobuf::Message* protobuf_msg, const bool IsSend)
+{
+	const std::string s_note = (IsSend ? "SendMsg" : "RevMsg");
+	if (header == nullptr || protobuf_msg == nullptr)
+	{
+		return;
+	}
+	if (header->msg_id < INNER_MSG_START_ID) {
+		const std::string JsonString = z::util::ConvertMessageToJson(protobuf_msg);
+		LOG_DEBUG("%s[from = %d][to = %d][%s], %s ",s_note.c_str(), header->src_server_id,header->dst_server_id, protobuf_msg->GetTypeName().c_str(), JsonString.c_str());
+	}
+}
+
 void TimeEngine::Init()
 {
     time_t t_now = ::time(nullptr);

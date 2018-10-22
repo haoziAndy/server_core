@@ -97,6 +97,10 @@ int ZReceiver::HandlerReceived()
 	if (!msg)
         return -1;
 
+#if(defined WIN32 or defined DEBUG)
+	ZSERVER.PrintMsg(msg,false);
+#endif
+
     int ret = handler_->OnMessage(msg, TIME_ENGINE.time());
     
     zmq_msg_close(&zmsg_);

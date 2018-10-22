@@ -2,6 +2,7 @@
 #include "public_function.h"
 #include "logger.h"
 #include "snappy.h"
+#include "google/protobuf/util/json_util.h"
 
 namespace z {
 namespace util {
@@ -23,6 +24,15 @@ google::protobuf::Message* CreateMessageByTypeName( const std::string& type_name
         }
     }
     return nullptr;
+}
+
+const std::string ConvertMessageToJson(const google::protobuf::Message *m) {
+	std::string str;
+	if( m == nullptr) {
+		return str;
+	}
+	google::protobuf::util::MessageToJsonString(*m, &str);
+	return str;
 }
 
 std::string MD5( const std::string& content, bool to_upper /*= true*/)
@@ -65,66 +75,70 @@ std::string Base64Decode( const std::string& content )
     return decoded;
 }
 
-std::string Compress( const std::string& str )
+#ifdef Release
+std::string Compress(const std::string& str)
 {
-    CryptoPP::Gzip compressor;
-    // put data into the compressor
-    compressor.PutMessageEnd(reinterpret_cast<const byte*>(str.data()), str.size());
-    // flush it to mark the end of a zlib message
-    bool bFlushRet = compressor.Flush(true);
-    // get size of compressed data
-    size_t outsize =
-        static_cast<size_t>(compressor.MaxRetrievable());
-    
-    void* out_buff = alloca(outsize);
-    compressor.Get(reinterpret_cast<byte*>(out_buff), outsize);
+	CryptoPP::Gzip compressor;
+	// put data into the compressor
+	compressor.PutMessageEnd(reinterpret_cast<const byte*>(str.data()), str.size());
+	// flush it to mark the end of a zlib message
+	bool bFlushRet = compressor.Flush(true);
+	// get size of compressed data
+	size_t outsize =
+		static_cast<size_t>(compressor.MaxRetrievable());
 
-    return std::string(static_cast<char*>(out_buff), outsize);
+	void* out_buff = alloca(outsize);
+	compressor.Get(reinterpret_cast<byte*>(out_buff), outsize);
+
+	return std::string(static_cast<char*>(out_buff), outsize);
 }
 
-std::string Decompress( const std::string& str )
+std::string Decompress(const std::string& str)
 {
-    CryptoPP::Gunzip decompressor;
-    size_t putSize = decompressor.Put(reinterpret_cast<const byte*>(str.data()), str.size());
-    // tell filter we want to process whatever we have received
-    bool bFlushRet = decompressor.Flush(true);
-    size_t outsize =
-        static_cast<size_t>(decompressor.MaxRetrievable());
-    void* out_buff = alloca(outsize);
-    decompressor.Get(reinterpret_cast<byte*>(out_buff), outsize);
+	CryptoPP::Gunzip decompressor;
+	size_t putSize = decompressor.Put(reinterpret_cast<const byte*>(str.data()), str.size());
+	// tell filter we want to process whatever we have received
+	bool bFlushRet = decompressor.Flush(true);
+	size_t outsize =
+		static_cast<size_t>(decompressor.MaxRetrievable());
+	void* out_buff = alloca(outsize);
+	decompressor.Get(reinterpret_cast<byte*>(out_buff), outsize);
 
-    return std::string(static_cast<char*>(out_buff), outsize);
+	return std::string(static_cast<char*>(out_buff), outsize);
 }
 
 // snappy compress
 std::string FastCompress(const char* data, int32 length)
 {
-    std::string compressed_str;
-    snappy::Compress(data,length,&compressed_str);
-    return compressed_str;
+	std::string compressed_str;
+	snappy::Compress(data, length, &compressed_str);
+	return compressed_str;
 }
 
 std::string FastCompress(const std::string& str)
 {
-    std::string compressed_str;
-    snappy::Compress(str.c_str(),str.size(),&compressed_str);
-    return compressed_str;
+	std::string compressed_str;
+	snappy::Compress(str.c_str(), str.size(), &compressed_str);
+	return compressed_str;
 }
 
 // snappy uncompress
 std::string FastUncompress(const char* data, int32 length)
 {
-    std::string uncompressed_str;
-    snappy::Uncompress(data,length,&uncompressed_str);
-    return uncompressed_str;
+	std::string uncompressed_str;
+	snappy::Uncompress(data, length, &uncompressed_str);
+	return uncompressed_str;
 }
 
 std::string FastUncompress(const std::string& str)
 {
-    std::string uncompressed_str;
-    snappy::Uncompress(str.c_str(),str.size(),&uncompressed_str);
-    return uncompressed_str;
+	std::string uncompressed_str;
+	snappy::Uncompress(str.c_str(), str.size(), &uncompressed_str);
+	return uncompressed_str;
 }
+
+
+#endif // 
 
 std::string UrlEncode(const std::string& str)
 {

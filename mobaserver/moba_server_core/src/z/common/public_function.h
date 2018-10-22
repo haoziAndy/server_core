@@ -34,7 +34,7 @@ std::string AESDecryptStr(const std::string& key, const std::string& crypted_tex
 // protobuf …Ë÷√Œ™default value
 void ApplyProtobufDefaults(::google::protobuf::Message *m, bool apply_no_default = true);
 
-
+const std::string ConvertMessageToJson(const google::protobuf::Message *m);
 }
 }
 

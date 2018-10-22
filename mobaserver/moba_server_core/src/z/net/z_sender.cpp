@@ -3,6 +3,7 @@
 #include "msg_header.h"
 #include "z_context.h"
 #include "z_server.h"
+#include "z/common/public_function.h"
 
 
 namespace z {
@@ -81,9 +82,9 @@ int ZSender::Close(bool force)
 
 int ZSender::Send( SMsgHeader* header, const google::protobuf::Message* protobuf_msg )
 {
-    auto msg_names = ZSERVER.msg_names();
-    //if (msg_names != nullptr)
-     //   LOG_DEBUG("send %s\n", protobuf_msg->GetTypeName().c_str()/*(*msg_names)[header->msg_id].c_str()*/);
+#if(defined WIN32 or defined DEBUG)
+	ZSERVER.PrintMsg(header, protobuf_msg,true);
+#endif
 
     // set sender id
     header->src_server_id = ZSERVER.server_id();
@@ -116,9 +117,9 @@ int ZSender::Send( SMsgHeader* header, const google::protobuf::Message* protobuf
 
 int ZSender::Send( SMsgHeader* s_msg )
 {
-    auto msg_names = ZSERVER.msg_names();
-    /*if (msg_names != nullptr)
-        LOG_DEBUG("send msgID = %d, %s\n", s_msg->msg_id,(*msg_names)[s_msg->msg_id].c_str());*/
+#if(defined WIN32 or defined DEBUG)
+	ZSERVER.PrintMsg(s_msg,true);
+#endif
 
     s_msg->src_server_id = ZSERVER.server_id();
     s_msg->dst_server_id = sendto_server_id_;
