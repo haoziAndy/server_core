@@ -97,7 +97,7 @@ int ZReceiver::HandlerReceived()
 	if (!msg)
         return -1;
 
-#if(defined WIN32 or defined DEBUG)
+#ifdef _DEBUG
 	ZSERVER.PrintMsg(msg,false);
 #endif
 

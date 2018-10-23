@@ -73,8 +73,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\contrib\pbjson\bin2ascii.h" />
-    <ClInclude Include="..\..\src\contrib\pbjson\pbjson.hpp" />
     <ClInclude Include="..\..\src\contrib\pugiconfig.hpp" />
     <ClInclude Include="..\..\src\contrib\pugixml.hpp" />
     <ClInclude Include="..\..\src\contrib\raknet\AutopatcherPatchContext.h" />
@@ -366,7 +364,6 @@
     <ClCompile Include="..\..\src\contrib\crypto\zdeflate.cpp" />
     <ClCompile Include="..\..\src\contrib\crypto\zinflate.cpp" />
     <ClCompile Include="..\..\src\contrib\crypto\zlib.cpp" />
-    <ClCompile Include="..\..\src\contrib\pbjson\pbjson.cpp" />
     <ClCompile Include="..\..\src\contrib\pugixml.cpp" />
     <ClCompile Include="..\..\src\contrib\raknet\Base64Encoder.cpp" />
     <ClCompile Include="..\..\src\contrib\raknet\BitStream.cpp" />

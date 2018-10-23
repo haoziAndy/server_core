@@ -10,6 +10,7 @@ namespace common {
 #define  WARN_S "Warn"
 #define  INFO_S "Info"
 #define  DEBUG_S "Debug"
+#define  TRACE_S "Trace"
 /// thread-safe
 class Logger
 {
@@ -50,6 +51,6 @@ private:
 #define LOG_WARN(format, ...) LOG4CPLUS_WARN_FMT( LOG4CPLUS(WARN_S),format, ##__VA_ARGS__)
 #define LOG_INFO(format, ...) LOG4CPLUS_INFO_FMT( LOG4CPLUS(INFO_S),format, ##__VA_ARGS__)
 #define LOG_DEBUG(format, ...) LOG4CPLUS_DEBUG_FMT( LOG4CPLUS(DEBUG_S),format, ##__VA_ARGS__)
-
+#define LOG_TRACE(format, ...) LOG4CPLUS_TRACE_FMT( LOG4CPLUS(TRACE_S),format, ##__VA_ARGS__)
 
 #endif //Z_COMMON_LOGGER_H

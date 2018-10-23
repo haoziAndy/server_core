@@ -18,9 +18,6 @@
     <Filter Include="Source Files\rapidjson\internal">
       <UniqueIdentifier>{3f9c9691-79c5-4206-a45c-df8fd6f5adff}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\pbjson">
-      <UniqueIdentifier>{8fcd740b-91c1-4fef-8c70-ddcd7fb01ee6}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\crypto">
       <UniqueIdentifier>{c9f09e51-8b49-4dd5-98f5-212394a837ad}</UniqueIdentifier>
     </Filter>
@@ -524,12 +521,6 @@
     <ClInclude Include="..\..\src\contrib\rapidjson\internal\strfunc.h">
       <Filter>Source Files\rapidjson\internal</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\contrib\pbjson\bin2ascii.h">
-      <Filter>Source Files\pbjson</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\contrib\pbjson\pbjson.hpp">
-      <Filter>Source Files\pbjson</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\contrib\pugixml.cpp">
@@ -864,9 +855,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\contrib\raknet\WSAStartupSingleton.cpp">
       <Filter>Source Files\raknet</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\contrib\pbjson\pbjson.cpp">
-      <Filter>Source Files\pbjson</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\contrib\crypto\3way.cpp">
       <Filter>Source Files\crypto</Filter>

@@ -136,6 +136,9 @@ int main()
 int main() {
 	log4cplus::initialize();
 	log4cplus::Initializer initializer;
-	LOGGER.Init("scene","./log",1);
+	LOGGER.Init("scene","./log", log4cplus::TRACE_LOG_LEVEL);
+	LOG_TRACE("AAAAAAAAAAAAAAA test trace");
+	LOG_TRACE("AAAAAAAAAAAAAAA test trace");
+	LOG_TRACE("AAAAAAAAAAAAAAA test trace");
 	return 0;
 }

@@ -82,7 +82,7 @@ int ZSender::Close(bool force)
 
 int ZSender::Send( SMsgHeader* header, const google::protobuf::Message* protobuf_msg )
 {
-#if(defined WIN32 or defined DEBUG)
+#ifdef _DEBUG 
 	ZSERVER.PrintMsg(header, protobuf_msg,true);
 #endif
 
@@ -117,7 +117,7 @@ int ZSender::Send( SMsgHeader* header, const google::protobuf::Message* protobuf
 
 int ZSender::Send( SMsgHeader* s_msg )
 {
-#if(defined WIN32 or defined DEBUG)
+#ifdef _DEBUG 
 	ZSERVER.PrintMsg(s_msg,true);
 #endif
 

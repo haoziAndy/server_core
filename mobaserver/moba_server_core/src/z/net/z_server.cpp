@@ -203,78 +203,6 @@ void ZServer::Run()
     // 默认asio loop
     DelegateLoop();
     time_engine_.run();
-    /*if (is_delegate_looping_)
-    {
-        return;
-    }*/
-    
-    /*int cur_frame_time_piece = server_time_piece_ms;
-    while (!is_server_shutdown_)
-    {
-        time_engine_.Update();
-        auto time_ts = time_engine_.time();
-        int item_size = poll_items_.size();
-        int rc = zmq_poll(poll_items_.data(), item_size, server_time_piece_ms);
-        if (rc > 0)
-        {
-            if (time_engine_.time() - time_ts > 0)
-            LOG_DEBUG("server poll piece ms : %" PRId64 "\n", time_engine_.time() - time_ts);
-            time_ts = time_engine_.time();
-            for (int i=0; i<item_size; ++i)
-            {
-                zmq_pollitem_t* item = & poll_items_.data()[i];
-                if (item->revents & ZMQ_POLLIN)
-                {
-                    ZReceiver* receiver = ref_poll_receivers_.data()[i];
-                    assert(receiver->socket() == item->socket);
-                    // 公平性调度
-                    for (int i = 0; i < 256; ++i)
-                    {
-                        int recv_size = receiver->ReceiveMessage();
-                        if (recv_size > 0)
-                        {
-                            // 增加消息统计
-                            SMsgHeader* header = reinterpret_cast<SMsgHeader*>(zmq_msg_data(
-                                const_cast<zmq_msg_t*>(&receiver->received_zmsg())));
-                            // 消息统计
-                            auto& msgs_stats = recv_msg_stats_[header->dst_server_id];
-                            auto& msg_stats = msgs_stats[header->msg_id];
-                            msg_stats.first += 1;
-                            msg_stats.second += header->length;
-
-                            int ret = receiver->HandlerReceived();
-                            if (ret < 0)
-                            {
-                                /// @todo error handling
-                            }
-                        }
-                        else if (recv_size == 0)
-                        {
-                            /// @todo error handling
-                            break;
-                        }
-                        else // recv_size < 0
-                        {
-                            break;
-                        }
-                    }
-                }
-            }
-            if (time_engine_.time() - time_ts > 0)
-                LOG_DEBUG("server run piece ms : %" PRId64 "\n", time_engine_.time() - time_ts);
-        }
-        time_ts = time_engine_.time();
-        boost::system::error_code ec;
-        int count = time_engine_.poll(ec);
-        if (ec)
-        {
-            LOG_ERR("sys err[%d]:%s", ec.value(), ec.message().c_str());
-        }
-        auto run_ms = time_engine_.time() - time_ts;
-        if (run_ms > 0)
-            LOG_DEBUG("asio run piece ms %d: %" PRId64 "\n", count, run_ms);
-        time_ts = time_engine_.time();
-    }*/
 
     return;
 }
@@ -741,7 +669,7 @@ void ZServer::PrintMsg(SMsgHeader* header, const google::protobuf::Message* prot
 	}
 	if (header->msg_id < INNER_MSG_START_ID) {
 		const std::string JsonString = z::util::ConvertMessageToJson(protobuf_msg);
-		LOG_DEBUG("%s[from = %d][to = %d][%s], %s ",s_note.c_str(), header->src_server_id,header->dst_server_id, protobuf_msg->GetTypeName().c_str(), JsonString.c_str());
+		LOG_TRACE("%s[from = %d][to = %d][%s], %s ",s_note.c_str(), header->src_server_id,header->dst_server_id, protobuf_msg->GetTypeName().c_str(), JsonString.c_str());
 	}
 }
 
