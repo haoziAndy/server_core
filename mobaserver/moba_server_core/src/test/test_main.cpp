@@ -8,6 +8,7 @@
 #include <log4cplus/helpers/property.h>
 #include <log4cplus/loggingmacros.h>
 #include <log4cplus/initializer.h>
+#include "z/common/core_dump.h"
 
 #ifdef _WIN32
 #ifdef _DEBUG
@@ -21,7 +22,9 @@
 #pragma comment(lib, "libzcommon.lib")
 #pragma comment(lib, "libzcontrib.lib")
 #pragma comment(lib, "log4cplusD.lib")
-
+#pragma comment(lib, "exception_handler.lib")
+#pragma comment(lib, "crash_generation_client.lib")
+#pragma comment(lib, "common.lib")
 #endif //_WIN32
 /*class CostTick
 {
@@ -131,14 +134,16 @@ int main()
     return 0;
 }*/
 
-
+void crash() {
+	volatile int* a = (int*)(NULL);
+	*a = 1;
+}
 
 int main() {
 	log4cplus::initialize();
 	log4cplus::Initializer initializer;
 	LOGGER.Init("scene","./log", log4cplus::TRACE_LOG_LEVEL);
-	LOG_TRACE("AAAAAAAAAAAAAAA test trace");
-	LOG_TRACE("AAAAAAAAAAAAAAA test trace");
-	LOG_TRACE("AAAAAAAAAAAAAAA test trace");
+	CORE_DUMPER.Init("./log");
+	crash();
 	return 0;
 }

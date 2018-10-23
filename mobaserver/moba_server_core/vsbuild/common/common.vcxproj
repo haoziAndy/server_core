@@ -15,6 +15,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\z\common\common_main.cpp" />
+    <ClCompile Include="..\..\src\z\common\core_dump.cpp" />
     <ClCompile Include="..\..\src\z\common\error.cpp" />
     <ClCompile Include="..\..\src\z\common\logger.cpp" />
     <ClCompile Include="..\..\src\z\common\memory_pool.cpp" />
@@ -26,6 +27,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\z\common\core_dump.h" />
     <ClInclude Include="..\..\src\z\common\error.h" />
     <ClInclude Include="..\..\src\z\common\logger.h" />
     <ClInclude Include="..\..\src\z\common\memory_pool.h" />

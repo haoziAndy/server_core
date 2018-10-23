@@ -40,6 +40,9 @@
     <ClCompile Include="..\..\src\z\common\public_function.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\z\common\core_dump.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\z\common\error.h">
@@ -67,6 +70,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\z\common\public_function.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\z\common\core_dump.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

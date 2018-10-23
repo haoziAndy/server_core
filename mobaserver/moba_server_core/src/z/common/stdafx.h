@@ -6,6 +6,15 @@
 #include <zmq.h>
 #include <zmq_utils.h>
 
+#include "log4cplus/logger.h"
+#include "log4cplus/appender.h"
+#include "log4cplus/fileappender.h"
+#include "log4cplus/consoleappender.h"
+#include "log4cplus/loglevel.h"
+#include "log4cplus/loggingmacros.h"
+#include "log4cplus/configurator.h"
+#include "log4cplus/initializer.h"
+
 #include <google/protobuf/message.h>
 
 #include <boost/timer.hpp>
