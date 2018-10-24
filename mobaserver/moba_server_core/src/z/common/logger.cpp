@@ -46,7 +46,6 @@ int Logger::Init( const std::string &server_name, const std::string &log_path, c
 	InfoLogger.addAppender(InfoAppender);
 	InfoLogger.setLogLevel(log_level);
 
-
 	log4cplus::SharedAppenderPtr WarnAppender(new log4cplus::RollingFileAppender(LOG4CPLUS_TEXT(file_name + ".warn.log"), rotating_size, SHRT_MAX, true, true));
 	WarnAppender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(pattern)));
 	log4cplus::Logger WarnLogger = log4cplus::Logger::getInstance(WARN_S);
