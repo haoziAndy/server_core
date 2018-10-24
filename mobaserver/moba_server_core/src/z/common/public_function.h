@@ -8,9 +8,9 @@ google::protobuf::Message* CreateMessageByTypeName(const std::string& type_name)
 
 //std::string MD5(const std::string& content, bool to_upper = true);
 
-std::string Base64Encode(const std::string& content);
+//std::string Base64Encode(const std::string& content);
 
-std::string Base64Decode(const std::string& content);
+//std::string Base64Decode(const std::string& content);
 
 std::string UrlEncode(const std::string& str);
 

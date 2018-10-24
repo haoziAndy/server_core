@@ -53,9 +53,7 @@ return output;
 }
 
 
-*/
-
-std::string Base64Encode( const std::string& content )
+/*std::string Base64Encode( const std::string& content )
 {
     static CryptoPP::Base64Encoder encoder(nullptr, false);
     std::string encoded;
@@ -77,9 +75,9 @@ std::string Base64Decode( const std::string& content )
     decoder.Detach();
 
     return decoded;
-}
+}*/
 
-#ifdef Release
+/*
 std::string Compress(const std::string& str)
 {
 	CryptoPP::Gzip compressor;
@@ -140,9 +138,7 @@ std::string FastUncompress(const std::string& str)
 	snappy::Uncompress(str.c_str(), str.size(), &uncompressed_str);
 	return uncompressed_str;
 }
-
-
-#endif // 
+*/
 
 std::string UrlEncode(const std::string& str)
 {
