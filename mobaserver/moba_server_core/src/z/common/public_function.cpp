@@ -34,22 +34,26 @@ const std::string ConvertMessageToJson(const google::protobuf::Message *m) {
 	google::protobuf::util::MessageToJsonString(*m, &str);
 	return str;
 }
+/*
 
-std::string MD5( const std::string& content, bool to_upper /*= true*/)
+std::string MD5( const std::string& content, bool to_upper /*= true)
 {
-    static CryptoPP::Weak::MD5 hash;
-    static byte digest[CryptoPP::Weak::MD5::DIGESTSIZE];
-    CryptoPP::HexEncoder encoder(nullptr, to_upper);
+static CryptoPP::Weak::MD5 hash;
+static byte digest[CryptoPP::Weak::MD5::DIGESTSIZE];
+CryptoPP::HexEncoder encoder(nullptr, to_upper);
 
-    hash.CalculateDigest(digest, (byte*)content.c_str(), content.length());
-    std::string output;        
-    encoder.Attach(new CryptoPP::StringSink(output));
-    encoder.Put(digest, sizeof(digest));
-    encoder.MessageEnd();
-    encoder.Detach();
-    
-    return output;
+hash.CalculateDigest(digest, (byte*)content.c_str(), content.length());
+std::string output;
+encoder.Attach(new CryptoPP::StringSink(output));
+encoder.Put(digest, sizeof(digest));
+encoder.MessageEnd();
+encoder.Detach();
+
+return output;
 }
+
+
+*/
 
 std::string Base64Encode( const std::string& content )
 {
