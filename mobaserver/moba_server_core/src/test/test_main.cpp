@@ -144,6 +144,6 @@ int main() {
 	log4cplus::Initializer initializer;
 	LOGGER.Init("scene","./log", log4cplus::TRACE_LOG_LEVEL);
 	CORE_DUMPER.Init("./log");
-	crash();
+	//crash();
 	return 0;
 }
