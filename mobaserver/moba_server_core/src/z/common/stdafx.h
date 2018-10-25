@@ -4,7 +4,6 @@
 #include <stdarg.h>
 
 #include <zmq.h>
-#include <zmq_utils.h>
 
 #include "log4cplus/logger.h"
 #include "log4cplus/appender.h"

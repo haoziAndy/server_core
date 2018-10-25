@@ -18,7 +18,6 @@
 #include <boost/random/random_device.hpp>
 
 #include <zmq.h>
-#include <zmq_utils.h>
 
 #include <google/protobuf/message.h>
 
