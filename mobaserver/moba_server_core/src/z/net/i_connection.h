@@ -70,14 +70,15 @@ protected:
     char read_data_[recv_buff_length];
     int32 read_size_;
 
-    std::vector<boost::asio::const_buffer> send_queue_;
-    std::vector<boost::asio::const_buffer> pending_send_queue_;
-
     std::atomic_uint op_count_;
 
     bool is_reading_;
 	bool is_writing_;
 	bool is_closing_;
+
+
+	std::vector<boost::asio::const_buffer> send_queue_;
+	std::vector<boost::asio::const_buffer> pending_send_queue_;
 
     DISALLOW_COPY_AND_ASSIGN(IConnection);
 };
