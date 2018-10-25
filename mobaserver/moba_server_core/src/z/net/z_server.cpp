@@ -168,7 +168,7 @@ const std::vector<ZSender*> ZServer::GetSendersByType(uint32 server_type) const
     {
         return result;
     }
-    for (int i = 0; i < senders_.size(); ++i)
+    for (int i = 0; i < static_cast<int>(senders_.size()); ++i)
     {
         if (SERVER_TYPE(i)== server_type)
         {

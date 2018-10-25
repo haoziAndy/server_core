@@ -76,8 +76,8 @@ protected:
     std::atomic_uint op_count_;
 
     bool is_reading_;
+	bool is_writing_;
 	bool is_closing_;
-    bool is_writing_;
 
     DISALLOW_COPY_AND_ASSIGN(IConnection);
 };
