@@ -53,7 +53,7 @@ return output;
 }
 
 
-/*std::string Base64Encode( const std::string& content )
+std::string Base64Encode( const std::string& content )
 {
     static CryptoPP::Base64Encoder encoder(nullptr, false);
     std::string encoded;
