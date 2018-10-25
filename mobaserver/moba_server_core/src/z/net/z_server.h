@@ -204,6 +204,9 @@ public:
 	void PrintMsg(SMsgHeader* s_msg,const bool IsSend);
 	void PrintMsg(SMsgHeader* header, const google::protobuf::Message* protobuf_msg, const bool IsSend);
 
+	void set_trace_msg_flag(bool trace_msg_flag) { trace_msg_flag_ = trace_msg_flag; }
+	bool trace_msg_flag() const { return trace_msg_flag_; }
+
     const std::unordered_map<int32, std::unordered_map<int32, std::pair<int32, int64>>>& send_msg_stats() const {return send_msg_stats_;}
     const std::unordered_map<int32, std::unordered_map<int32, std::pair<int32, int64>>>& recv_msg_stats() const {return recv_msg_stats_;}
 private:

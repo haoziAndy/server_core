@@ -638,6 +638,9 @@ void ZServer::Daemon()
 
 void ZServer::PrintMsg(SMsgHeader* s_msg, const bool IsSend)
 {
+	if (!trace_msg_flag_) {
+		return;
+	}
 	if (s_msg == nullptr)
 	{
 		return;
@@ -662,6 +665,9 @@ void ZServer::PrintMsg(SMsgHeader* s_msg, const bool IsSend)
 }
 void ZServer::PrintMsg(SMsgHeader* header, const google::protobuf::Message* protobuf_msg, const bool IsSend)
 {
+	if (!trace_msg_flag_) {
+		return;
+	}
 	const std::string s_note = (IsSend ? "SendMsg" : "RevMsg");
 	if (header == nullptr || protobuf_msg == nullptr)
 	{

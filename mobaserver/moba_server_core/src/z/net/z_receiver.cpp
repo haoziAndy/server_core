@@ -97,9 +97,7 @@ int ZReceiver::HandlerReceived()
 	if (!msg)
         return -1;
 
-#ifdef _DEBUG
 	ZSERVER.PrintMsg(msg,false);
-#endif
 
     int ret = handler_->OnMessage(msg, TIME_ENGINE.time());
     
