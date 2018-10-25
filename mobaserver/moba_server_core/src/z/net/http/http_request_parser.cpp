@@ -312,7 +312,7 @@ RequestParser::result_type RequestParser::Consume(Request& req, char input)
   case option_post_data:
       {
           req.content.push_back(input);
-          if (req.content.size() < req.content_length)
+          if (static_cast<int>(req.content.size()) < req.content_length)
               return indeterminate;
           else
               return good;

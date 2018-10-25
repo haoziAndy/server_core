@@ -62,7 +62,7 @@ void IConnection::AsyncSend(const char* data, int32 length)
         // 增加保护, 防止不停的累加
         if (pending_send_queue_.size() >= max_pending_send_size)
         {
-            LOG_INFO("pending_send_queue_ too large %d", pending_send_queue_.size());
+            LOG_INFO("pending_send_queue_ too large %d", static_cast<int>(pending_send_queue_.size()));
             AsyncClose();
             return;
         }
@@ -83,7 +83,7 @@ void IConnection::AsyncSend( const boost::asio::const_buffer& buffer )
         // 增加保护, 防止不停的累加
         if (pending_send_queue_.size() >= max_pending_send_size)
         {
-            LOG_INFO("pending_send_queue_ too large %d", pending_send_queue_.size());
+            LOG_INFO("pending_send_queue_ too large %d", static_cast<int>( pending_send_queue_.size()));
             AsyncClose();
             return;
         }
@@ -104,7 +104,7 @@ void IConnection::AsyncSend( const std::vector<boost::asio::const_buffer>& buffe
         // 增加保护, 防止不停的累加
         if (pending_send_queue_.size() >= max_pending_send_size)
         {
-            LOG_INFO("pending_send_queue_ too large %d", pending_send_queue_.size());
+            LOG_INFO("pending_send_queue_ too large %d", static_cast<int>(pending_send_queue_.size()));
             AsyncClose();
             return;
         }
