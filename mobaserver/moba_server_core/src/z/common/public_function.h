@@ -17,22 +17,22 @@ std::string UrlEncode(const std::string& str);
 std::string UrlDecode(const std::string& str);
 
 // gzip compress
-std::string Compress(const std::string& str);
+//std::string Compress(const std::string& str);
 // gzip uncompress
-std::string Decompress(const std::string& str);
+//std::string Decompress(const std::string& str);
 
 // snappy compress
-std::string FastCompress(const char* data, int32 length);
-std::string FastCompress(const std::string& str);
+//std::string FastCompress(const char* data, int32 length);
+//std::string FastCompress(const std::string& str);
 // snappy uncompress
-std::string FastUncompress(const char* data, int32 length);
-std::string FastUncompress(const std::string& str);
+//std::string FastUncompress(const char* data, int32 length);
+//std::string FastUncompress(const std::string& str);
 
-std::string AESEncryptStr(const std::string& key, const std::string& plain_text, const std::string& ci);
-std::string AESDecryptStr(const std::string& key, const std::string& crypted_text, const std::string& ci);
+//std::string AESEncryptStr(const std::string& key, const std::string& plain_text, const std::string& ci);
+//std::string AESDecryptStr(const std::string& key, const std::string& crypted_text, const std::string& ci);
 
 // protobuf …Ë÷√Œ™default value
-void ApplyProtobufDefaults(::google::protobuf::Message *m, bool apply_no_default = true);
+//void ApplyProtobufDefaults(::google::protobuf::Message *m, bool apply_no_default = true);
 
 const std::string ConvertMessageToJson(const google::protobuf::Message *m);
 }

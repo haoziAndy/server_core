@@ -37,7 +37,7 @@ namespace net
 struct SMsgHeader
 {
 	SMsgHeader()
-		: length(0), msg_id(0), src_server_id(0), dst_server_id(0)
+		: msg_id(0), length(0),  src_server_id(0), dst_server_id(0)
 	{}
 	uint32    msg_id;
 	uint32    length;

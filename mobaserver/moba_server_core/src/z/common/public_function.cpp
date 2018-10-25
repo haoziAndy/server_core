@@ -36,7 +36,7 @@ const std::string ConvertMessageToJson(const google::protobuf::Message *m) {
 }
 /*
 
-std::string MD5( const std::string& content, bool to_upper /*= true)
+std::string MD5( const std::string& content, bool to_upper)
 {
 static CryptoPP::Weak::MD5 hash;
 static byte digest[CryptoPP::Weak::MD5::DIGESTSIZE];
@@ -75,9 +75,8 @@ std::string Base64Decode( const std::string& content )
     decoder.Detach();
 
     return decoded;
-}*/
+}
 
-/*
 std::string Compress(const std::string& str)
 {
 	CryptoPP::Gzip compressor;
@@ -233,7 +232,7 @@ std::string UrlDecode(const std::string& sSrc)
 
 }
 
-void ApplyProtobufDefaults(::google::protobuf::Message *m, bool apply_no_default)
+/*void ApplyProtobufDefaults(::google::protobuf::Message *m, bool apply_no_default)
 {
     const ::google::protobuf::Descriptor *d = m->GetDescriptor();
     const ::google::protobuf::Reflection *r = m->GetReflection();
@@ -337,6 +336,7 @@ void ApplyProtobufDefaults(::google::protobuf::Message *m, bool apply_no_default
         } // if
     } // for
 } // apply_protobuf_defaults
+*/
 
 
 
