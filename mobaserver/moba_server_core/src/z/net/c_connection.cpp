@@ -12,7 +12,7 @@ namespace net {
 CConnection::CConnection( IServer* server, int conn_index )
     : IConnection(server, conn_index)
     , status_(LoginStatus_DEFAULT)
-    , open_id_(0)
+    , account_id_("")
     , idle_count_(0)
     , msg_count_(0)
 {

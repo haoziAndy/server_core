@@ -30,8 +30,8 @@ public:
     /// on keep alive timeout
     void OnKeepAliveTimeOut(const boost::system::error_code& ec);
 
-    void set_open_id(int64 open_id) {open_id_ = open_id;}
-    int64 open_id() const {return open_id_;}
+    void set_account_id(const std::string &account_id) { account_id_ = account_id;}
+    std::string account_id() const {return account_id_;}
 
     /*void set_server_group_id(int server_group_id) {server_group_id_ = server_group_id;}
     int server_group_id() const {return server_group_id_;}*/
@@ -56,7 +56,7 @@ public:
 
 private:
     LoginStatus status_;
-    int64 open_id_;
+    std::string account_id_;
     //int32 server_group_id_;
 
     int32 idle_count_;                  // 防止发呆, 每秒加1, 到某值就判定断开, 有消息读取置零
