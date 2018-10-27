@@ -12,6 +12,7 @@ set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "/usr/local/lib")
 
 include_directories(.)
 include_directories(../../../include)
+include_directories(../../../include/log4cplus/)
 include_directories(../../)
 include_directories(../../contrib)
 
@@ -66,7 +67,7 @@ add_library(${build_target} STATIC ${SRC_FILES})
 set_target_properties(${build_target} PROPERTIES PREFIX "")
 
 add_precompiled_header(${build_target} stdafx.h FORCEINCLUDE)
-target_link_libraries(${build_target} ${ZLIB_DIR}/libzcommon.a)
+target_link_libraries(${build_target} ${ZLIB_DIR}/libzcommon.a )
 
 add_custom_command(TARGET ${build_target}
           POST_BUILD
