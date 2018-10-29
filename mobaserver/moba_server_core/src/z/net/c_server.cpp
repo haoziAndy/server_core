@@ -76,8 +76,6 @@ void CCServer::SendToSession( int session_id, const std::string & user_id, CMsgH
 
     auto length = msg->length + sizeof(*msg);
 
-	msg->length += sizeof(msg->msg_id);//由于客户端消息id也算在包长里面
-
     CMsgHeaderHton(msg);
     conn->AsyncSend(reinterpret_cast<const char*>(msg), length);
 }

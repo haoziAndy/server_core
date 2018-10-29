@@ -58,9 +58,6 @@ int32 CConnection::OnRead( char* data, int32 length )
         /// 字节序转换
         CMsgHeaderNtoh(msg);
 
-		msg->length -= sizeof(msg->msg_id);//由于客户端现在把消息id的长度也算在包长里面
-
-
         // 客户端发给服务器的消息 最大长度限制
         if (msg->length > recv_client_message_max_length)
         {
