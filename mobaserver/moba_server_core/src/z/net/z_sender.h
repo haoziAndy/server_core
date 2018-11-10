@@ -36,6 +36,7 @@ public:
     void set_status(int32 status) { status_ = status;}
     int32 status() const {return status_;}
 
+	int32 get_sendto_server_id() const { return sendto_server_id_; }
 private:
     ZSocket* socket_;    
     int sendto_server_id_; 

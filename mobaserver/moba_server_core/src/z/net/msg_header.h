@@ -3,8 +3,7 @@
 
 // 短连接模式
 #define NON_PERSISTANCE_MODE 0
-#define PLAYRID_LEN 22
-#define ASYNC_REQ_LEN 22
+#define UIDLen 22
 
 
 #define INNER_MSG_START_ID 50000
@@ -37,15 +36,18 @@ namespace net
 struct SMsgHeader
 {
 	SMsgHeader()
-		: msg_id(0), length(0),  src_server_id(0), dst_server_id(0)
-	{}
+		: msg_id(0), length(0),  src_server_id(0), dst_server_id(0), session_id(0)
+	{
+		async_seq[0] = '\0';
+		player_id[0] = '\0';
+	}
 	uint32    msg_id;
 	uint32    length;
 	int32    src_server_id;        // 消息来源 服务器id 
 	int32    dst_server_id;        // 为gate 登录sessionid
 	uint32    session_id;        // 为gate 登录sessionid
-	char    async_seq[ASYNC_REQ_LEN];
-	char    player_id[PLAYRID_LEN];   // 玩家未登录时，player_id为0
+	char    async_seq[UIDLen];
+	char    player_id[UIDLen];   // 玩家未登录时，player_id为0
 };
 
 
