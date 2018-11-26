@@ -34,6 +34,13 @@
 #include <time.h>
 #include <string>
 
+#include "log4cplus/logger.h"
+#include "log4cplus/appender.h"
+#include "log4cplus/fileappender.h"
+#include "log4cplus/consoleappender.h"
+#include "log4cplus/loglevel.h"
+#include "log4cplus/loggingmacros.h"
+
 #include <z/common/types.h>
 #include <z/common/singleton.h>
 

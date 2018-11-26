@@ -68,6 +68,7 @@ int Logger::Init( const std::string &server_name, const std::string &log_path, c
 	FatalLogger.setLogLevel(log_level);
 	const log4cplus::LogLevelManager& llm = log4cplus::getLogLevelManager();
 	LOG_INFO("Success Init Logger, LogLv = %s", llm.toString(log_level).c_str());
+	this->log_level_ = log_level;
     return 0;
 }
 

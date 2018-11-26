@@ -22,9 +22,12 @@ public:
     int Init(const std::string &server_name, const std::string &log_path, const int32 log_level);
     void Destroy();
 
+	log4cplus::LogLevel GetLogLevel() { return log_level_; }
 private:
 
     Logger();
+	
+	log4cplus::LogLevel log_level_;
 
     DECLARE_SINGLETON(Logger);
 };
