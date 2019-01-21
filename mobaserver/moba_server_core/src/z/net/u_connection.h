@@ -2,7 +2,6 @@
 #define Z_NET_U_CONNECTION_H
 
 #include "msg_handler.h"
-typedef uint32_t kcp_conv_t;
 
 namespace z {
 namespace net {
@@ -42,11 +41,6 @@ public:
 
     void SecondTimerHandler(const boost::system::error_code& ec);
 
-	void UConnection::SetUdpRemoteEndpoint(const boost::asio::ip::udp::endpoint& udp_remote_endpoint);
-
-	int UConnection::udp_output(const char *buf, int len, ikcpcb *kcp, void *user);
-private:
-	void UConnection::InitKcp(const kcp_conv_t& conv);
 protected:
     boost::asio::deadline_timer deadline_timer_; 
 
@@ -54,17 +48,13 @@ protected:
     int64 user_id_;
     int64 open_id_;
     int32 sid_;
+	kcp_conv_t kcp_conv_t_;
 
     IUMsgHandler* msg_handler_;
 
     LoginStatus status_;
 
     DISALLOW_COPY_AND_ASSIGN(UConnection);
-private:
-	kcp_conv_t conv_;
-	IKCPCB* p_kcp_; // --own
-	uint32_t last_packet_recv_time_;
-	boost::asio::ip::udp::endpoint udp_remote_endpoint_;
 };
 
 

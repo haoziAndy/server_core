@@ -4,17 +4,18 @@
 #include "msg_handler.h"
 #include "z_server.h"
 #include "u_connection.h"
+#include "asio_kcp/server.hpp"
 
 namespace z {
 namespace net {
 
 
-UdpServer::UdpServer():
-	udp_socket_(TIME_ENGINE)
-    ,request_handler_(nullptr)
+UdpServer::UdpServer(const std::string& address, const std::string& port):
+    request_handler_(nullptr)
     , signals_(TIME_ENGINE)
+	,kcp_server_(TIME_ENGINE, address, port)
     , is_server_shutdown_(false)
-    , poll_timer_(TIME_ENGINE)    
+	, poll_timer_(TIME_ENGINE)
 {}
 
 bool UdpServer::Init(const std::string& addr, const std::string& port,const int32 max_incomming_conn, IUMsgHandler* handler )
@@ -29,28 +30,9 @@ bool UdpServer::Init(const std::string& addr, const std::string& port,const int3
         LOG_ERR("max_incomming_conn %d", max_incomming_conn);
         return false;
     }
-	boost::asio::ip::udp::resolver resolver(TIME_ENGINE);
-	boost::asio::ip::udp::resolver::query query(addr, port);
-
-	boost::system::error_code ec;
-	auto it = resolver.resolve(query, ec);
-	if (ec)
-	{
-		LOG_ERR("UdpServer::Init failed. Error[%d]: %s", ec.value(), ec.message().c_str());
-		return false;
-	}
-
-	boost::asio::ip::udp::endpoint _endpoint = *it;
-	this->udp_socket_.bind(_endpoint,ec);
-	if (ec)
-	{
-		LOG_ERR("UdpServer::Init failed. Error[%d]: %s", ec.value(), ec.message().c_str());
-		return false;
-	}
 
     request_handler_ = handler;
 
-    InitPollTimer();
 
     signals_.add(SIGINT);
     signals_.add(SIGTERM);
@@ -117,20 +99,7 @@ void UdpServer::SendToSession( int session_id, uint64 user_id, CMsgHeader* msg )
 
 int32 UdpServer::AddNewConnection(  )
 {
-    // alloc avail session id
-    static int s_session_id = 0;
-    auto session_id = ((++s_session_id) << 1) | 0x0;
-    for (int i=0; session_conn_.find(session_id) != session_conn_.end() && i<100; ++i)
-        ++ session_id;
-    
-    if (session_conn_.find(session_id) != session_conn_.end())
-    {
-        LOG_ERR("failed alloc session_id");
-        return -1;
-    }
-    auto conn = ZPOOL_NEW_SHARED(z::net::UConnection, session_id, conn_guid, request_handler_);
-    session_conn_[session_id] = conn;
-	
+
     return 0;
 }
 
@@ -160,8 +129,6 @@ void UdpServer::Run()
 
 void UdpServer::Stop()
 {
-	this->udp_socket_.cancel();
-	this->udp_socket_.close();
 	is_server_shutdown_ = true;
 }
 
@@ -170,38 +137,6 @@ void UdpServer::Destroy()
 
 }
 
-
-void UdpServer::HandleUdpReceiveFrom(const boost::system::error_code& error, size_t bytes_recvd)
-{
-	if (!error && bytes_recvd > 0)
-	{/*
-		if (asio_kcp::is_connect_packet(udp_data_, bytes_recvd))
-		{
-			//handle_connect_packet();
-			goto END;
-		}
-		*/
-		//handle_kcp_packet(bytes_recvd);
-	}
-	else
-	{
-		LOG_ERR("\nhandle_udp_receive_from error end! error: %s, bytes_recvd: %ld\n", error.message().c_str(), bytes_recvd);
-	}
-
-END:
-	HookUdpAsyncReceive();
-}
-
-void UdpServer::HookUdpAsyncReceive(void)
-{
-	if (is_server_shutdown_)
-		return;
-	udp_socket_.async_receive_from(
-		boost::asio::buffer(udp_data_, sizeof(udp_data_)), udp_remote_endpoint_,
-		boost::bind(&UdpServer::HandleUdpReceiveFrom, this,
-			boost::asio::placeholders::error,
-			boost::asio::placeholders::bytes_transferred));
-}
 
 boost::shared_ptr<UConnection> UdpServer::GetConnection( int32 session_id ) const
 {

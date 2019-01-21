@@ -58,7 +58,8 @@
 #include <contrib/crypto/gzip.h>
 #include <contrib/crypto/hex.h>
 #include <contrib/crypto/base64.h>
-#include "contrib/kcp/ikcp.h"
+
+#include "asio_kcp/server.hpp"
 
 #ifdef _WIN32
 #define snprintf sprintf_s

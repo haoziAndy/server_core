@@ -12,9 +12,6 @@
     <Filter Include="Source Files\crypto">
       <UniqueIdentifier>{c9f09e51-8b49-4dd5-98f5-212394a837ad}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\kcp">
-      <UniqueIdentifier>{b2eec86c-cbb6-4548-928d-d64d619e612d}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\contrib\pugiconfig.hpp">
@@ -22,9 +19,6 @@
     </ClInclude>
     <ClInclude Include="..\..\src\contrib\pugixml.hpp">
       <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\contrib\kcp\ikcp.h">
-      <Filter>Source Files\kcp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -399,9 +393,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\contrib\crypto\zlib.cpp">
       <Filter>Source Files\crypto</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\contrib\kcp\ikcp.c">
-      <Filter>Source Files\kcp</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

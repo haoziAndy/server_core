@@ -43,33 +43,27 @@ public:
    // bool GetConnStatistics(const RakNet::RakNetGUID& conn_guid, RakNet::RakNetStatistics* stat, int* ping = nullptr) const;
 private:
     void SendToSession(int session_id, uint64 user_id, CMsgHeader* msg);
-
-	void HookUdpAsyncReceive(void);
-	void HandleUdpReceiveFrom(const boost::system::error_code& error, size_t bytes_recvd);
     void PollTimerHandler(const boost::system::error_code& ec);
 
 private:
-	/// The listen socket.
-	boost::asio::ip::udp::socket udp_socket_;
-	boost::asio::ip::udp::endpoint udp_remote_endpoint_;
 
     z::net::IUMsgHandler* request_handler_;
 
     std::unordered_map<int32, boost::shared_ptr<UConnection>> session_conn_;
+
+	kcp_svr::server kcp_server_;
 
     /// The signal_set is used to register for process termination notifications.
     boost::asio::signal_set signals_;    
 
     bool is_server_shutdown_;
 
-	enum { udp_packet_max_length = 1080 }; // (576-8-20 - 8) * 2
-	char udp_data_[1024 * 32];
-
     boost::asio::deadline_timer poll_timer_;
 
     boost::function<void (UConnection*)> uconn_timer_func_;
 private:
-    UdpServer();
+	UdpServer();
+    UdpServer(const std::string& address, const std::string& port);
         
     DECLARE_SINGLETON(UdpServer);
 };

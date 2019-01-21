@@ -9,23 +9,11 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\http">
-      <UniqueIdentifier>{688c1915-c0d3-4d0b-a5b8-e4d3c8955e81}</UniqueIdentifier>
+    <Filter Include="Source Files\asio_kcp">
+      <UniqueIdentifier>{891568cf-2918-4f6a-b3cf-1caac8da7f9f}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\src\z\net\http\http_reply.cpp">
-      <Filter>Source Files\http</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\z\net\http\http_request_parser.cpp">
-      <Filter>Source Files\http</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\z\net\h_connection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\z\net\h_server.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\z\net\i_connection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -65,23 +53,29 @@
     <ClCompile Include="..\..\src\z\net\session_mgr.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\z\net\asio_kcp\connect_packet.cpp">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\z\net\asio_kcp\connection.cpp">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\z\net\asio_kcp\connection_container.cpp">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\z\net\asio_kcp\connection_manager.cpp">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\z\net\asio_kcp\ikcp.c">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\z\net\asio_kcp\kcp_typedef.cpp">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\z\net\asio_kcp\server.cpp">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\z\net\http\http_reply.h">
-      <Filter>Source Files\http</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\z\net\http\http_request.h">
-      <Filter>Source Files\http</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\z\net\http\http_request_parser.h">
-      <Filter>Source Files\http</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\z\net\h_connection.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\z\net\h_server.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\z\net\i_connection.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -123,6 +117,27 @@
     </ClInclude>
     <ClInclude Include="..\..\src\z\net\session_mgr.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\z\net\asio_kcp\connect_packet.hpp">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\z\net\asio_kcp\connection.hpp">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\z\net\asio_kcp\connection_container.hpp">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\z\net\asio_kcp\connection_manager.hpp">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\z\net\asio_kcp\ikcp.h">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\z\net\asio_kcp\kcp_typedef.hpp">
+      <Filter>Source Files\asio_kcp</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\z\net\asio_kcp\server.hpp">
+      <Filter>Source Files\asio_kcp</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
