@@ -4,24 +4,20 @@
 #include "msg_handler.h"
 #include "z_server.h"
 #include "u_connection.h"
-#include <raknet/MessageIdentifiers.h>
-#include <raknet/RakPeerInterface.h>
-#include <raknet/RakNetStatistics.h>
-#include <raknet/RakNetTypes.h>
 
 namespace z {
 namespace net {
 
 
-UdpServer::UdpServer()
-    : server_ (nullptr)
-    , request_handler_(nullptr)
+UdpServer::UdpServer():
+	udp_socket_(TIME_ENGINE)
+    ,request_handler_(nullptr)
     , signals_(TIME_ENGINE)
     , is_server_shutdown_(false)
     , poll_timer_(TIME_ENGINE)    
 {}
 
-bool UdpServer::Init( const int32 port, const int32 max_incomming_conn, const std::string& password, IUMsgHandler* handler )
+bool UdpServer::Init(const std::string& addr, const std::string& port,const int32 max_incomming_conn, IUMsgHandler* handler )
 {
     if (handler == nullptr)
     {
@@ -33,24 +29,24 @@ bool UdpServer::Init( const int32 port, const int32 max_incomming_conn, const st
         LOG_ERR("max_incomming_conn %d", max_incomming_conn);
         return false;
     }
+	boost::asio::ip::udp::resolver resolver(TIME_ENGINE);
+	boost::asio::ip::udp::resolver::query query(addr, port);
 
-    server_ = RakNet::RakPeerInterface::GetInstance();
-    server_->SetIncomingPassword(password.c_str(), password.size());
-    server_->SetTimeoutTime(3000, RakNet::UNASSIGNED_SYSTEM_ADDRESS);
+	boost::system::error_code ec;
+	auto it = resolver.resolve(query, ec);
+	if (ec)
+	{
+		LOG_ERR("UdpServer::Init failed. Error[%d]: %s", ec.value(), ec.message().c_str());
+		return false;
+	}
 
-    RakNet::SocketDescriptor socket_descriptor[2];
-    socket_descriptor[0].port = port;
-    socket_descriptor[0].socketFamily = AF_INET;
-    socket_descriptor[1].port = port;
-    socket_descriptor[1].socketFamily = AF_INET6; // Test out IPV6
-    bool b = (server_->Startup(max_incomming_conn, socket_descriptor, 1) == RakNet::RAKNET_STARTED);
-    if (!b)
-    {
-        LOG_ERR("failed to start server on port %d max_conn %d", port, max_incomming_conn);
-        return false;
-    }
-    server_->SetMaximumIncomingConnections(max_incomming_conn);
-    server_->SetOccasionalPing(true);
+	boost::asio::ip::udp::endpoint _endpoint = *it;
+	this->udp_socket_.bind(_endpoint,ec);
+	if (ec)
+	{
+		LOG_ERR("UdpServer::Init failed. Error[%d]: %s", ec.value(), ec.message().c_str());
+		return false;
+	}
 
     request_handler_ = handler;
 
@@ -68,7 +64,7 @@ bool UdpServer::Init( const int32 port, const int32 max_incomming_conn, const st
 
 void UdpServer::SendToSession( int session_id, uint64 user_id, SMsgHeader* msg )
 {
-    if (msg->length > 0xffff)
+   /* if (msg->length > 0xffff)
     {
         LOG_ERR("client msg length > 0xffff, id %d", msg->msg_id);
         return;
@@ -83,7 +79,7 @@ void UdpServer::SendToSession( int session_id, uint64 user_id, SMsgHeader* msg )
 //    cmsg->send_tick = msg->send_tick;
     memcpy(cmsg+1, msg+1, msg->length);
 
-    SendToSession(session_id, user_id, cmsg);
+    SendToSession(session_id, user_id, cmsg);*/
 }
 
 void UdpServer::SendToSession( int session_id, uint64 user_id, CMsgHeader* msg )
@@ -115,19 +111,12 @@ void UdpServer::SendToSession( int session_id, uint64 user_id, CMsgHeader* msg )
     CMsgHeaderHton(msg);
 
     char* buff = reinterpret_cast<char*>(msg) - 1;
-    server_->Send(buff, length, HIGH_PRIORITY, RELIABLE_ORDERED, 0, conn->raknet_guid(), false);
+   // server_->Send(buff, length, HIGH_PRIORITY, RELIABLE_ORDERED, 0, conn->raknet_guid(), false);
     ZPOOL_FREE(buff);
 }
 
-int32 UdpServer::AddNewConnection( const struct RakNet::RakNetGUID& conn_guid )
+int32 UdpServer::AddNewConnection(  )
 {
-    auto it = guid_conn_.find(conn_guid);
-    if (it != guid_conn_.end())
-    {
-        LOG_ERR("guid already exist. %" PRIu64, conn_guid.g);
-        return -1;
-    }
-    
     // alloc avail session id
     static int s_session_id = 0;
     auto session_id = ((++s_session_id) << 1) | 0x0;
@@ -141,14 +130,13 @@ int32 UdpServer::AddNewConnection( const struct RakNet::RakNetGUID& conn_guid )
     }
     auto conn = ZPOOL_NEW_SHARED(z::net::UConnection, session_id, conn_guid, request_handler_);
     session_conn_[session_id] = conn;
-    guid_conn_[conn_guid] = conn;
-
+	
     return 0;
 }
 
-int32 UdpServer::RemoveConnection( const struct RakNet::RakNetGUID& conn_guid )
+int32 UdpServer::RemoveConnection( )
 {
-    auto it = guid_conn_.find(conn_guid);
+   /* auto it = guid_conn_.find(conn_guid);
     if (it != guid_conn_.end())
     {
         auto& conn = it->second;
@@ -161,7 +149,7 @@ int32 UdpServer::RemoveConnection( const struct RakNet::RakNetGUID& conn_guid )
         if (s_it != session_conn_.end())
             session_conn_.erase(s_it);
         guid_conn_.erase(it);
-    }
+    }*/
     return 0;
 }
 
@@ -172,7 +160,9 @@ void UdpServer::Run()
 
 void UdpServer::Stop()
 {
-
+	this->udp_socket_.cancel();
+	this->udp_socket_.close();
+	is_server_shutdown_ = true;
 }
 
 void UdpServer::Destroy()
@@ -180,104 +170,37 @@ void UdpServer::Destroy()
 
 }
 
-int32 UdpServer::Poll()
+
+void UdpServer::HandleUdpReceiveFrom(const boost::system::error_code& error, size_t bytes_recvd)
 {
-    enum {max_frame_msg_count = 256};
+	if (!error && bytes_recvd > 0)
+	{/*
+		if (asio_kcp::is_connect_packet(udp_data_, bytes_recvd))
+		{
+			//handle_connect_packet();
+			goto END;
+		}
+		*/
+		//handle_kcp_packet(bytes_recvd);
+	}
+	else
+	{
+		LOG_ERR("\nhandle_udp_receive_from error end! error: %s, bytes_recvd: %ld\n", error.message().c_str(), bytes_recvd);
+	}
 
-    RakNet::Packet* p;
-    // GetPacketIdentifier returns this
-    unsigned char packetIdentifier;
-
-    int i = 0;
-    for ( ; i < max_frame_msg_count; ++i)
-    {
-        p = server_->Receive();
-        if (p == nullptr)
-            break;
-
-        // 开始处理消息
-        packetIdentifier = p->data[0];
-        // Check if this is a network message packet
-        switch (packetIdentifier)
-        {
-        case ID_DISCONNECTION_NOTIFICATION:
-            // Connection lost normally
-            printf("ID_DISCONNECTION_NOTIFICATION from %s\n", p->systemAddress.ToString(true));
-            this->RemoveConnection(p->guid);
-            break;
-
-        case ID_NEW_INCOMING_CONNECTION:
-            // Somebody connected.  We have their IP now
-            printf("ID_NEW_INCOMING_CONNECTION from %s with GUID %s\n", p->systemAddress.ToString(true), p->guid.ToString());
-            AddNewConnection(p->guid);
-            break;
-
-        case ID_INCOMPATIBLE_PROTOCOL_VERSION:
-            printf("ID_INCOMPATIBLE_PROTOCOL_VERSION\n");
-            break;
-
-        case ID_CONNECTED_PING:
-        case ID_UNCONNECTED_PING:
-            printf("Ping from %s\n", p->systemAddress.ToString(true));
-            break;
-
-        case ID_CONNECTION_LOST:
-            // Couldn't deliver a reliable packet - i.e. the other system was abnormally
-            // terminated
-            printf("ID_CONNECTION_LOST from %s\n", p->systemAddress.ToString(true));;
-            this->RemoveConnection(p->guid);
-            break;
-        case ID_USER_PACKET_ENUM:
-            {
-                //server_->Send(reinterpret_cast<char*>(p->data), p->length, HIGH_PRIORITY, RELIABLE_ORDERED, 0, p->guid, false);
-                auto it = guid_conn_.find(p->guid);
-                if (it != guid_conn_.end())
-                {
-                    auto& conn = it->second;
-                    int ret = conn->OnRead(reinterpret_cast<char*>(&p->data[1]), p->length - 1);
-                    if (ret < 0)
-                        CloseConnection(conn->session_id());
-                }
-            }
-            break;
-        default:
-            // The server knows the static data of all clients, so we can prefix the message
-            // With the name data
-            //printf("%s\n", p->data);
-
-            // Relay the message.  We prefix the name for other clients.  This demonstrates
-            // That messages can be changed on the server before being broadcast
-            // Sending is the same as before
-            LOG_ERR("recv unhandle raknet packet %d", p->data[0]);
-            break;
-        }
-        //
-        server_->DeallocatePacket(p);
-    }
-    return i;
+END:
+	HookUdpAsyncReceive();
 }
 
-void UdpServer::InitPollTimer()
+void UdpServer::HookUdpAsyncReceive(void)
 {
-    poll_timer_.expires_from_now(boost::posix_time::millisec(1));
-    poll_timer_.async_wait(boost::bind(&UdpServer::PollTimerHandler, this, boost::asio::placeholders::error));
-}
-
-void UdpServer::PollTimerHandler( const boost::system::error_code& ec )
-{
-    if (!ec)
-    {
-        poll_timer_.expires_from_now(boost::posix_time::millisec(1));
-        poll_timer_.async_wait(boost::bind(&UdpServer::PollTimerHandler, this, boost::asio::placeholders::error));
-        Poll();
-    }
-    else
-    {
-        if (ec.value() != boost::asio::error::operation_aborted)
-        {
-            LOG_ERR("timer ec %d: %s", ec.value(), ec.message().c_str());
-        }
-    }
+	if (is_server_shutdown_)
+		return;
+	udp_socket_.async_receive_from(
+		boost::asio::buffer(udp_data_, sizeof(udp_data_)), udp_remote_endpoint_,
+		boost::bind(&UdpServer::HandleUdpReceiveFrom, this,
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
 }
 
 boost::shared_ptr<UConnection> UdpServer::GetConnection( int32 session_id ) const
@@ -302,23 +225,9 @@ void UdpServer::CloseConnection( int32 session_id )
         auto& conn = it->second;
         if (conn.get() != nullptr)
         {
-            RemoveConnection(conn->raknet_guid());
+    //        RemoveConnection(conn->raknet_guid());
         }
     }
-}
-
-bool UdpServer::GetConnStatistics( const RakNet::RakNetGUID& conn_guid, RakNet::RakNetStatistics* stat, int* ping /*= nullptr*/ ) const
-{
-    auto sys_addr = server_->GetSystemAddressFromGuid(conn_guid);
-    if (sys_addr == RakNet::UNASSIGNED_SYSTEM_ADDRESS)
-        return false;
-
-    server_->GetStatistics(sys_addr, stat);
-    if (ping != nullptr)
-    {
-        *ping = server_->GetAveragePing(sys_addr);
-    }
-    return true;
 }
 
 void UdpServer::ExecuteUConnTimerFunc( UConnection* conn ) const

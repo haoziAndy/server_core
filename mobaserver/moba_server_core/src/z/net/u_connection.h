@@ -2,7 +2,7 @@
 #define Z_NET_U_CONNECTION_H
 
 #include "msg_handler.h"
-#include <raknet/RakNetTypes.h> // RakNet::RakNetGUID
+typedef uint32_t kcp_conv_t;
 
 namespace z {
 namespace net {
@@ -15,7 +15,7 @@ class UConnection
     // 8192 - 64
     enum {recv_client_message_max_length = 8128 };
 public:
-    UConnection(int session_id, const RakNet::RakNetGUID& raknet_guid, IUMsgHandler* msg_handler);
+    UConnection(int session_id, IUMsgHandler* msg_handler);
     virtual ~UConnection();
     
     /// 
@@ -24,7 +24,7 @@ public:
     int32 OnRead(char* data, int32 length);
 
     int session_id() const { return session_id_; }
-    const RakNet::RakNetGUID& raknet_guid() const {return raknet_guild_;}
+   
     uint64 user_id() const { return user_id_; }
     void set_user_id(int64 _user_id) {user_id_ = _user_id;}
     
@@ -41,8 +41,13 @@ public:
     int SetLoginStatus(LoginStatus status);
 
     void SecondTimerHandler(const boost::system::error_code& ec);
+
+	void UConnection::SetUdpRemoteEndpoint(const boost::asio::ip::udp::endpoint& udp_remote_endpoint);
+
+	int UConnection::udp_output(const char *buf, int len, ikcpcb *kcp, void *user);
+private:
+	void UConnection::InitKcp(const kcp_conv_t& conv);
 protected:
-    const RakNet::RakNetGUID raknet_guild_;
     boost::asio::deadline_timer deadline_timer_; 
 
     int32 session_id_;
@@ -55,6 +60,11 @@ protected:
     LoginStatus status_;
 
     DISALLOW_COPY_AND_ASSIGN(UConnection);
+private:
+	kcp_conv_t conv_;
+	IKCPCB* p_kcp_; // --own
+	uint32_t last_packet_recv_time_;
+	boost::asio::ip::udp::endpoint udp_remote_endpoint_;
 };
 
 

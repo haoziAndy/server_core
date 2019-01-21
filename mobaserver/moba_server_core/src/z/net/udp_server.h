@@ -1,12 +1,6 @@
 #ifndef Z_NET_UDP_SERVER_H
 #define Z_NET_UDP_SERVER_H
 
-#include <raknet/RakNetTypes.h>
-
-namespace RakNet {
-    struct RakNetStatistics;
-}
-
 namespace z {
 namespace net {
 
@@ -21,7 +15,7 @@ public:
     ~UdpServer()
     {}
 
-    bool Init(const int32 port, const int32 max_incomming_conn, const std::string& password, IUMsgHandler* handler);
+    bool Init(const std::string& addr, const std::string& port, const int32 max_incomming_conn, IUMsgHandler* handler);
 
     void Destroy();
 
@@ -31,8 +25,8 @@ public:
 
     z::net::IUMsgHandler* request_handler() const {return request_handler_;}
 
-    int32 AddNewConnection(const struct RakNet::RakNetGUID& conn_guid);
-    int32 RemoveConnection(const struct RakNet::RakNetGUID& conn_guid);
+    int32 AddNewConnection();
+    int32 RemoveConnection();
 
     void CloseConnection(int32 session_id);
 
@@ -46,41 +40,30 @@ public:
     void ExecuteUConnTimerFunc(UConnection* conn) const;
 
     // 连接状态数据
-    bool GetConnStatistics(const RakNet::RakNetGUID& conn_guid, RakNet::RakNetStatistics* stat, int* ping = nullptr) const;
+   // bool GetConnStatistics(const RakNet::RakNetGUID& conn_guid, RakNet::RakNetStatistics* stat, int* ping = nullptr) const;
 private:
     void SendToSession(int session_id, uint64 user_id, CMsgHeader* msg);
 
-    void InitPollTimer();
+	void HookUdpAsyncReceive(void);
+	void HandleUdpReceiveFrom(const boost::system::error_code& error, size_t bytes_recvd);
     void PollTimerHandler(const boost::system::error_code& ec);
-    int32 Poll();
-
-    struct HashGuidPair
-    {        
-        size_t operator()(const struct RakNet::RakNetGUID& id ) const
-        {
-            return std::hash<uint64>()(id.g);
-        }
-    };
-    struct EqualGuidPair
-    {
-        bool operator () (const struct RakNet::RakNetGUID& id1,
-            const struct RakNet::RakNetGUID& id2) const
-        {
-            return id1.g == id2.g;
-        }
-    };
 
 private:
-    RakNet::RakPeerInterface* server_;
+	/// The listen socket.
+	boost::asio::ip::udp::socket udp_socket_;
+	boost::asio::ip::udp::endpoint udp_remote_endpoint_;
+
     z::net::IUMsgHandler* request_handler_;
 
     std::unordered_map<int32, boost::shared_ptr<UConnection>> session_conn_;
-    std::unordered_map<struct RakNet::RakNetGUID, boost::shared_ptr<UConnection>, HashGuidPair, EqualGuidPair> guid_conn_;
-    
+
     /// The signal_set is used to register for process termination notifications.
     boost::asio::signal_set signals_;    
 
     bool is_server_shutdown_;
+
+	enum { udp_packet_max_length = 1080 }; // (576-8-20 - 8) * 2
+	char udp_data_[1024 * 32];
 
     boost::asio::deadline_timer poll_timer_;
 

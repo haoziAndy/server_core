@@ -7,24 +7,60 @@
 namespace z {
 namespace net {
 
-UConnection::UConnection( int session_id, const RakNet::RakNetGUID& raknet_guild, IUMsgHandler* msg_handler )
-    : raknet_guild_(raknet_guild)
-    , deadline_timer_(TIME_ENGINE)
+UConnection::UConnection( int session_id, IUMsgHandler* msg_handler, const kcp_conv_t& conv):
+	deadline_timer_(TIME_ENGINE)
     , session_id_(session_id)
     , user_id_(0)
     , msg_handler_(msg_handler)
     , status_(LoginStatus_DEFAULT)
+	,conv_(0)
+    ,p_kcp_(nullptr)
+    ,last_packet_recv_time_(0)
 {
     BOOST_ASSERT(msg_handler != nullptr);
     deadline_timer_.expires_from_now(boost::posix_time::seconds(5));
     deadline_timer_.async_wait(boost::bind(&UConnection::SecondTimerHandler, this, boost::asio::placeholders::error));
-}
+	this->InitKcp(conv);
+};
 
 UConnection::~UConnection()
 {
     boost::system::error_code ignored_ec;
     deadline_timer_.cancel(ignored_ec);
+	ikcp_release(p_kcp_);
+	p_kcp_ = nullptr;
+	conv_ = 0;
 }
+
+
+void UConnection::SetUdpRemoteEndpoint(const boost::asio::ip::udp::endpoint& udp_remote_endpoint)
+{
+	udp_remote_endpoint_ = udp_remote_endpoint;
+}
+
+void UConnection::InitKcp(const kcp_conv_t& conv)
+{
+	conv_ = conv;
+	p_kcp_ = ikcp_create(conv, (void*)this);
+	//p_kcp_->output = &connection::udp_output;
+
+	// 启动快速模式
+	// 第二个参数 nodelay-启用以后若干常规加速将启动
+	// 第三个参数 interval为内部处理时钟，默认设置为 10ms
+	// 第四个参数 resend为快速重传指标，设置为2
+	// 第五个参数 为是否禁用常规流控，这里禁止
+	//ikcp_nodelay(p_kcp_, 1, 10, 2, 1);
+	ikcp_nodelay(p_kcp_, 1, 5, 1, 1); // 设置成1次ACK跨越直接重传, 这样反应速度会更快. 内部时钟5毫秒.
+}
+
+// 发送一个 udp包
+int UConnection::udp_output(const char *buf, int len, ikcpcb *kcp, void *user)
+{
+	//((UConnection*)user)->send_udp_package(buf, len);
+	return 0;
+}
+
+
 
 void UConnection::OnClose()
 {
