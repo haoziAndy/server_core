@@ -45,4 +45,10 @@ int server::send_msg(const kcp_conv_t& conv, std::shared_ptr<std::string> msg)
     return connection_manager_ptr_->send_msg(conv, msg);
 }
 
+int server::send_msg(const kcp_conv_t& conv, char *msg,const int32 length)
+{
+	return connection_manager_ptr_->send_msg(conv, msg,length);
+}
+
+
 } // namespace kcp_svr

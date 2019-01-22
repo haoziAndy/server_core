@@ -101,6 +101,15 @@ namespace kcp_svr {
 		}
 	}
 
+	void connection::send_kcp_msg(char *msg,const int length)
+	{
+		int send_ret = ikcp_send(p_kcp_, msg, length);
+		if (send_ret < 0)
+		{
+			std::cout << "send_ret<0: " << send_ret << std::endl;
+		}
+	}
+
 	void connection::input(char* udp_data, size_t bytes_recvd, const udp::endpoint& udp_remote_endpoint)
 	{
 		last_packet_recv_time_ = get_cur_clock();
@@ -126,7 +135,9 @@ namespace kcp_svr {
 		*/
 
 		{
-			char kcp_buf[1024 * 1000] = "";
+			static const int32 kcp_rev_buff_len = 1024 * 1000;
+			//char kcp_buf[1024 * 1000] = "";
+			char* kcp_buf = reinterpret_cast<char*>(ZPOOL_MALLOC(kcp_rev_buff_len));
 			int kcp_recvd_bytes = ikcp_recv(p_kcp_, kcp_buf, sizeof(kcp_buf));
 			if (kcp_recvd_bytes <= 0)
 			{
@@ -134,12 +145,20 @@ namespace kcp_svr {
 			}
 			else
 			{
-				const std::string package(kcp_buf, kcp_recvd_bytes);
-				if (auto ptr = connection_manager_weak_ptr_.lock())
+				auto session = UDPSERVER.GetConnection(this->session_id());
+				if (session){
+					auto handled_size = session->OnRead(kcp_buf, kcp_recvd_bytes);
+					if (handled_size != kcp_recvd_bytes) {
+						UDPSERVER.CloseConnection(this->session_id());
+					}
+				}
+				//const std::string package(kcp_buf, kcp_recvd_bytes);
+				/*if (auto ptr = connection_manager_weak_ptr_.lock())
 				{
 					ptr->call_event_callback_func(conv_, eRcvMsg, std::make_shared<std::string>(package));
-				}
+				}*/
 			}
+			ZPOOL_FREE(kcp_buf);
 		}
 	}
 
@@ -163,6 +182,7 @@ namespace kcp_svr {
 		{
 			std::shared_ptr<std::string> msg(new std::string("timeout"));
 			ptr->call_event_callback_func(conv_, eEventType::eDisconnect, msg);
+			UDPSERVER.CloseConnection(this->session_id());
 		}
 	}
 

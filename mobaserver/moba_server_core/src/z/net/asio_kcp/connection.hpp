@@ -38,9 +38,13 @@ public:
 
     // user level send msg.
     void send_kcp_msg(const std::string& msg);
+	void send_kcp_msg(char *msg, const int length);
 
     // todo need close if connection bind some asio callback.
     //void close();
+
+	void set_session_id(const int32 session_id) { session_id_ = session_id; };
+	int32 session_id() const { return session_id_; };
 
 private:
     void init_kcp(const kcp_conv_t& conv);
@@ -57,6 +61,7 @@ private:
     ikcpcb* p_kcp_; // --own
     udp::endpoint udp_remote_endpoint_;
     uint32_t last_packet_recv_time_;
+	int32 session_id_;
 };
 
 } // namespace kcp_svr

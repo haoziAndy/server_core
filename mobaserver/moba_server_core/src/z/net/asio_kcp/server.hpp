@@ -48,6 +48,8 @@ public:
     //  void set_lag_notify_time(uint32_t mtime);
 
     int send_msg(const kcp_conv_t& conv, std::shared_ptr<std::string> msg);
+
+	int send_msg(const kcp_conv_t& conv, char *msg, const int32 length);
     //  int send_msg(const std::vector< kcp_conv_t conv >& /*convs*/, std::shared_ptr<std::string> msg);
     //  int send_msg_to_all();
     void force_disconnect(const kcp_conv_t& conv);

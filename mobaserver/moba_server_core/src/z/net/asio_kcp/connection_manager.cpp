@@ -161,7 +161,7 @@ void connection_manager::handle_kcp_packet(size_t bytes_recvd)
     connection::shared_ptr conn_ptr = connections_.find_by_conv(conv);
     if (!conn_ptr)
     {
-        std::cout << "connection not exist with conv: " << conv << std::endl;
+		LOG_FATAL ("connection not exist with conv: %d",  conv );
         return;
     }
 
@@ -200,7 +200,8 @@ void connection_manager::handle_udp_receive_from(const boost::system::error_code
     }
     else
     {
-        printf("\nhandle_udp_receive_from error end! error: %s, bytes_recvd: %ld\n", error.message().c_str(), bytes_recvd);
+		LOG_ERR("\nhandle_udp_receive_from error end! error: %s, bytes_recvd: %ld\n", error.message().c_str(), bytes_recvd);
+		
     }
 
 END:
@@ -247,6 +248,16 @@ int connection_manager::send_msg(const kcp_conv_t& conv, std::shared_ptr<std::st
 
     connection_ptr->send_kcp_msg(*msg);
     return 0;
+}
+
+int connection_manager::send_msg(const kcp_conv_t& conv, char * msg,const int32 length)
+{
+	connection::shared_ptr connection_ptr = connections_.find_by_conv(conv);
+	if (!connection_ptr)
+		return -1;
+
+	connection_ptr->send_kcp_msg(msg, length);
+	return 0;
 }
 
 } // namespace kcp_svr

@@ -15,7 +15,7 @@ public:
     ~UdpServer()
     {}
 
-    bool Init(const std::string& addr, const std::string& port, const int32 max_incomming_conn, IUMsgHandler* handler);
+    bool Init(const std::string& addr, const std::string& port, IUMsgHandler* handler);
 
     void Destroy();
 
@@ -25,25 +25,19 @@ public:
 
     z::net::IUMsgHandler* request_handler() const {return request_handler_;}
 
-    int32 AddNewConnection();
-    int32 RemoveConnection();
+    int32 AddNewConnection(const kcp_conv_t _kcp_conv_t);
 
     void CloseConnection(int32 session_id);
 
     void SendToSession(int session_id, uint64 user_id, SMsgHeader* msg);
     boost::shared_ptr<UConnection> GetConnection(int32 session_id) const;
 
-    void SetUConnTimerFunc(boost::function<void (UConnection*)>&& func)
-    {
-        uconn_timer_func_ = func;
-    }
-    void ExecuteUConnTimerFunc(UConnection* conn) const;
-
     // 连接状态数据
    // bool GetConnStatistics(const RakNet::RakNetGUID& conn_guid, RakNet::RakNetStatistics* stat, int* ping = nullptr) const;
 private:
     void SendToSession(int session_id, uint64 user_id, CMsgHeader* msg);
     void PollTimerHandler(const boost::system::error_code& ec);
+	int32 RemoveConnection(const int32 session_id);
 
 private:
 

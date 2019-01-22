@@ -7,16 +7,15 @@
 namespace z {
 namespace net {
 
-UConnection::UConnection( int session_id, IUMsgHandler* msg_handler):
+UConnection::UConnection( int session_id,const kcp_conv_t _kcp_conv_t, IUMsgHandler* msg_handler):
 	deadline_timer_(TIME_ENGINE)
     , session_id_(session_id)
     , user_id_(0)
     , msg_handler_(msg_handler)
     , status_(LoginStatus_DEFAULT)
+	, kcp_conv_t_(_kcp_conv_t)
 {
     BOOST_ASSERT(msg_handler != nullptr);
-    deadline_timer_.expires_from_now(boost::posix_time::seconds(5));
-    deadline_timer_.async_wait(boost::bind(&UConnection::SecondTimerHandler, this, boost::asio::placeholders::error));
 };
 
 UConnection::~UConnection()
@@ -24,9 +23,6 @@ UConnection::~UConnection()
     boost::system::error_code ignored_ec;
     deadline_timer_.cancel(ignored_ec);
 }
-
-
-
 
 void UConnection::OnClose()
 {
@@ -97,26 +93,6 @@ int UConnection::SetLoginStatus( LoginStatus status )
     status_ = status;
     return 0;
 }
-
-void UConnection::SecondTimerHandler( const boost::system::error_code& ec )
-{
-    if (!ec)
-    {
-        deadline_timer_.expires_from_now(boost::posix_time::seconds(5));
-        deadline_timer_.async_wait(boost::bind(&UConnection::SecondTimerHandler, this, boost::asio::placeholders::error));
-
-        UDPSERVER.ExecuteUConnTimerFunc(this);
-    }
-    else
-    {
-        if (ec.value() != boost::asio::error::operation_aborted)
-        {
-            LOG_ERR("timer ec %d: %s", ec.value(), ec.message().c_str());
-        }
-    }
-}
-
-
 
 } // namespace net
 } // namespace z

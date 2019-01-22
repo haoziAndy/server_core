@@ -60,6 +60,8 @@
 #include <contrib/crypto/base64.h>
 
 #include "asio_kcp/server.hpp"
+#include "udp_server.h"
+#include "u_connection.h"
 
 #ifdef _WIN32
 #define snprintf sprintf_s

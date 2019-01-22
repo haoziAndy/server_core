@@ -39,6 +39,8 @@ public:
     // this func should be multithread safe if running UdpPacketHandler in work thread pool.  can implement by io_service.dispatch
     void send_udp_packet(const std::string& msg, const udp::endpoint& endpoint);
 
+	int send_msg(const kcp_conv_t& conv, char * msg, const int32 length);
+
 
     uint32_t get_cur_clock(void) const {return cur_clock_;}
 private:

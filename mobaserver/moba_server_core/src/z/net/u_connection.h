@@ -14,7 +14,7 @@ class UConnection
     // 8192 - 64
     enum {recv_client_message_max_length = 8128 };
 public:
-    UConnection(int session_id, IUMsgHandler* msg_handler);
+    UConnection(int session_id, const kcp_conv_t _kcp_conv_t, IUMsgHandler* msg_handler);
     virtual ~UConnection();
     
     /// 
@@ -39,7 +39,7 @@ public:
     int32 GetLoginStatus() const {return status_;}
     int SetLoginStatus(LoginStatus status);
 
-    void SecondTimerHandler(const boost::system::error_code& ec);
+	kcp_conv_t kcp_conv() const { return kcp_conv_t_; }
 
 protected:
     boost::asio::deadline_timer deadline_timer_; 

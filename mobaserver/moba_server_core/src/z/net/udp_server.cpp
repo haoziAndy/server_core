@@ -18,16 +18,11 @@ UdpServer::UdpServer(const std::string& address, const std::string& port):
 	, poll_timer_(TIME_ENGINE)
 {}
 
-bool UdpServer::Init(const std::string& addr, const std::string& port,const int32 max_incomming_conn, IUMsgHandler* handler )
+bool UdpServer::Init(const std::string& addr, const std::string& port, IUMsgHandler* handler)
 {
     if (handler == nullptr)
     {
         LOG_ERR("icmsg handler == nullptr");
-        return false;
-    }
-    if (max_incomming_conn <= 0)
-    {
-        LOG_ERR("max_incomming_conn %d", max_incomming_conn);
         return false;
     }
 
@@ -46,7 +41,7 @@ bool UdpServer::Init(const std::string& addr, const std::string& port,const int3
 
 void UdpServer::SendToSession( int session_id, uint64 user_id, SMsgHeader* msg )
 {
-   /* if (msg->length > 0xffff)
+    if (msg->length > 0xffff)
     {
         LOG_ERR("client msg length > 0xffff, id %d", msg->msg_id);
         return;
@@ -54,14 +49,12 @@ void UdpServer::SendToSession( int session_id, uint64 user_id, SMsgHeader* msg )
     z::net::CMsgHeader* cmsg;
     int buff_length = msg->length + sizeof(*cmsg);
     unsigned char* buff = reinterpret_cast<unsigned char*> (ZPOOL_MALLOC(buff_length + 1));
-    buff[0] = ID_USER_PACKET_ENUM;
-    cmsg = reinterpret_cast<z::net::CMsgHeader*>(buff + 1);
+    cmsg = reinterpret_cast<z::net::CMsgHeader*>(buff);
     cmsg->length = msg->length;
     cmsg->msg_id = msg->msg_id;
-//    cmsg->send_tick = msg->send_tick;
     memcpy(cmsg+1, msg+1, msg->length);
 
-    SendToSession(session_id, user_id, cmsg);*/
+    SendToSession(session_id, user_id, cmsg);
 }
 
 void UdpServer::SendToSession( int session_id, uint64 user_id, CMsgHeader* msg )
@@ -93,32 +86,44 @@ void UdpServer::SendToSession( int session_id, uint64 user_id, CMsgHeader* msg )
     CMsgHeaderHton(msg);
 
     char* buff = reinterpret_cast<char*>(msg) - 1;
+	kcp_server_.send_msg(conn->kcp_conv(), buff, length);
+
    // server_->Send(buff, length, HIGH_PRIORITY, RELIABLE_ORDERED, 0, conn->raknet_guid(), false);
     ZPOOL_FREE(buff);
 }
 
-int32 UdpServer::AddNewConnection(  )
+int32 UdpServer::AddNewConnection( const kcp_conv_t _kcp_conv_t)
 {
+	// alloc avail session id
+	static int s_session_id = 0;
+	auto session_id = ((++s_session_id) << 1) | 0x0;
+	for (int i = 0; session_conn_.find(session_id) != session_conn_.end() && i < 100; ++i)
+		++session_id;
 
-    return 0;
+	if (session_conn_.find(session_id) != session_conn_.end())
+	{
+		LOG_FATAL("failed alloc session_id");
+		kcp_server_.force_disconnect(_kcp_conv_t);
+		return -1;
+	}
+	auto conn = ZPOOL_NEW_SHARED(z::net::UConnection, session_id, _kcp_conv_t, request_handler_);
+	session_conn_[session_id] = conn;
+
+    return session_id;
 }
 
-int32 UdpServer::RemoveConnection( )
+int32 UdpServer::RemoveConnection(const int32 session_id)
 {
-   /* auto it = guid_conn_.find(conn_guid);
-    if (it != guid_conn_.end())
+     auto it = session_conn_.find(session_id);
+    if (it != session_conn_.end())
     {
         auto& conn = it->second;
 
         request_handler()->OnClientDisconnect(conn.get());
-        server_->CloseConnection(conn->raknet_guid(), true);
+		kcp_server_.force_disconnect(conn->kcp_conv());
         conn->OnClose();
-
-        auto s_it = session_conn_.find(conn->session_id());
-        if (s_it != session_conn_.end())
-            session_conn_.erase(s_it);
-        guid_conn_.erase(it);
-    }*/
+		session_conn_.erase(it);
+    }
     return 0;
 }
 
@@ -130,13 +135,13 @@ void UdpServer::Run()
 void UdpServer::Stop()
 {
 	is_server_shutdown_ = true;
+	kcp_server_.stop();
 }
 
 void UdpServer::Destroy()
 {
 
 }
-
 
 boost::shared_ptr<UConnection> UdpServer::GetConnection( int32 session_id ) const
 {
@@ -160,16 +165,10 @@ void UdpServer::CloseConnection( int32 session_id )
         auto& conn = it->second;
         if (conn.get() != nullptr)
         {
-    //        RemoveConnection(conn->raknet_guid());
+            RemoveConnection(session_id);
         }
     }
 }
-
-void UdpServer::ExecuteUConnTimerFunc( UConnection* conn ) const
-{
-    uconn_timer_func_(conn);
-}
-
 
 } // namespace net
 } // namespace z

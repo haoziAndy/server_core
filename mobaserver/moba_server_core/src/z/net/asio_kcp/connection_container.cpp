@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "connection_container.hpp"
 #include <algorithm>
 #include <boost/bind.hpp>
@@ -54,7 +55,9 @@ connection::shared_ptr connection_container::add_new_connection(std::weak_ptr<co
 {
     connection::shared_ptr ptr = connection::create(manager_ptr, conv, udp_sender_endpoint);
     connections_[conv] = ptr;
-    return ptr;
+	const int32 session_id = UDPSERVER.AddNewConnection(conv);
+	ptr->set_session_id(session_id);
+	return ptr;
 }
 
 void connection_container::remove_connection(const kcp_conv_t& conv)
