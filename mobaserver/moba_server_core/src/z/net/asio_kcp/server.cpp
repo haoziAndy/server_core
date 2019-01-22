@@ -8,9 +8,9 @@
 
 namespace kcp_svr {
 
-server::server(boost::asio::io_service& io_service, const std::string& address, const std::string& port)
+server::server(boost::asio::io_service& io_service)
   : io_service_(io_service),
-    connection_manager_ptr_(new connection_manager(io_service_, address, std::atoi(port.c_str())))
+    connection_manager_ptr_(new connection_manager(io_service_))
 {
 }
 
@@ -27,6 +27,11 @@ void server::stop()
     //     connection_manager_.stop_recv();
     //     connection_manager_.stop_packet_handler_workthread();
     //     connection_manager_.close();
+}
+
+bool server::init(const std::string& address, const std::string& port)
+{
+	return connection_manager_ptr_->connection_manager_init(address, std::atoi(port.c_str()));
 }
 
 void server::set_callback(const std::function<event_callback_t>& func)

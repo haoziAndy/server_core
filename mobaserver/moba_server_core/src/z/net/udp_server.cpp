@@ -10,10 +10,10 @@ namespace z {
 namespace net {
 
 
-UdpServer::UdpServer(const std::string& address, const std::string& port):
+UdpServer::UdpServer():
     request_handler_(nullptr)
     , signals_(TIME_ENGINE)
-	,kcp_server_(TIME_ENGINE, address, port)
+	,kcp_server_(TIME_ENGINE)
     , is_server_shutdown_(false)
 	, poll_timer_(TIME_ENGINE)
 {}
@@ -25,6 +25,12 @@ bool UdpServer::Init(const std::string& addr, const std::string& port, IUMsgHand
         LOG_ERR("icmsg handler == nullptr");
         return false;
     }
+
+	if (!kcp_server_.init(addr, port))
+	{
+		LOG_ERR("Failed to init kcp_server_");
+		return false;
+	}
 
     request_handler_ = handler;
 
@@ -39,7 +45,7 @@ bool UdpServer::Init(const std::string& addr, const std::string& port, IUMsgHand
     return true;
 }
 
-void UdpServer::SendToSession( int session_id, uint64 user_id, SMsgHeader* msg )
+void UdpServer::SendToSession( int session_id, const std::string & user_id, SMsgHeader* msg )
 {
     if (msg->length > 0xffff)
     {
@@ -57,7 +63,7 @@ void UdpServer::SendToSession( int session_id, uint64 user_id, SMsgHeader* msg )
     SendToSession(session_id, user_id, cmsg);
 }
 
-void UdpServer::SendToSession( int session_id, uint64 user_id, CMsgHeader* msg )
+void UdpServer::SendToSession( int session_id,const std::string &user_id, CMsgHeader* msg )
 {
     auto it = session_conn_.find(session_id);
     if (it == session_conn_.end())

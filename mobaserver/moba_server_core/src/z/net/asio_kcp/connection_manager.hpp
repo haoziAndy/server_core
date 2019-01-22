@@ -19,8 +19,9 @@ public:
 
     typedef std::shared_ptr<connection_manager> shared_ptr;
 
-    connection_manager(boost::asio::io_service& io_service, const std::string& address, int udp_port);
+    connection_manager(boost::asio::io_service& io_service);
 
+	bool connection_manager_init(const std::string& address, int udp_port);
     /// Stop all connections.
     void stop_all();
 

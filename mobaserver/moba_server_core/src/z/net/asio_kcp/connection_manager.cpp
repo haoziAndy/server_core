@@ -80,14 +80,18 @@ uint64_t endpoint_to_i(const udp::endpoint& ep)
 }
 
 
-connection_manager::connection_manager(boost::asio::io_service& io_service, const std::string& address, int udp_port) :
+connection_manager::connection_manager(boost::asio::io_service& io_service) :
     stopped_(false),
     udp_socket_(io_service),
     kcp_timer_(io_service),
     cur_clock_(0)
 {
+}
 
-	boost::asio::ip::udp::resolver resolver(io_service);
+bool connection_manager::connection_manager_init( const std::string& address, int udp_port)
+{
+
+	boost::asio::ip::udp::resolver resolver(udp_socket_.get_io_service());
 	boost::asio::ip::udp::resolver::query query(address, std::to_string(udp_port));
 
 	boost::system::error_code ec;
@@ -95,20 +99,23 @@ connection_manager::connection_manager(boost::asio::io_service& io_service, cons
 	if (ec)
 	{
 		LOG_ERR("connection_manager::connection_manager failed. Error[%d]: %s", ec.value(), ec.message().c_str());
-		return;
+		return false;
 	}
+	boost::asio::ip::udp::endpoint endpoint = *it;
 
-	udp_socket_.bind(udp::endpoint(boost::asio::ip::address::from_string(address), udp_port), ec);
+	udp_socket_.open(endpoint.protocol());
+	udp_socket_.bind(endpoint, ec);
 	if (ec)
 	{
 		LOG_ERR("connection_manager::connection_manager failed. Error[%d]: %s", ec.value(), ec.message().c_str());
-		return;
+		return false;
 	}
 
-    //udp_socket_.set_option(udp::socket::non_blocking_io(false)); // why this make compile fail
+	//udp_socket_.set_option(udp::socket::non_blocking_io(false)); // why this make compile fail
 
-    hook_udp_async_receive();
-    hook_kcp_timer();
+	hook_udp_async_receive();
+	hook_kcp_timer();
+	return true;
 }
 
 void connection_manager::stop_all()

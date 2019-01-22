@@ -29,13 +29,13 @@ public:
 
     void CloseConnection(int32 session_id);
 
-    void SendToSession(int session_id, uint64 user_id, SMsgHeader* msg);
+    void SendToSession(int session_id, const std::string & user_id, SMsgHeader* msg);
     boost::shared_ptr<UConnection> GetConnection(int32 session_id) const;
 
     // 连接状态数据
    // bool GetConnStatistics(const RakNet::RakNetGUID& conn_guid, RakNet::RakNetStatistics* stat, int* ping = nullptr) const;
 private:
-    void SendToSession(int session_id, uint64 user_id, CMsgHeader* msg);
+    void SendToSession(int session_id, const std::string & user_id, CMsgHeader* msg);
     void PollTimerHandler(const boost::system::error_code& ec);
 	int32 RemoveConnection(const int32 session_id);
 
@@ -57,7 +57,6 @@ private:
     boost::function<void (UConnection*)> uconn_timer_func_;
 private:
 	UdpServer();
-    UdpServer(const std::string& address, const std::string& port);
         
     DECLARE_SINGLETON(UdpServer);
 };

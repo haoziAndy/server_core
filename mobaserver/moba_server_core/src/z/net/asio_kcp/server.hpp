@@ -38,7 +38,9 @@ class server
 {
 public:
     /// Construct the server to listen on the specified TCP address and port
-    explicit server(boost::asio::io_service& io_service, const std::string& address, const std::string& port);
+    explicit server(boost::asio::io_service& io_service);
+
+	bool init( const std::string& address, const std::string& port);
     // ~server(); // checking the stop() function called already.
 
     void set_callback(const std::function<event_callback_t>& func);

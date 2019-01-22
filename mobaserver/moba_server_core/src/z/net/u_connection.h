@@ -24,8 +24,8 @@ public:
 
     int session_id() const { return session_id_; }
    
-    uint64 user_id() const { return user_id_; }
-    void set_user_id(int64 _user_id) {user_id_ = _user_id;}
+    std::string user_id() const { return user_id_; }
+    void set_user_id(const std::string &_user_id) {user_id_ = _user_id;}
     
     void set_open_id(int64 _open_id) {open_id_ = _open_id;}
     int64 open_id() const {return open_id_;}
@@ -45,7 +45,7 @@ protected:
     boost::asio::deadline_timer deadline_timer_; 
 
     int32 session_id_;
-    int64 user_id_;
+    std::string user_id_;
     int64 open_id_;
     int32 sid_;
 	kcp_conv_t kcp_conv_t_;
