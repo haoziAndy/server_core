@@ -10,7 +10,7 @@ namespace net {
 UConnection::UConnection( int session_id,const kcp_conv_t _kcp_conv_t, IUMsgHandler* msg_handler):
 	deadline_timer_(TIME_ENGINE)
     , session_id_(session_id)
-    , user_id_(0)
+    , user_id_("")
     , msg_handler_(msg_handler)
     , status_(LoginStatus_DEFAULT)
 	, kcp_conv_t_(_kcp_conv_t)
