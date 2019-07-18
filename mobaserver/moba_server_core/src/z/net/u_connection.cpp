@@ -12,8 +12,8 @@ UConnection::UConnection( int session_id,const kcp_conv_t _kcp_conv_t, IUMsgHand
     , session_id_(session_id)
     , user_id_("")
     , msg_handler_(msg_handler)
-    , status_(LoginStatus_DEFAULT)
-	, kcp_conv_t_(_kcp_conv_t)
+    , kcp_conv_t_(_kcp_conv_t) 
+	, status_(LoginStatus_DEFAULT)
 {
     BOOST_ASSERT(msg_handler != nullptr);
 };
