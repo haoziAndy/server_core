@@ -48,11 +48,12 @@ protected:
     std::string user_id_;
     int64 open_id_;
     int32 sid_;
-	kcp_conv_t kcp_conv_t_;
 
     IUMsgHandler* msg_handler_;
 
     LoginStatus status_;
+
+	kcp_conv_t kcp_conv_t_;
 
     DISALLOW_COPY_AND_ASSIGN(UConnection);
 };

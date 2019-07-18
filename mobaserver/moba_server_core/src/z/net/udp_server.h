@@ -45,10 +45,10 @@ private:
 
     std::unordered_map<int32, boost::shared_ptr<UConnection>> session_conn_;
 
-	kcp_svr::server kcp_server_;
-
     /// The signal_set is used to register for process termination notifications.
     boost::asio::signal_set signals_;    
+
+	kcp_svr::server kcp_server_;
 
     bool is_server_shutdown_;
 
