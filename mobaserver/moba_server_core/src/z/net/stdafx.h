@@ -1,6 +1,9 @@
 #ifndef NET_STDAFX_H
 #define NET_STDAFX_H
 
+#include <time.h>
+#include <iostream>
+#include <string>
 #include <boost/timer.hpp>
 #include <boost/date_time.hpp>
 #include <boost/asio.hpp>
@@ -31,10 +34,6 @@
 #include <queue>
 #include <unordered_map>
 #include <unordered_set>
-
-#include <iostream>
-#include <time.h>
-#include <string>
 
 #include "log4cplus/logger.h"
 #include "log4cplus/appender.h"
