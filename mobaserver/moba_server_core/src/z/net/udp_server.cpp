@@ -68,22 +68,22 @@ void UdpServer::SendToSession( int session_id,const std::string &user_id, CMsgHe
     auto it = session_conn_.find(session_id);
     if (it == session_conn_.end())
     {
-        LOG_DEBUG("Stop SendMsg[%d] to session[%d] user %" PRId64 ": not found client session",
-            msg->msg_id, session_id, user_id);
+        LOG_DEBUG("Stop SendMsg[%d] to session[%d] user %s: not found client session",
+            msg->msg_id, session_id, user_id.c_str());
         ZPOOL_FREE(msg);
         return;
     }
     auto& conn = it->second;
     if (conn.get() == nullptr)
     {
-        LOG_ERR("NULL connection by player %" PRIu64, user_id);
+        LOG_ERR("NULL connection by player %s", user_id.c_str());
         ZPOOL_FREE(msg);
         return;
     }
     if (conn->user_id() != user_id)
     {
-        LOG_ERR("Stop SendMsg[%d] to session[%d]: user_id mismatched. need %" PRId64 ", get %" PRId64,
-            msg->msg_id, session_id, user_id, conn->user_id());
+        LOG_ERR("Stop SendMsg[%d] to session[%d]: user_id mismatched. need %s, get %s",
+            msg->msg_id, session_id, user_id.c_str(), conn->user_id().c_str());
         ZPOOL_FREE(msg);
         return;
     }
