@@ -15,9 +15,10 @@ include_directories(../../../include)
 include_directories(../../../include/log4cplus/)
 include_directories(../../)
 include_directories(../../contrib)
+include_directories(./asio_kcp)
 
 aux_source_directory(. SRC_FILES)
-aux_source_directory(./http SRC_FILES)
+aux_source_directory(./asio_kcp SRC_FILES)
 
 MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
    	GET_FILENAME_COMPONENT(_inputWe ${_input} NAME_WE)
