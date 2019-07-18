@@ -59,7 +59,6 @@
 #include <contrib/crypto/hex.h>
 #include <contrib/crypto/base64.h>
 
-#include "ikcp.h"
 #include "asio_kcp/server.hpp"
 #include "udp_server.h"
 #include "u_connection.h"

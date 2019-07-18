@@ -19,7 +19,7 @@
 #  include <sys/time.h>
 #endif
 
-#include "ikcp.h"
+#include <ikcp.h>
 #include "connect_packet.hpp"
 
 #ifdef WIN32

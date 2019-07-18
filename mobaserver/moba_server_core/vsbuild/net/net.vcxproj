@@ -23,9 +23,6 @@
     <ClCompile Include="..\..\src\z\net\asio_kcp\connect_packet.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="..\..\src\z\net\asio_kcp\ikcp.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
     <ClCompile Include="..\..\src\z\net\asio_kcp\kcp_typedef.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
     </ClCompile>
@@ -51,7 +48,6 @@
     <ClInclude Include="..\..\src\z\net\asio_kcp\connection_container.hpp" />
     <ClInclude Include="..\..\src\z\net\asio_kcp\connection_manager.hpp" />
     <ClInclude Include="..\..\src\z\net\asio_kcp\connect_packet.hpp" />
-    <ClInclude Include="..\..\src\z\net\asio_kcp\ikcp.h" />
     <ClInclude Include="..\..\src\z\net\asio_kcp\kcp_typedef.hpp" />
     <ClInclude Include="..\..\src\z\net\asio_kcp\server.hpp" />
     <ClInclude Include="..\..\src\z\net\c_connection.h" />

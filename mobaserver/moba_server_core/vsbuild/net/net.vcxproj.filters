@@ -65,9 +65,6 @@
     <ClCompile Include="..\..\src\z\net\asio_kcp\connection_manager.cpp">
       <Filter>Source Files\asio_kcp</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\z\net\asio_kcp\ikcp.c">
-      <Filter>Source Files\asio_kcp</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\z\net\asio_kcp\kcp_typedef.cpp">
       <Filter>Source Files\asio_kcp</Filter>
     </ClCompile>
@@ -128,9 +125,6 @@
       <Filter>Source Files\asio_kcp</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\z\net\asio_kcp\connection_manager.hpp">
-      <Filter>Source Files\asio_kcp</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\z\net\asio_kcp\ikcp.h">
       <Filter>Source Files\asio_kcp</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\z\net\asio_kcp\kcp_typedef.hpp">
