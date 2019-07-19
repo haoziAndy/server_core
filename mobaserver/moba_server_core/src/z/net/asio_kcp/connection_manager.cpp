@@ -90,7 +90,6 @@ connection_manager::connection_manager(boost::asio::io_service& io_service) :
 
 bool connection_manager::connection_manager_init( const std::string& address, int udp_port)
 {
-
 	boost::asio::ip::udp::resolver resolver(udp_socket_.get_io_service());
 	boost::asio::ip::udp::resolver::query query(address, std::to_string(udp_port));
 
@@ -102,6 +101,8 @@ bool connection_manager::connection_manager_init( const std::string& address, in
 		return false;
 	}
 	boost::asio::ip::udp::endpoint endpoint = *it;
+
+	udp_socket_.set_option(boost::asio::socket_base::reuse_address(true));
 
 	udp_socket_.open(endpoint.protocol());
 	udp_socket_.bind(endpoint, ec);
