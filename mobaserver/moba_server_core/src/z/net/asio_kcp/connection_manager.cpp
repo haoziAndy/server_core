@@ -115,6 +115,7 @@ bool connection_manager::connection_manager_init( const std::string& address, in
 
 	hook_udp_async_receive();
 	hook_kcp_timer();
+	LOG_INFO("Success to init kcp server");
 	return true;
 }
 

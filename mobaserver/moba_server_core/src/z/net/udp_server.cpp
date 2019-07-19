@@ -112,7 +112,7 @@ int32 UdpServer::AddNewConnection( const kcp_conv_t _kcp_conv_t)
 		kcp_server_.force_disconnect(_kcp_conv_t);
 		return -1;
 	}
-	auto conn = ZPOOL_NEW_SHARED(z::net::UConnection, session_id, _kcp_conv_t, request_handler_);
+	auto conn = ZPOOL_NEW_SHARED(z::net::UConnection, session_id, _kcp_conv_t);
 	session_conn_[session_id] = conn;
 
     return session_id;

@@ -69,7 +69,6 @@ set_target_properties(${build_target} PROPERTIES PREFIX "")
 
 add_precompiled_header(${build_target} stdafx.h FORCEINCLUDE)
 target_link_libraries(${build_target} ${ZLIB_DIR}/libzcommon.a )
-target_link_libraries(${build_target} ${ZLIB_DIR}/libkcp.a )
 
 add_custom_command(TARGET ${build_target}
           POST_BUILD

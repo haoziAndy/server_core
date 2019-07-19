@@ -14,7 +14,7 @@ class UConnection
     // 8192 - 64
     enum {recv_client_message_max_length = 8128 };
 public:
-    UConnection(int session_id, const kcp_conv_t _kcp_conv_t, IUMsgHandler* msg_handler);
+    UConnection(int session_id, const kcp_conv_t _kcp_conv_t);
     virtual ~UConnection();
     
     /// 
@@ -41,8 +41,6 @@ protected:
 
     int32 session_id_;
     std::string user_id_;
-
-    IUMsgHandler* msg_handler_;
 
 	kcp_conv_t kcp_conv_t_;
 

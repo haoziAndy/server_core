@@ -7,15 +7,13 @@
 namespace z {
 namespace net {
 
-UConnection::UConnection( int session_id,const kcp_conv_t _kcp_conv_t, IUMsgHandler* msg_handler):
+UConnection::UConnection( int session_id,const kcp_conv_t _kcp_conv_t):
 	deadline_timer_(TIME_ENGINE)
     , session_id_(session_id)
     , user_id_("")
-    , msg_handler_(msg_handler)
     , kcp_conv_t_(_kcp_conv_t) 
 	, status_(LoginStatus_DEFAULT)
 {
-    BOOST_ASSERT(msg_handler != nullptr);
 };
 
 UConnection::~UConnection()
@@ -62,7 +60,7 @@ int32 UConnection::OnRead( char* data, int32 length )
             break;
         }
 
-        int h_ret = msg_handler_->OnMessage(this, msg);
+        int h_ret = UDPSERVER.request_handler()->OnMessage(this, msg);
         // 消息处理 返回-1, 表明应该断开连接
         if (h_ret < 0)
             return -1;

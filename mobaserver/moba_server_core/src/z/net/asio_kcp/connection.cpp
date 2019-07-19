@@ -29,7 +29,7 @@ namespace kcp_svr {
 
 	void connection::clean(void)
 	{
-		std::cout << "clean connection conv:" << conv_ << std::endl;
+		LOG_DEBUG("clean connection conv: %d ", conv_);
 		std::string disconnect_msg = asio_kcp::making_disconnect_packet(conv_);
 		send_udp_package(disconnect_msg.c_str(), disconnect_msg.size());
 		ikcp_release(p_kcp_);
@@ -45,6 +45,7 @@ namespace kcp_svr {
 		{
 			ptr->init_kcp(conv);
 			ptr->set_udp_remote_endpoint(udp_remote_endpoint);
+			LOG_DEBUG("New UDP connection from: ip = %s,port = %d ", udp_remote_endpoint.address().to_string().c_str(), udp_remote_endpoint.port());
 			//   AK_INFO_LOG << "new connection from: " << udp_remote_endpoint;
 		}
 		return ptr;
