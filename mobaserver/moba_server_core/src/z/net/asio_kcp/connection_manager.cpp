@@ -102,8 +102,6 @@ bool connection_manager::connection_manager_init( const std::string& address, in
 	}
 	boost::asio::ip::udp::endpoint endpoint = *it;
 
-	udp_socket_.set_option(boost::asio::socket_base::reuse_address(true));
-
 	udp_socket_.open(endpoint.protocol());
 	udp_socket_.bind(endpoint, ec);
 	if (ec)
