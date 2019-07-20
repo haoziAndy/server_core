@@ -37,6 +37,8 @@ public:
 	void SecondTimerHandler(const boost::system::error_code& ec);
 	kcp_conv_t kcp_conv() const { return kcp_conv_t_; }
 
+
+
 protected:
     boost::asio::deadline_timer deadline_timer_; 
 

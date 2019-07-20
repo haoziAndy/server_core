@@ -13,7 +13,6 @@ UConnection::UConnection( int session_id,const kcp_conv_t _kcp_conv_t):
     , user_id_("")
     , kcp_conv_t_(_kcp_conv_t) 
 	, status_(LoginStatus_DEFAULT)
-	, udp_connection_init_time_(0)
 {
 	deadline_timer_.expires_from_now(boost::posix_time::seconds(5));
 	deadline_timer_.async_wait(boost::bind(&UConnection::SecondTimerHandler, this, boost::asio::placeholders::error));
@@ -106,7 +105,7 @@ void UConnection::SecondTimerHandler(const boost::system::error_code& ec)
 		if (status_ == LoginStatus_DEFAULT) {
 			const int32 now = TIME_ENGINE.time_sec();
 			//KCP连接创建了 但是长时间没有登录协议生成
-			if (now - this->udp_connection_init_time_ > 10) {
+			if (now - this->udp_connection_init_time_ > UDPSERVER.login_time_out_sec()) {
 				LOG_DEBUG("KCP连接创建了 但是长时间没有登录协议生成,_kcp_conv_t =  %d", this->kcp_conv_t_);
 				UDPSERVER.CloseConnection(this->session_id());
 			}

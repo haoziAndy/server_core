@@ -15,7 +15,7 @@ UdpServer::UdpServer():
     , signals_(TIME_ENGINE)
 	,kcp_server_(TIME_ENGINE)
     , is_server_shutdown_(false)
-	, poll_timer_(TIME_ENGINE)
+	, login_time_out_sec_(1)
 {}
 
 bool UdpServer::Init(const std::string& addr, const std::string& port, IUMsgHandler* handler)

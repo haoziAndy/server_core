@@ -32,6 +32,9 @@ public:
     void SendToSession(int session_id, const std::string & user_id, SMsgHeader* msg);
     boost::shared_ptr<UConnection> GetConnection(int32 session_id) const;
 
+	int32 login_time_out_sec() const { return login_time_out_sec_; }
+	void set_login_time_out_sec(int32 timeout_sec) { login_time_out_sec_ = timeout_sec; }
+
 private:
     void SendToSession(int session_id, const std::string & user_id, CMsgHeader* msg);
     void PollTimerHandler(const boost::system::error_code& ec);
@@ -50,9 +53,8 @@ private:
 
     bool is_server_shutdown_;
 
-    boost::asio::deadline_timer poll_timer_;
+	int32 login_time_out_sec_;
 
-    boost::function<void (UConnection*)> uconn_timer_func_;
 private:
 	UdpServer();
         
