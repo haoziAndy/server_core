@@ -52,13 +52,6 @@
 #include <z/common/public_function.h>
 
 
-#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
-#include <contrib/crypto/md5.h>
-#include <contrib/crypto/zlib.h>
-#include <contrib/crypto/gzip.h>
-#include <contrib/crypto/hex.h>
-#include <contrib/crypto/base64.h>
-
 #include "asio_kcp/server.hpp"
 #include "udp_server.h"
 #include "u_connection.h"

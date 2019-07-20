@@ -27,6 +27,7 @@ public:
             const kcp_conv_t& conv, const udp::endpoint& udp_remote_endpoint);
 
     void set_udp_remote_endpoint(const udp::endpoint& udp_remote_endpoint);
+	const udp::endpoint  get_udp_remote_endpoint() const;
 
     // changing udp_remote_endpoint at every packet. Because we allow connection change ip or port. we using conv to indicate a connection.
     void input(char* udp_data, size_t bytes_recvd, const udp::endpoint& udp_remote_endpoint);

@@ -34,6 +34,7 @@ public:
     int32 GetLoginStatus() const {return status_;}
     int SetLoginStatus(LoginStatus status);
 
+	void SecondTimerHandler(const boost::system::error_code& ec);
 	kcp_conv_t kcp_conv() const { return kcp_conv_t_; }
 
 protected:
@@ -45,6 +46,8 @@ protected:
 	kcp_conv_t kcp_conv_t_;
 
     LoginStatus status_;
+
+	int32 udp_connection_init_time_;
 
     DISALLOW_COPY_AND_ASSIGN(UConnection);
 };

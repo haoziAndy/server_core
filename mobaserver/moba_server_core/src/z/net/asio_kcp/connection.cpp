@@ -45,7 +45,7 @@ namespace kcp_svr {
 		{
 			ptr->init_kcp(conv);
 			ptr->set_udp_remote_endpoint(udp_remote_endpoint);
-			LOG_DEBUG("New UDP connection from: ip = %s,port = %d ", udp_remote_endpoint.address().to_string().c_str(), udp_remote_endpoint.port());
+			LOG_DEBUG("New UDP connection from: ip = %s,port = %d,conv = %u ", udp_remote_endpoint.address().to_string().c_str(), udp_remote_endpoint.port(), conv);
 			//   AK_INFO_LOG << "new connection from: " << udp_remote_endpoint;
 		}
 		return ptr;
@@ -54,6 +54,10 @@ namespace kcp_svr {
 	void connection::set_udp_remote_endpoint(const udp::endpoint& udp_remote_endpoint)
 	{
 		udp_remote_endpoint_ = udp_remote_endpoint;
+	}
+
+	const udp::endpoint connection::get_udp_remote_endpoint() const {
+		return udp_remote_endpoint_;
 	}
 
 	void connection::init_kcp(const kcp_conv_t& conv)
@@ -142,22 +146,23 @@ namespace kcp_svr {
 			int kcp_recvd_bytes = ikcp_recv(p_kcp_, kcp_buf, sizeof(kcp_buf));
 			if (kcp_recvd_bytes <= 0)
 			{
-				std::cout << "\nkcp_recvd_bytes<=0: " << kcp_recvd_bytes << std::endl;
+				LOG_ERR("kcp_recvd_bytes<=0: %d",kcp_recvd_bytes);
 			}
 			else
 			{
-				auto session = UDPSERVER.GetConnection(this->session_id());
+				/*auto session = UDPSERVER.GetConnection(this->session_id());
 				if (session){
 					auto handled_size = session->OnRead(kcp_buf, kcp_recvd_bytes);
 					if (handled_size != kcp_recvd_bytes) {
 						UDPSERVER.CloseConnection(this->session_id());
 					}
-				}
-				//const std::string package(kcp_buf, kcp_recvd_bytes);
-				/*if (auto ptr = connection_manager_weak_ptr_.lock())
-				{
-					ptr->call_event_callback_func(conv_, eRcvMsg, std::make_shared<std::string>(package));
 				}*/
+				const std::string package(kcp_buf, kcp_recvd_bytes);
+				if (auto ptr = connection_manager_weak_ptr_.lock())
+				{
+					LOG_DEBUG("packagepackagepackage = %s", package.c_str());
+					//ptr->call_event_callback_func(conv_, eRcvMsg, std::make_shared<std::string>(package));
+				}
 			}
 			ZPOOL_FREE(kcp_buf);
 		}
@@ -179,12 +184,11 @@ namespace kcp_svr {
 
 	void connection::do_timeout(void)
 	{
-		if (auto ptr = connection_manager_weak_ptr_.lock())
+		/*if (auto ptr = connection_manager_weak_ptr_.lock())
 		{
 			std::shared_ptr<std::string> msg(new std::string("timeout"));
 			ptr->call_event_callback_func(conv_, eEventType::eDisconnect, msg);
-			UDPSERVER.CloseConnection(this->session_id());
-		}
+		}*/
 	}
 
 

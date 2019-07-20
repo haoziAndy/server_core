@@ -25,7 +25,9 @@ connection::shared_ptr connection_container::find_by_conv(const kcp_conv_t& conv
 
 void connection_container::update_all_kcp(uint32_t clock)
 {
-    for (auto iter = connections_.begin(); iter != connections_.end();)
+	//			
+	std::unordered_map<kcp_conv_t, connection::shared_ptr>  timeout_list;
+    for (auto iter = connections_.begin(); iter != connections_.end();++iter)
     {
         connection::shared_ptr& ptr = iter->second;
 
@@ -34,13 +36,16 @@ void connection_container::update_all_kcp(uint32_t clock)
         // check timeout
         if (ptr->is_timeout())
         {
-            ptr->do_timeout();
-            connections_.erase(iter++);
-            continue;
+           // ptr->do_timeout();
+			timeout_list[iter->first] = iter->second;
         }
-
-        iter++;
     }
+
+	for (auto iter = timeout_list.begin(); iter != timeout_list.end(); ++iter)
+	{
+		UDPSERVER.CloseConnection(iter->second->session_id());
+	}
+
 }
 
 void connection_container::stop_all()
@@ -55,6 +60,7 @@ connection::shared_ptr connection_container::add_new_connection(std::weak_ptr<co
 {
     connection::shared_ptr ptr = connection::create(manager_ptr, conv, udp_sender_endpoint);
     connections_[conv] = ptr;
+
 	const int32 session_id = UDPSERVER.AddNewConnection(conv);
 	ptr->set_session_id(session_id);
 	return ptr;

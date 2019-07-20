@@ -132,8 +132,8 @@ void connection_manager::force_disconnect(const kcp_conv_t& conv)
     if (!connections_.find_by_conv(conv))
         return;
 
-    std::shared_ptr<std::string> msg(new std::string("server force disconnect"));
-    call_event_callback_func(conv, eEventType::eDisconnect, msg);
+    /*std::shared_ptr<std::string> msg(new std::string("server force disconnect"));
+    call_event_callback_func(conv, eEventType::eDisconnect, msg);*/
     connections_.remove_connection(conv);
 }
 
@@ -144,7 +144,7 @@ void connection_manager::set_callback(const std::function<event_callback_t>& fun
 
 void connection_manager::call_event_callback_func(kcp_conv_t conv, eEventType event_type, std::shared_ptr<std::string> msg)
 {
-    event_callback_(conv, event_type, msg);
+   // event_callback_(conv, event_type, msg);
 }
 
 void connection_manager::handle_connect_packet()
@@ -191,15 +191,16 @@ void connection_manager::handle_udp_receive_from(const boost::system::error_code
         */
 
         #if AK_ENABLE_UDP_PACKET_LOG
-            AK_UDP_PACKET_LOG << "udp_recv:" << udp_remote_endpoint_.address().to_string() << ":" << udp_remote_endpoint_.port()
-                << " conv:" << 0
-                << " size:" << bytes_recvd << "\n"
-                << Essential::ToHexDumpText(std::string(udp_data_, bytes_recvd), 32);
+		AK_UDP_PACKET_LOG << "udp_recv:" << udp_remote_endpoint_.address().to_string() << ":" << udp_remote_endpoint_.port()
+			<< " conv:" << 0
+			<< " size:" << bytes_recvd << "\n"
+			<< Essential::ToHexDumpText(std::string(udp_data_, bytes_recvd), 32);
         #endif
 
+		//LOG_DEBUG("AAA = rev = %s need = %d ", std::string(udp_data_, bytes_recvd).c_str(), sizeof("asio_kcp_connect_package get_conv"));
         if (asio_kcp::is_connect_packet(udp_data_, bytes_recvd))
         {
-            handle_connect_packet();
+			handle_connect_packet();
             goto END;
         }
 

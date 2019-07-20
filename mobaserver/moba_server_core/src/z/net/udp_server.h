@@ -32,8 +32,6 @@ public:
     void SendToSession(int session_id, const std::string & user_id, SMsgHeader* msg);
     boost::shared_ptr<UConnection> GetConnection(int32 session_id) const;
 
-    // 连接状态数据
-   // bool GetConnStatistics(const RakNet::RakNetGUID& conn_guid, RakNet::RakNetStatistics* stat, int* ping = nullptr) const;
 private:
     void SendToSession(int session_id, const std::string & user_id, CMsgHeader* msg);
     void PollTimerHandler(const boost::system::error_code& ec);
