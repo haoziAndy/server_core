@@ -1,6 +1,6 @@
 #pragma once
 
-#define ASIO_KCP_CONNECTION_TIMEOUT_TIME 10 * 1000 // default is 10 seconds.
+#define ASIO_KCP_CONNECTION_TIMEOUT_TIME 100000 * 1000 // default is 10 seconds.
 
 #include <stdint.h>
 #include <string>

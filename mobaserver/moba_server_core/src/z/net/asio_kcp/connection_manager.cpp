@@ -132,7 +132,7 @@ void connection_manager::force_disconnect(const kcp_conv_t& conv)
     if (!connections_.find_by_conv(conv))
         return;
 
-    /*std::shared_ptr<std::string> msg(new std::string("server force disconnect"));
+   /* std::shared_ptr<std::string> msg(new std::string("server force disconnect"));
     call_event_callback_func(conv, eEventType::eDisconnect, msg);*/
     connections_.remove_connection(conv);
 }
@@ -200,7 +200,7 @@ void connection_manager::handle_udp_receive_from(const boost::system::error_code
 		//LOG_DEBUG("AAA = rev = %s need = %d ", std::string(udp_data_, bytes_recvd).c_str(), sizeof("asio_kcp_connect_package get_conv"));
         if (asio_kcp::is_connect_packet(udp_data_, bytes_recvd))
         {
-			handle_connect_packet();
+            handle_connect_packet();
             goto END;
         }
 
