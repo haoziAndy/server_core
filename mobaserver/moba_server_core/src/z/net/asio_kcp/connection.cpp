@@ -45,7 +45,7 @@ namespace kcp_svr {
 		{
 			ptr->init_kcp(conv);
 			ptr->set_udp_remote_endpoint(udp_remote_endpoint);
-			//LOG_DEBUG("New UDP connection from: ip = %s,port = %d,conv = %u ", udp_remote_endpoint.address().to_string().c_str(), udp_remote_endpoint.port(), conv);
+			LOG_DEBUG("New UDP connection from: ip = %s,port = %d,conv = %u ", udp_remote_endpoint.address().to_string().c_str(), udp_remote_endpoint.port(), conv);
 			//   AK_INFO_LOG << "new connection from: " << udp_remote_endpoint;
 		}
 		return ptr;
@@ -102,7 +102,7 @@ namespace kcp_svr {
 		int send_ret = ikcp_send(p_kcp_, msg.c_str(), msg.size());
 		if (send_ret < 0)
 		{
-			std::cout << "send_ret<0: " << send_ret << std::endl;
+			LOG_ERR( "send_ret<0: %d",  send_ret);
 		}
 	}
 
@@ -111,7 +111,7 @@ namespace kcp_svr {
 		int send_ret = ikcp_send(p_kcp_, msg, length);
 		if (send_ret < 0)
 		{
-			std::cout << "send_ret<0: " << send_ret << std::endl;
+			LOG_ERR( "send_ret<0: %d", send_ret);
 		}
 	}
 
@@ -139,11 +139,11 @@ namespace kcp_svr {
 		}
 		*/
 
-		/*{
-			static const int32 kcp_rev_buff_len = 1024 * 1;
-			char kcp_buf[1024 * 1000] = "";
-			//char* kcp_buf = reinterpret_cast<char*>(ZPOOL_MALLOC(kcp_rev_buff_len));
-			int kcp_recvd_bytes = ikcp_recv(p_kcp_, kcp_buf, sizeof(kcp_buf));
+		{
+			static const int32 kcp_rev_buff_len = 1024 * 1000;
+			//char kcp_buf[1024 * 1000] = "";
+			char* kcp_buf = reinterpret_cast<char*>(ZPOOL_MALLOC(kcp_rev_buff_len));
+			int kcp_recvd_bytes = ikcp_recv(p_kcp_, kcp_buf, kcp_rev_buff_len/*sizeof(kcp_buf)*/);
 			if (kcp_recvd_bytes <= 0)
 			{
 				LOG_ERR("kcp_recvd_bytes<=0: %d", kcp_recvd_bytes);
@@ -156,36 +156,18 @@ namespace kcp_svr {
 					if (handled_size != kcp_recvd_bytes) {
 						UDPSERVER.CloseConnection(this->session_id());
 					}
-				}
+				}*/
 				std::string package(kcp_buf, kcp_recvd_bytes);
 				if (auto ptr = connection_manager_weak_ptr_.lock())
 				{
-					//LOG_DEBUG("packagepackagepackage = %s", package.c_str());
-					send_kcp_msg("AAAA");
+					LOG_DEBUG("packagepackagepackage = %s", package.c_str());
+					send_kcp_msg(package);
 					//ptr->call_event_callback_func(conv_, eRcvMsg, std::make_shared<std::string>(package));
 				}
 			}
-			//ZPOOL_FREE(kcp_buf);
-		}*/
-
-		{
-			char kcp_buf[1024 * 1000] = "";
-			int kcp_recvd_bytes = ikcp_recv(p_kcp_, kcp_buf, sizeof(kcp_buf));
-			if (kcp_recvd_bytes <= 0)
-			{
-				std::cout << "\nkcp_recvd_bytes<=0: " << kcp_recvd_bytes << std::endl;
-			}
-			else
-			{
-				const std::string package(kcp_buf, kcp_recvd_bytes);
-				
-				if (auto ptr = connection_manager_weak_ptr_.lock())
-				{
-					send_kcp_msg("AAAA");
-				//	ptr->call_event_callback_func(conv_, eRcvMsg, std::make_shared<std::string>(package));
-				}
-			}
+			ZPOOL_FREE(kcp_buf);
 		}
+
 	}
 
 	void connection::update_kcp(uint32_t clock)

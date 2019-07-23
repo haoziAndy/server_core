@@ -175,7 +175,7 @@ void connection_manager::handle_kcp_packet(size_t bytes_recvd)
     if (conn_ptr)
         conn_ptr->input(udp_data_, bytes_recvd, udp_remote_endpoint_);
     else
-        std::cout << "add_new_connection failed! can not connect!" << std::endl;
+       LOG_ERR( "add_new_connection failed! can not connect!");
 }
 
 void connection_manager::handle_udp_receive_from(const boost::system::error_code& error, size_t bytes_recvd)
