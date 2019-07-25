@@ -47,6 +47,8 @@ public:
 	void set_session_id(const int32 session_id) { session_id_ = session_id; };
 	int32 session_id() const { return session_id_; };
 
+	bool check_sndwnd() const;
+
 private:
     void init_kcp(const kcp_conv_t& conv);
     void clean(void);

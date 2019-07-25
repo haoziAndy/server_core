@@ -161,14 +161,14 @@ void connection_manager::handle_kcp_packet(size_t bytes_recvd)
     int ret = ikcp_get_conv(udp_data_, bytes_recvd, &conv);
     if (ret == 0)
     {
-        LOG_FATAL("ikcp_get_conv return 0");
+		LOG_DEBUG("ikcp_get_conv return 0");
         return;
     }
 
     connection::shared_ptr conn_ptr = connections_.find_by_conv(conv);
     if (!conn_ptr)
     {
-		LOG_FATAL ("connection not exist with conv: %d",  conv );
+		LOG_DEBUG ("connection not exist with conv: %d",  conv );
         return;
     }
 
@@ -254,6 +254,11 @@ int connection_manager::send_msg(const kcp_conv_t& conv, std::shared_ptr<std::st
     if (!connection_ptr)
         return -1;
 
+	if (!connection_ptr->check_sndwnd())
+	{
+		UDPSERVER.CloseConnection(connection_ptr->session_id());
+		return -1;
+	}
     connection_ptr->send_kcp_msg(*msg);
     return 0;
 }
@@ -263,6 +268,12 @@ int connection_manager::send_msg(const kcp_conv_t& conv, char * msg,const int32 
 	connection::shared_ptr connection_ptr = connections_.find_by_conv(conv);
 	if (!connection_ptr)
 		return -1;
+
+	if (!connection_ptr->check_sndwnd())
+	{
+		UDPSERVER.CloseConnection(connection_ptr->session_id());
+		return -1;
+	}
 
 	connection_ptr->send_kcp_msg(msg, length);
 	return 0;

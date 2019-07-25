@@ -73,6 +73,8 @@ namespace kcp_svr {
 		// 第五个参数 为是否禁用常规流控，这里禁止
 		//ikcp_nodelay(p_kcp_, 1, 10, 2, 1);
 		ikcp_nodelay(p_kcp_, 1, 5, 1, 1); // 设置成1次ACK跨越直接重传, 这样反应速度会更快. 内部时钟5毫秒.
+
+		ikcp_wndsize(p_kcp_, ASIO_KCP_FLAGS_SNDWND, ASIO_KCP_FLAGS_RCVWND);
 	}
 
 	// 发送一个 udp包
@@ -104,6 +106,9 @@ namespace kcp_svr {
 		{
 			LOG_ERR( "send_ret<0: %d",  send_ret);
 		}
+		else {
+			ikcp_flush(p_kcp_);
+		}
 	}
 
 	void connection::send_kcp_msg(char *msg,const int length)
@@ -112,6 +117,9 @@ namespace kcp_svr {
 		if (send_ret < 0)
 		{
 			LOG_ERR( "send_ret<0: %d", send_ret);
+		}
+		else {
+			ikcp_flush(p_kcp_);
 		}
 	}
 
@@ -146,24 +154,24 @@ namespace kcp_svr {
 			int kcp_recvd_bytes = ikcp_recv(p_kcp_, kcp_buf, kcp_rev_buff_len/*sizeof(kcp_buf)*/);
 			if (kcp_recvd_bytes <= 0)
 			{
-				LOG_ERR("kcp_recvd_bytes<=0: %d", kcp_recvd_bytes);
+				LOG_DEBUG("kcp_recvd_bytes<=0: %d", kcp_recvd_bytes);
 			}
 			else
 			{
-				/*auto session = UDPSERVER.GetConnection(this->session_id());
+				auto session = UDPSERVER.GetConnection(this->session_id());
 				if (session){
-					auto handled_size = session->OnRead(kcp_buf, kcp_recvd_bytes);
-					if (handled_size != kcp_recvd_bytes) {
+					const int32 res = session->OnRead(kcp_buf, kcp_recvd_bytes);
+					if ( res < 0) {
 						UDPSERVER.CloseConnection(this->session_id());
 					}
-				}*/
-				std::string package(kcp_buf, kcp_recvd_bytes);
+				}
+				/*std::string package(kcp_buf, kcp_recvd_bytes);
 				if (auto ptr = connection_manager_weak_ptr_.lock())
 				{
 					LOG_DEBUG("packagepackagepackage = %s", package.c_str());
 					send_kcp_msg(package);
 					//ptr->call_event_callback_func(conv_, eRcvMsg, std::make_shared<std::string>(package));
-				}
+				}*/
 			}
 			ZPOOL_FREE(kcp_buf);
 		}
@@ -206,6 +214,16 @@ namespace kcp_svr {
 			return ptr->get_cur_clock();
 		}
 		return 0;
+	}
+
+	bool connection::check_sndwnd() const
+	{
+		const int waitsnd = ikcp_waitsnd(p_kcp_);
+		if (waitsnd > ASIO_KCP_FLAGS_SNDWND * 2) {
+			LOG_INFO(" waitsnd = %d > %d * 2 ", waitsnd, ASIO_KCP_FLAGS_SNDWND);
+			return false;
+		}
+		return true;
 	}
 
 } // namespace kcp_svr

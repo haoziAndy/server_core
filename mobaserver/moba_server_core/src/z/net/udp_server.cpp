@@ -47,20 +47,22 @@ bool UdpServer::Init(const std::string& addr, const std::string& port, IUMsgHand
 
 void UdpServer::SendToSession( int session_id, const std::string & user_id, SMsgHeader* msg )
 {
-    if (msg->length > 0xffff)
-    {
-        LOG_ERR("client msg length > 0xffff, id %d", msg->msg_id);
-        return;
-    }
-    z::net::CMsgHeader* cmsg;
-    int buff_length = msg->length + sizeof(*cmsg);
-    unsigned char* buff = reinterpret_cast<unsigned char*> (ZPOOL_MALLOC(buff_length + 1));
-    cmsg = reinterpret_cast<z::net::CMsgHeader*>(buff);
-    cmsg->length = msg->length;
-    cmsg->msg_id = msg->msg_id;
-    memcpy(cmsg+1, msg+1, msg->length);
+	if (msg->length > 0xffff)
+	{
+		auto msg_names = ZSERVER.msg_names();
+		if (msg_names != nullptr)
+			LOG_ERR("client msg length > 0xffff, id %d %s", msg->msg_id, (*msg_names)[msg->msg_id].c_str());
+		return;
+	}
+	z::net::CMsgHeader* cmsg;
+	int buff_length = msg->length + sizeof(*cmsg);
+	char* buff = reinterpret_cast<char*> (ZPOOL_MALLOC(buff_length));
+	cmsg = reinterpret_cast<z::net::CMsgHeader*>(buff);
+	cmsg->length = msg->length;
+	cmsg->msg_id = msg->msg_id;
+	memcpy(cmsg + 1, msg + 1, msg->length);
 
-    SendToSession(session_id, user_id, cmsg);
+	SendToSession(session_id, user_id, cmsg);
 }
 
 void UdpServer::SendToSession( int session_id,const std::string &user_id, CMsgHeader* msg )
@@ -87,15 +89,14 @@ void UdpServer::SendToSession( int session_id,const std::string &user_id, CMsgHe
         ZPOOL_FREE(msg);
         return;
     }
-    auto length = msg->length + sizeof(*msg) + 1;
+	auto length = msg->length + sizeof(*msg);
 
-    CMsgHeaderHton(msg);
+	CMsgHeaderHton(msg);
 
-    char* buff = reinterpret_cast<char*>(msg) - 1;
-	kcp_server_.send_msg(conn->kcp_conv(), buff, length);
+	kcp_server_.send_msg(conn->kcp_conv(), reinterpret_cast<char*>(msg), length);
 
    // server_->Send(buff, length, HIGH_PRIORITY, RELIABLE_ORDERED, 0, conn->raknet_guid(), false);
-    ZPOOL_FREE(buff);
+    ZPOOL_FREE(msg);
 }
 
 int32 UdpServer::AddNewConnection( const kcp_conv_t _kcp_conv_t)
@@ -149,18 +150,14 @@ void UdpServer::Destroy()
 
 }
 
-boost::shared_ptr<UConnection> UdpServer::GetConnection( int32 session_id ) const
+boost::shared_ptr<UConnection> UdpServer::GetConnection( int32 session_id )
 {
     auto it = session_conn_.find(session_id);
     if (it != session_conn_.end())
     {
         return it->second;
     }
-    else
-    {
-        static boost::shared_ptr<UConnection> empty_ptr;
-        return empty_ptr;
-    }
+	return nullptr;
 }
 
 void UdpServer::CloseConnection( int32 session_id )

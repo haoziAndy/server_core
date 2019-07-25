@@ -30,7 +30,7 @@ public:
     void CloseConnection(int32 session_id);
 
     void SendToSession(int session_id, const std::string & user_id, SMsgHeader* msg);
-    boost::shared_ptr<UConnection> GetConnection(int32 session_id) const;
+    boost::shared_ptr<UConnection> GetConnection(int32 session_id);
 
 	int32 login_time_out_sec() const { return login_time_out_sec_; }
 	void set_login_time_out_sec(int32 timeout_sec) { login_time_out_sec_ = timeout_sec; }
