@@ -11,6 +11,7 @@
 
 struct IKCPCB;
 typedef struct IKCPCB ikcpcb;
+typedef uint32_t kcp_conv_t;
 
 // indicate a converse between a client and connection_obj between server.
 

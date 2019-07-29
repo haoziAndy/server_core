@@ -154,9 +154,13 @@ void connection_manager::handle_connect_packet()
 
 void connection_manager::handle_kcp_packet(size_t bytes_recvd)
 {
-    IUINT32 conv;
-    int ret = ikcp_get_conv(udp_data_, bytes_recvd, &conv);
-    if (ret == 0)
+	//ikcp.c IKCP_OVERHEAD  24
+	if (bytes_recvd < 24)
+	{
+		return;
+	}
+	const IUINT32 conv = ikcp_getconv(udp_data_);
+    if (conv <= 0)
     {
 		LOG_DEBUG("ikcp_get_conv return 0");
         return;
