@@ -327,7 +327,7 @@ namespace kcp_svr {
 		}
 	}
 
-	void connection::on_write(int32 length)
+	void connection::on_write(const int32 length)
 	{
 		for (auto it = send_queue_.begin(); it != send_queue_.end(); ++it)
 		{
