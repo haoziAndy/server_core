@@ -40,7 +40,7 @@ const std::string string_to_hex(const std::string& str)
 	std::string result = "0x";
 	std::string tmp;
 	std::stringstream ss;
-	for (int i = 0; i < str.size(); i++)
+	for (uint i = 0; i < str.size(); i++)
 	{
 		ss << std::hex << int(str[i]) << std::endl;
 		ss >> tmp;
