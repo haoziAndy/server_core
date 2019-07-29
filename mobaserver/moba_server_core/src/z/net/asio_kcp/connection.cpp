@@ -33,12 +33,15 @@ namespace kcp_svr {
 	void connection::clean(void)
 	{
 		LOG_DEBUG("clean connection conv: %d ", conv_);
-		std::string disconnect_msg = asio_kcp::making_disconnect_packet(conv_);
-		send_udp_package(disconnect_msg.c_str(), disconnect_msg.size());
+		is_closing_ = true;
+		if (auto ptr = connection_manager_weak_ptr_.lock())
+		{
+			std::string disconnect_msg = asio_kcp::making_disconnect_packet(conv_);
+			ptr->send_udp_packet(disconnect_msg, udp_remote_endpoint_);
+		}
 		ikcp_release(p_kcp_);
 		p_kcp_ = NULL;
 		conv_ = 0;
-		is_closing_ = true;
 
 		for (auto it = send_queue_.begin(); it != send_queue_.end(); ++it)
 		{

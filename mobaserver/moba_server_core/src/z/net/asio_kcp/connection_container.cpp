@@ -32,7 +32,7 @@ void connection_container::update_all_kcp(uint32_t clock)
         connection::shared_ptr& ptr = iter->second;
 
         ptr->update_kcp(clock);
-
+		
         // check timeout
         if (ptr->is_timeout())
         {
