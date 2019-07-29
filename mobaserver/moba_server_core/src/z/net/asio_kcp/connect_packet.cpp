@@ -8,7 +8,7 @@
 
 #define ASIO_KCP_CONNECT_PACKET "asio_kcp_connect_package get_conv"
 #define ASIO_KCP_SEND_BACK_CONV_PACKET "asio_kcp_connect_back_package get_conv:"
-#define ASIO_KCP_DISCONNECT_PACKET "asio_kcp_disconnect_package"
+#define ASIO_KCP_DISCONNECT_PACKET "asio_kcp_disconnect_package:"
 
 namespace asio_kcp {
 
