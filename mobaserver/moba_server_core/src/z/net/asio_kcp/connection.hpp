@@ -60,7 +60,7 @@ private:
 	void async_send_udp_package(const char* data, const int length);
 	void start_write();
 	void handle_async_write(const boost::system::error_code& ec, size_t bytes_transferred);
-	void connection::on_write(const int32 length);
+	void connection::on_write(int32 length);
 
 private:
     std::weak_ptr<connection_manager> connection_manager_weak_ptr_; // -known
