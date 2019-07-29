@@ -57,6 +57,10 @@ private:
 
     uint32_t get_cur_clock(void) const;
     uint32_t get_timeout_time(void) const;
+	void async_send_udp_package(const char* data, const int length);
+	void start_write();
+	void handle_async_write(const boost::system::error_code& ec, size_t bytes_transferred);
+	void connection::on_write(const int32 length);
 
 private:
     std::weak_ptr<connection_manager> connection_manager_weak_ptr_; // -known
@@ -65,6 +69,10 @@ private:
     udp::endpoint udp_remote_endpoint_;
     uint32_t last_packet_recv_time_;
 	int32 session_id_;
+	bool is_writing_;
+	bool is_closing_;
+	std::vector<boost::asio::const_buffer> send_queue_;
+	std::vector<boost::asio::const_buffer> pending_send_queue_;
 };
 
 } // namespace kcp_svr

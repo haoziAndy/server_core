@@ -18,7 +18,10 @@ namespace kcp_svr {
 		connection_manager_weak_ptr_(manager_ptr),
 		conv_(0),
 		p_kcp_(NULL),
-		last_packet_recv_time_(0)
+		last_packet_recv_time_(0),
+		is_writing_(false),
+		is_closing_(false),
+		pending_send_queue_(send_queue_)
 	{
 	}
 
@@ -35,6 +38,23 @@ namespace kcp_svr {
 		ikcp_release(p_kcp_);
 		p_kcp_ = NULL;
 		conv_ = 0;
+		is_closing_ = true;
+
+		for (auto it = send_queue_.begin(); it != send_queue_.end(); ++it)
+		{
+			auto& buffer = *it;
+			const char* data = boost::asio::buffer_cast<const char*>(buffer);
+			ZPOOL_FREE(static_cast<void*>(const_cast<char*>(data)));
+		}
+		send_queue_.clear();
+
+		for (auto it = pending_send_queue_.begin(); it != pending_send_queue_.end(); ++it)
+		{
+			auto& buffer = *it;
+			const char* data = boost::asio::buffer_cast<const char*>(buffer);
+			ZPOOL_FREE(static_cast<void*>(const_cast<char*>(data)));
+		}
+		pending_send_queue_.clear();
 	}
 
 	connection::shared_ptr connection::create(const std::weak_ptr<connection_manager>& manager_ptr,
@@ -72,9 +92,11 @@ namespace kcp_svr {
 		// 第四个参数 resend为快速重传指标，设置为2
 		// 第五个参数 为是否禁用常规流控，这里禁止
 		//ikcp_nodelay(p_kcp_, 1, 10, 2, 1);
-		ikcp_nodelay(p_kcp_, 1, 5, 1, 1); // 设置成1次ACK跨越直接重传, 这样反应速度会更快. 内部时钟5毫秒.
+		ikcp_nodelay(p_kcp_, 1,5,1,1); // 设置成1次ACK跨越直接重传, 这样反应速度会更快. 内部时钟5毫秒.
 
 		ikcp_wndsize(p_kcp_, ASIO_KCP_FLAGS_SNDWND, ASIO_KCP_FLAGS_RCVWND);
+
+		p_kcp_->rx_minrto = 10;
 	}
 
 	// 发送一个 udp包
@@ -86,17 +108,11 @@ namespace kcp_svr {
 
 	void connection::send_udp_package(const char *buf, int len)
 	{
-		if (auto ptr = connection_manager_weak_ptr_.lock())
+		/*if (auto ptr = connection_manager_weak_ptr_.lock())
 		{
 			ptr->send_udp_packet(std::string(buf, len), udp_remote_endpoint_);
-
-#if AK_ENABLE_UDP_PACKET_LOG
-			std::cout << "udp_send:" << udp_remote_endpoint_.address().to_string() << ":" << udp_remote_endpoint_.port()
-				<< " conv:" << conv_
-				<< " size:" << len << "\n"
-				<< Essential::ToHexDumpText(std::string(buf, len), 32);
-#endif
-		}
+		}*/
+		async_send_udp_package(buf, len);
 	}
 
 	void connection::send_kcp_msg(const std::string& msg)
@@ -127,8 +143,9 @@ namespace kcp_svr {
 	{
 		last_packet_recv_time_ = get_cur_clock();
 		udp_remote_endpoint_ = udp_remote_endpoint;
-
+		
 		ikcp_input(p_kcp_, udp_data, bytes_recvd);
+	
 
 		/* todo need re recv or not?
 		while (true)
@@ -148,13 +165,18 @@ namespace kcp_svr {
 		*/
 
 		{
-			static const int32 kcp_rev_buff_len = 1024 * 1000;
+			static const int32 kcp_rev_buff_len = 1024 * 10;
 			//char kcp_buf[1024 * 1000] = "";
 			char* kcp_buf = reinterpret_cast<char*>(ZPOOL_MALLOC(kcp_rev_buff_len));
 			int kcp_recvd_bytes = ikcp_recv(p_kcp_, kcp_buf, kcp_rev_buff_len/*sizeof(kcp_buf)*/);
 			if (kcp_recvd_bytes <= 0)
 			{
-				LOG_DEBUG("kcp_recvd_bytes<=0: %d", kcp_recvd_bytes);
+				if (kcp_recvd_bytes == -1) {
+
+				}
+				else {
+					LOG_DEBUG("kcp_recvd_bytes<=0: %d", kcp_recvd_bytes);
+				}
 			}
 			else
 			{
@@ -224,6 +246,93 @@ namespace kcp_svr {
 			return false;
 		}
 		return true;
+	}
+
+	void connection::async_send_udp_package(const char* data, const int length)
+	{
+		char* buff = reinterpret_cast<char*>(ZPOOL_MALLOC(length));
+		memcpy(buff, data, length);
+		if (!is_writing_)
+		{
+			send_queue_.push_back(boost::asio::buffer(buff, length));
+			start_write();
+		}
+		else
+		{
+			enum { max_pending_send_size = 256 };
+			// 增加保护, 防止不停的累加
+			if (pending_send_queue_.size() >= max_pending_send_size)
+			{
+				LOG_INFO("udp pending_send_queue_ too large %d", static_cast<int>(pending_send_queue_.size()));
+				UDPSERVER.CloseConnection(this->session_id());
+				return;
+			}
+			pending_send_queue_.push_back(boost::asio::buffer(buff, length));
+		}
+	}
+
+	void connection::start_write()
+	{
+		if (is_closing_)
+			return;
+
+		if (is_writing_)
+			return;
+
+		if (send_queue_.empty())
+			return;
+
+		is_writing_ = true;
+
+		if (auto ptr = connection_manager_weak_ptr_.lock())
+		{
+			auto udp_socket = ptr->get_udp_socket();
+			udp_socket->async_send_to(send_queue_, udp_remote_endpoint_,
+				boost::bind(&connection::handle_async_write, this,
+					boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+		}
+	
+	}
+
+	void connection::handle_async_write(const boost::system::error_code& ec, size_t bytes_transferred)
+	{
+		is_writing_ = false;
+		if (!ec)
+		{
+			on_write(bytes_transferred);
+			if (!pending_send_queue_.empty())
+			{
+				send_queue_.swap(pending_send_queue_);
+				// continue write
+				start_write();
+			}
+		}
+		else
+		{
+			if (is_closing_)
+				return;
+
+			if (ec == boost::asio::error::operation_aborted)
+				return;
+
+			if (!(ec == boost::asio::error::connection_reset ||
+				ec == boost::asio::error::eof))
+			{
+				LOG_DEBUG("udp session[%d] error[%d]:%s", session_id(), ec.value(), ec.message().c_str());
+			}
+			UDPSERVER.CloseConnection(this->session_id());
+		}
+	}
+
+	void connection::on_write(const int32 length)
+	{
+		for (auto it = send_queue_.begin(); it != send_queue_.end(); ++it)
+		{
+			auto& buffer = *it;
+			const char* data = boost::asio::buffer_cast<const char*>(buffer);
+			ZPOOL_FREE(static_cast<void*>(const_cast<char*>(data)));
+		}
+		send_queue_.clear();
 	}
 
 } // namespace kcp_svr

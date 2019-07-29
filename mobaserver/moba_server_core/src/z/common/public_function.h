@@ -35,7 +35,10 @@ std::string UrlDecode(const std::string& str);
 //void ApplyProtobufDefaults(::google::protobuf::Message *m, bool apply_no_default = true);
 
 const std::string ConvertMessageToJson(const google::protobuf::Message *m);
+
+const std::string string_to_hex(const std::string& str);
 }
 }
+
 
 #endif // !SRC_Z_COMMON_PUBLIC_FUNCTION_H

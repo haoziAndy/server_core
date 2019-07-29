@@ -22,35 +22,32 @@
 #include <ikcp.h>
 #include "connect_packet.hpp"
 
-#ifdef WIN32
-int gettimeofday(struct timeval *tp, void *tzp)
-{
-	time_t clock;
-	struct tm tm;
-	SYSTEMTIME wtm;
-	GetLocalTime(&wtm);
-	tm.tm_year = wtm.wYear - 1900;
-	tm.tm_mon = wtm.wMonth - 1;
-	tm.tm_mday = wtm.wDay;
-	tm.tm_hour = wtm.wHour;
-	tm.tm_min = wtm.wMinute;
-	tm.tm_sec = wtm.wSecond;
-	tm.tm_isdst = -1;
-	clock = mktime(&tm);
-	tp->tv_sec = clock;
-	tp->tv_usec = wtm.wMilliseconds * 1000;
-	return (0);
-}
-#endif
-
-
 /* get system time */
 static inline void itimeofday(long *sec, long *usec)
 {
+#if defined(__unix)
 	struct timeval time;
 	gettimeofday(&time, NULL);
 	if (sec) *sec = time.tv_sec;
 	if (usec) *usec = time.tv_usec;
+#else
+	static long mode = 0, addsec = 0;
+	BOOL retval;
+	static IINT64 freq = 1;
+	IINT64 qpc;
+	if (mode == 0) {
+		retval = QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
+		freq = (freq == 0) ? 1 : freq;
+		retval = QueryPerformanceCounter((LARGE_INTEGER*)&qpc);
+		addsec = (long)time(NULL);
+		addsec = addsec - (long)((qpc / freq) & 0x7fffffff);
+		mode = 1;
+	}
+	retval = QueryPerformanceCounter((LARGE_INTEGER*)&qpc);
+	retval = retval * 2;
+	if (sec) *sec = (long)(qpc / freq) + addsec;
+	if (usec) *usec = (long)((qpc % freq) * 1000000 / freq);
+#endif
 }
 
 /* get clock in millisecond 64 */
@@ -277,6 +274,10 @@ int connection_manager::send_msg(const kcp_conv_t& conv, char * msg,const int32 
 
 	connection_ptr->send_kcp_msg(msg, length);
 	return 0;
+}
+
+udp::socket* connection_manager::get_udp_socket() {
+	return &udp_socket_;
 }
 
 } // namespace kcp_svr

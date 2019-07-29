@@ -31,8 +31,8 @@ public:
 
     int send_msg(const kcp_conv_t& conv, std::shared_ptr<std::string> msg);
 
-
-
+	udp::socket* get_udp_socket();
+	
 
     // this func should be multithread safe if running UdpPacketHandler in work thread pool.  can implement by io_service.dispatch
     void call_event_callback_func(kcp_conv_t conv, eEventType event_type, std::shared_ptr<std::string> msg);

@@ -34,6 +34,21 @@ const std::string ConvertMessageToJson(const google::protobuf::Message *m) {
 	google::protobuf::util::MessageToJsonString(*m, &str);
 	return str;
 }
+
+const std::string string_to_hex(const std::string& str)
+{
+	std::string result = "0x";
+	std::string tmp;
+	std::stringstream ss;
+	for (int i = 0; i < str.size(); i++)
+	{
+		ss << std::hex << int(str[i]) << std::endl;
+		ss >> tmp;
+		result += tmp;
+	}
+	return result;
+}
+
 /*
 
 std::string MD5( const std::string& content, bool to_upper)
