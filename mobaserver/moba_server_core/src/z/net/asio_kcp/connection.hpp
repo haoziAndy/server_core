@@ -14,7 +14,7 @@ using namespace boost::asio::ip;
 class connection_manager;
 
 class connection
-  : private boost::noncopyable
+  : private boost::noncopyable, public std::enable_shared_from_this<connection>
 {
 public:
     typedef std::shared_ptr<connection> shared_ptr;

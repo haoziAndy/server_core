@@ -291,7 +291,7 @@ namespace kcp_svr {
 		{
 			auto udp_socket = ptr->get_udp_socket();
 			udp_socket->async_send_to(send_queue_, udp_remote_endpoint_,
-				boost::bind(&connection::handle_async_write, this,
+				boost::bind(&connection::handle_async_write, shared_from_this(),
 					boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 		}
 	
@@ -300,6 +300,10 @@ namespace kcp_svr {
 	void connection::handle_async_write(const boost::system::error_code& ec, size_t bytes_transferred)
 	{
 		is_writing_ = false;
+
+		//if (is_closing_)
+		//	return;
+
 		if (!ec)
 		{
 			on_write(bytes_transferred);
@@ -312,9 +316,6 @@ namespace kcp_svr {
 		}
 		else
 		{
-			if (is_closing_)
-				return;
-
 			if (ec == boost::asio::error::operation_aborted)
 				return;
 

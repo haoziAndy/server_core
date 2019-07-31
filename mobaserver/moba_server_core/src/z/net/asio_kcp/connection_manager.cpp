@@ -209,7 +209,7 @@ void connection_manager::handle_udp_receive_from(const boost::system::error_code
     }
     else
     {
-		LOG_ERR("\nhandle_udp_receive_from error end! error: %s, bytes_recvd: %ld\n", error.message().c_str(), bytes_recvd);
+		LOG_DEBUG("\nhandle_udp_receive_from error end! error: %s, bytes_recvd: %ld\n", error.message().c_str(), bytes_recvd);
 		
     }
 
