@@ -62,7 +62,7 @@ using uint64 = std::uint64_t;
 
 using string = std::string;
 
-#if WIN32  // !HAVE_SYS_UIO_H
+#ifdef WIN32  // !HAVE_SYS_UIO_H
 // Windows does not have an iovec type, yet the concept is universally useful.
 // It is simple to define it ourselves, so we put it inside our own namespace.
 struct iovec {
