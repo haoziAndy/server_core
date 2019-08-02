@@ -12,6 +12,10 @@ include_directories(../../)
 include_directories(../../../include/google_breakpad)
 include_directories(../../../include/snappy)
 
+set(HAVE_SYS_UIO_H_01 ${HAVE_SYS_UIO_H})
+if(NOT HAVE_SYS_UIO_H_01)
+  set(HAVE_SYS_UIO_H_01 0)
+endif(NOT HAVE_SYS_UIO_H_01)
 
 MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
 	GET_FILENAME_COMPONENT(_inputWe ${_input} NAME_WE)
