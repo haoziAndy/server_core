@@ -46,12 +46,6 @@
 #include <z/common/types.h>
 #include <z/common/singleton.h>
 
-#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
-#include <contrib/crypto/md5.h>
-#include <contrib/crypto/zlib.h>
-#include <contrib/crypto/gzip.h>
-#include <contrib/crypto/hex.h>
-#include <contrib/crypto/base64.h>
 
 
 #ifdef _WIN32

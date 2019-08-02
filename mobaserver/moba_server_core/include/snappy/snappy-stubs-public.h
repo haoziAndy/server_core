@@ -1,5 +1,4 @@
 // Copyright 2011 Google Inc. All Rights Reserved.
-// Author: sesse@google.com (Steinar H. Gunderson)
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -40,15 +39,13 @@
 #include <cstdint>
 #include <string>
 
-#ifndef _WIN32
-#if 1  // HAVE_SYS_UIO_H
+#if ${HAVE_SYS_UIO_H_01}  // HAVE_SYS_UIO_H
 #include <sys/uio.h>
 #endif  // HAVE_SYS_UIO_H
-#endif
 
-#define SNAPPY_MAJOR 1
-#define SNAPPY_MINOR 1
-#define SNAPPY_PATCHLEVEL 7
+#define SNAPPY_MAJOR ${PROJECT_VERSION_MAJOR}
+#define SNAPPY_MINOR ${PROJECT_VERSION_MINOR}
+#define SNAPPY_PATCHLEVEL ${PROJECT_VERSION_PATCH}
 #define SNAPPY_VERSION \
     ((SNAPPY_MAJOR << 16) | (SNAPPY_MINOR << 8) | SNAPPY_PATCHLEVEL)
 
@@ -65,7 +62,7 @@ using uint64 = std::uint64_t;
 
 using string = std::string;
 
-#if !1  // !HAVE_SYS_UIO_H
+#if !${HAVE_SYS_UIO_H_01}  // !HAVE_SYS_UIO_H
 // Windows does not have an iovec type, yet the concept is universally useful.
 // It is simple to define it ourselves, so we put it inside our own namespace.
 struct iovec {

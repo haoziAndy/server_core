@@ -122,6 +122,7 @@ std::string Decompress(const std::string& str)
 
 	return std::string(static_cast<char*>(out_buff), outsize);
 }
+*/
 
 // snappy compress
 std::string FastCompress(const char* data, int32 length)
@@ -152,7 +153,7 @@ std::string FastUncompress(const std::string& str)
 	snappy::Uncompress(str.c_str(), str.size(), &uncompressed_str);
 	return uncompressed_str;
 }
-*/
+
 
 std::string UrlEncode(const std::string& str)
 {
