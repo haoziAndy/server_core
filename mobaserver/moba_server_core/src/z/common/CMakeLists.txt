@@ -12,6 +12,7 @@ include_directories(../../)
 include_directories(../../../include/google_breakpad)
 include_directories(../../../include/snappy)
 
+check_include_file("sys/uio.h" HAVE_SYS_UIO_H)
 set(HAVE_SYS_UIO_H_01 ${HAVE_SYS_UIO_H})
 if(NOT HAVE_SYS_UIO_H_01)
   set(HAVE_SYS_UIO_H_01 0)
