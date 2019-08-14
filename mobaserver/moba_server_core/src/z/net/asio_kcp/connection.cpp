@@ -226,10 +226,9 @@ namespace kcp_svr {
 		}*/
 	}
 
-
 	uint32_t connection::get_timeout_time(void) const
 	{
-		return ASIO_KCP_CONNECTION_TIMEOUT_TIME;
+		return UDPSERVER.keepalive_time_out_sec() * 1000;
 	}
 
 	uint32_t connection::get_cur_clock(void) const

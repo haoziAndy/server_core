@@ -35,6 +35,9 @@ public:
 	int32 login_time_out_sec() const { return login_time_out_sec_; }
 	void set_login_time_out_sec(int32 timeout_sec) { login_time_out_sec_ = timeout_sec; }
 
+	int32 keepalive_time_out_sec() const { return keepalive_time_out_sec_; }
+	void set_keepalive_time_out_sec(int32 time_out_sec) { keepalive_time_out_sec_ = time_out_sec; }
+
 private:
     void SendToSession(int session_id, const std::string & user_id, CMsgHeader* msg);
     void PollTimerHandler(const boost::system::error_code& ec);
@@ -54,6 +57,8 @@ private:
     bool is_server_shutdown_;
 
 	int32 login_time_out_sec_;
+
+	int32 keepalive_time_out_sec_;
 
 private:
 	UdpServer();

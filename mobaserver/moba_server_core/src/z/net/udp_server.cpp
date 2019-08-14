@@ -16,6 +16,7 @@ UdpServer::UdpServer():
 	,kcp_server_(TIME_ENGINE)
     , is_server_shutdown_(false)
 	, login_time_out_sec_(1)
+	, keepalive_time_out_sec_(300)
 {}
 
 bool UdpServer::Init(const std::string& addr, const std::string& port, IUMsgHandler* handler)
@@ -34,6 +35,10 @@ bool UdpServer::Init(const std::string& addr, const std::string& port, IUMsgHand
 
     request_handler_ = handler;
 
+	// 登录超时默认1秒
+	login_time_out_sec_ = 1;
+	// 默认超时设置为300秒
+	keepalive_time_out_sec_ = 300;
 
     signals_.add(SIGINT);
     signals_.add(SIGTERM);

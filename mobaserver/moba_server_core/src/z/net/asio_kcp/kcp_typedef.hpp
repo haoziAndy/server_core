@@ -1,6 +1,5 @@
 #pragma once
 
-#define ASIO_KCP_CONNECTION_TIMEOUT_TIME 10 * 1000 // default is 10 seconds.
 #define  ASIO_KCP_FLAGS_SNDWND  256 //发送窗口 256
 #define  ASIO_KCP_FLAGS_RCVWND  256 //接收窗口 256
 
