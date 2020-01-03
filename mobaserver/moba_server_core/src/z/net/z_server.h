@@ -115,7 +115,10 @@ class ZServer
         , signals_(time_engine_)
         , deadline_timer_(time_engine_)
         , msg_names_(nullptr)
-    {}
+    {
+		// init current_path
+		current_path_ = boost::filesystem::current_path().generic_string() + "/";
+	}
 
 public:
 
@@ -196,7 +199,7 @@ public:
 
     const std::string& current_path() {return current_path_;}
     // 后台化, linux 下有效
-    void Daemon();
+    //void Daemon();
 
     std::unordered_map<int32, const std::string>* msg_names() const {return msg_names_;}
     void set_msg_names(std::unordered_map<int32, const std::string>* name_list) { msg_names_ = name_list;}

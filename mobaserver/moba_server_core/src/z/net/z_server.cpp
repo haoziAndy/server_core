@@ -619,11 +619,8 @@ void ZServer::SecondTimerHandler( const boost::system::error_code& ec )
     }
 }
 
-void ZServer::Daemon()
+/*void ZServer::Daemon()
 {
-    // init current_path
-    current_path_ = boost::filesystem::current_path().generic_string() + "/";
-
 #ifndef _WIN32
 #include <unistd.h>
     time_engine_.notify_fork(boost::asio::io_service::fork_prepare);
@@ -634,7 +631,7 @@ void ZServer::Daemon()
     }
     time_engine_.notify_fork(boost::asio::io_service::fork_child);
 #endif // _WIN32
-}
+}*/
 
 void ZServer::PrintMsg(SMsgHeader* s_msg, const bool IsSend)
 {
