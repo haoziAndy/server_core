@@ -18,6 +18,10 @@ int ZServer::Init(int server_id, int server_type, const std::string& server_name
     server_conn_str_ = conn_str;
     msg_handler_ = msg_handler;
 
+	int major, minor, patch;
+	zmq_version(&major, &minor, &patch); 
+	LOG_INFO("Current ZEROMQ version is %d.%d.%d", major, minor, patch);
+
     if (AddReceiver(server_id, listen_str, msg_handler) == NULL)
     {
         LOG_ERR("AddReceiver failed server_id %d, listern_str %s", server_id, listen_str.data());
