@@ -76,8 +76,11 @@ LOG4CPLUS_EXPORT void * log4cplus_initialize(void);
 LOG4CPLUS_EXPORT int log4cplus_deinitialize(void * initializer);
 
 LOG4CPLUS_EXPORT int log4cplus_file_configure(const log4cplus_char_t *pathname);
+LOG4CPLUS_EXPORT int log4cplus_file_reconfigure(const log4cplus_char_t *pathname);
 LOG4CPLUS_EXPORT int log4cplus_str_configure(const log4cplus_char_t *config);
+LOG4CPLUS_EXPORT int log4cplus_str_reconfigure(const log4cplus_char_t *config);
 LOG4CPLUS_EXPORT int log4cplus_basic_configure(void);
+LOG4CPLUS_EXPORT int log4cplus_basic_reconfigure(int logToStdErr);
 LOG4CPLUS_EXPORT void log4cplus_shutdown(void);
 
 LOG4CPLUS_EXPORT int log4cplus_logger_exists(const log4cplus_char_t *name);
@@ -110,6 +113,11 @@ LOG4CPLUS_EXPORT int log4cplus_add_callback_appender(
     const log4cplus_char_t * logger, log4cplus_log_event_callback_t callback,
     void * cookie);
 
+// Custom LogLevel
+LOG4CPLUS_EXPORT int log4cplus_add_log_level(unsigned int ll,
+    const log4cplus_char_t *ll_name);
+LOG4CPLUS_EXPORT int log4cplus_remove_log_level(unsigned int ll,
+    const log4cplus_char_t *ll_name);
 
 #ifdef __cplusplus
 }
