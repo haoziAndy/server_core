@@ -136,6 +136,8 @@ public:
     void Stop();
     void ForceStop();
 
+	bool HttpPostReq(char const* host, char const*port, char const*target, const std::string &content, std::function<void(const std::string&, bool)> callback);
+
     void RegisterCleanFunctor(const boost::function<void()>&& functor)
     {
         clean_functions_.push_back(functor);

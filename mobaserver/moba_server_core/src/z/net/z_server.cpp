@@ -3,6 +3,7 @@
 #include "msg_header.h"
 #include "z_receiver.h"
 #include "z_sender.h"
+#include "http_client_session.h"
 
 namespace z {
 namespace net {
@@ -680,6 +681,22 @@ void ZServer::PrintMsg(SMsgHeader* header, const google::protobuf::Message* prot
 	}
 }
 
+bool ZServer::HttpPostReq(char const* host, char const*port, char const*target, const std::string &content, std::function<void(const std::string&, bool)> callback)
+{
+	if (host == nullptr or port == nullptr or target == nullptr)
+	{
+		LOG_FATAL("Http Post host == nullptr or port == nullptr or target == nullptr ");
+		return false;
+	}
+	const int version = 10;
+	auto http =  std::make_shared<HttpClientSession>(time_engine_);
+	if (http == nullptr) {
+		return false;
+	}
+	http->run(host, port, target, content, version, callback);
+	return true;
+}
+
 void TimeEngine::Init()
 {
     time_t t_now = ::time(nullptr);
@@ -724,7 +741,6 @@ void SendSMsgByType(int sendto_server_type, int32 msg_id, SMsgHeader& header, go
     header.msg_id = msg_id;
     ZSERVER.SendMsgByType(sendto_server_type, &header, &body);
 }
-
 
 } //namespace net
 } //namespace z

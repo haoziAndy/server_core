@@ -1,149 +1,232 @@
+//
+// Copyright (c) 2016-2017 Vinnie Falco (vinnie dot falco at gmail dot com)
+//
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+//
+// Official repository: https://github.com/boostorg/beast
+//
+
+//------------------------------------------------------------------------------
+//
+// Example: HTTP client, asynchronous
+//
+//------------------------------------------------------------------------------
 #include "stdafx.h"
-#include "z/common/logger.h"
-#include <log4cplus/logger.h>
-#include <log4cplus/fileappender.h>
-#include <log4cplus/layout.h>
-#include <log4cplus/ndc.h>
-#include <log4cplus/helpers/loglog.h>
-#include <log4cplus/helpers/property.h>
-#include <log4cplus/loggingmacros.h>
-#include <log4cplus/initializer.h>
-#include "z/common/core_dump.h"
+#include <boost/beast/core.hpp>
+#include <boost/beast/http.hpp>
+#include <boost/beast/version.hpp>
+#include <boost/asio/connect.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <cstdlib>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <string>
+#include <cstdlib>
+#include <cstring>
+#include <cctype>
+#include <iomanip>
+#include <sstream>
+#include <string>
 
-#ifdef _WIN32
-#ifdef _DEBUG
-//#    pragma comment(lib, "libzmq.lib")
-//#    pragma comment(lib, "libprotobuf.lib")
-#else
-#    pragma comment(lib, "libzmq.lib")
-#    pragma comment(lib, "libprotobufd.lib")
-#endif // _DEBUG
+using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
+namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 
-#pragma comment(lib, "libzcommon.lib")
-#pragma comment(lib, "libzcontrib.lib")
-#pragma comment(lib, "log4cplusD.lib")
-#pragma comment(lib, "exception_handler.lib")
-#pragma comment(lib, "crash_generation_client.lib")
-#pragma comment(lib, "common.lib")
-#endif //_WIN32
-/*class CostTick
+										//------------------------------------------------------------------------------
+
+										// Report a failure
+void
+fail(boost::system::error_code ec, char const* what)
 {
-public:
-    CostTick()
-    {
-        tick_ = boost::chrono::duration_cast<boost::chrono::milliseconds>(
-            boost::chrono::system_clock::now().time_since_epoch()).count();
-    }
-    int64 tick() const 
-    {
-        return tick_;
-    }
-    int64 cost_tick() 
-    {
-        auto cur_tick = boost::chrono::duration_cast<boost::chrono::milliseconds>(
-            boost::chrono::system_clock::now().time_since_epoch()).count();
-        auto cost = cur_tick - tick_;
-        tick_ = cur_tick;
-        return cost;
-    }
-    void Print() 
-    {
-        auto cur_tick = boost::chrono::duration_cast<boost::chrono::milliseconds>(
-            boost::chrono::system_clock::now().time_since_epoch()).count();
-        std::cout << "cost " << (cur_tick - tick_) << " ms." << std::endl;
-        tick_ = cur_tick;
-    }
-private:
-    int64 tick_;
-};
-int main()
-{
-    std::cout << "Hello world!\n" << std::endl;
-    
-    auto alloc_size = 8;
-    auto alloc_count = 20;
-    std::vector<void*> addr_list;
-    for (auto i = 0; i < alloc_count; ++i)
-    {
-        auto addr = ZPOOL_MALLOC(8 << i);
-        addr_list.push_back(addr);
-    }
-    std::cout << ZPOOL.PrintStats() << std::endl;
-    for (auto it = addr_list.begin(); it != addr_list.end(); ++it)
-    {
-        auto addr = *it;
-        ZPOOL_FREE(addr);
-    }
-    std::cout << ZPOOL.PrintStats() << std::endl;
-
-
-    auto heat_count = 1000*10;
-    std::unordered_set<void*> heat_addr_list;
-    for (auto i = 0; i < heat_count; ++i)
-    {
-        auto addr = ZPOOL_MALLOC(i + 1);
-        heat_addr_list.insert(addr);
-    }
-    std::cout << ZPOOL.PrintStats();
-    for (auto it = heat_addr_list.begin(); it != heat_addr_list.end(); ++it)
-    {
-        auto addr = *it;
-        ZPOOL_FREE(addr);
-    }
-    std::cout << ZPOOL.PrintStats();
-    ZPOOL.set_need_stats(false);
-    auto bench_count = 1024;// * 1024;
-    CostTick tick;
-    for (int j = 8; j < 1024 * 1024; j *= 2)
-    {
-        {
-            for (auto i = 0; i < bench_count; ++i)
-            {
-                auto addr = ZPOOL_MALLOC(j);
-                ZPOOL_FREE(addr);
-            }
-            auto cost_time = tick.cost_tick();
-            std::cout << "bench palloc size " << j 
-                << " count " << bench_count << ","
-                <<" cost " << cost_time << " ms,"
-                << "avg " << (bench_count * 1000.0 / cost_time) << " requests per sec"
-                << std::endl; 
-        }
-        
-        {
-            std::vector<void*> list_addr;
-            list_addr.reserve(bench_count);
-            for (auto i = 0; i < bench_count; ++i)
-            {
-                auto addr = std::malloc(j);
-                std::free(addr);
-                list_addr.push_back(addr);
-            }
-            auto cost_time = tick.cost_tick();
-            std::cout << "bench malloc size " << j 
-                << " count " << bench_count << ","
-                <<" cost " << cost_time << " ms,"
-                << "avg " << (bench_count * 1000.0 / cost_time) << " requests per sec"
-                << std::endl; 
-        }
-        
-    }
-    
-
-
-    return 0;
-}*/
-
-void crash() {
-	volatile int* a = (int*)(NULL);
-	*a = 1;
+	std::cerr << what << ": " << ec.message() << "\n";
 }
 
-int main() {
-	log4cplus::initialize();
-	log4cplus::Initializer initializer;
-	LOGGER.Init("scene","./log", log4cplus::TRACE_LOG_LEVEL);
-	CORE_DUMPER.Init("./log");
-	//crash();
+// Performs an HTTP GET and prints the response
+class session : public std::enable_shared_from_this<session>
+{
+	tcp::resolver resolver_;
+	tcp::socket socket_;
+	boost::beast::flat_buffer buffer_; // (Must persist between reads)
+	http::request<http::string_body> req_;
+	http::response<http::string_body> res_;
+
+public:
+	// Resolver and socket require an io_context
+	explicit
+		session(boost::asio::io_context& ioc)
+		: resolver_(ioc)
+		, socket_(ioc)
+	{
+	}
+
+	// Start the asynchronous operation
+	void
+		run(
+			char const* host,
+			char const* port,
+			char const* target,
+			std::string &body,
+			int version)
+	{
+		// Set up an HTTP GET request message
+		req_.version(version);
+		req_.method(http::verb::post);
+		req_.target(target);
+		req_.set(http::field::host, host);
+		req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
+		req_.set(http::field::content_type, "application/x-www-form-urlencoded; charset=utf-8");
+		req_.body() = body;
+		req_.prepare_payload();
+		std::cout << req_ << std::endl;
+		// Look up the domain name
+		resolver_.async_resolve(
+			host,
+			port,
+			std::bind(
+				&session::on_resolve,
+				shared_from_this(),
+				std::placeholders::_1,
+				std::placeholders::_2));
+	}
+
+	void
+		on_resolve(
+			boost::system::error_code ec,
+			tcp::resolver::results_type results)
+	{
+		if (ec)
+			return fail(ec, "resolve");
+
+		// Make the connection on the IP address we get from a lookup
+		boost::asio::async_connect(
+			socket_,
+			results.begin(),
+			results.end(),
+			std::bind(
+				&session::on_connect,
+				shared_from_this(),
+				std::placeholders::_1));
+	}
+
+	void
+		on_connect(boost::system::error_code ec)
+	{
+		if (ec)
+			return fail(ec, "connect");
+
+		// Send the HTTP request to the remote host
+		http::async_write(socket_, req_,
+			std::bind(
+				&session::on_write,
+				shared_from_this(),
+				std::placeholders::_1,
+				std::placeholders::_2));
+	}
+
+	void
+		on_write(
+			boost::system::error_code ec,
+			std::size_t bytes_transferred)
+	{
+		boost::ignore_unused(bytes_transferred);
+
+		if (ec)
+			return fail(ec, "write");
+
+		// Receive the HTTP response
+		http::async_read(socket_, buffer_, res_,
+			std::bind(
+				&session::on_read,
+				shared_from_this(),
+				std::placeholders::_1,
+				std::placeholders::_2));
+	}
+
+	void
+		on_read(
+			boost::system::error_code ec,
+			std::size_t bytes_transferred)
+	{
+		boost::ignore_unused(bytes_transferred);
+
+		if (ec)
+			return fail(ec, "read");
+
+		// Write the message to standard out
+		std::cout << res_.body().data() << std::endl;
+
+		// Gracefully close the socket
+		socket_.shutdown(tcp::socket::shutdown_both, ec);
+
+		// not_connected happens sometimes so don't bother reporting it.
+		if (ec && ec != boost::system::errc::not_connected)
+			return fail(ec, "shutdown");
+
+		// If we get here then the connection is closed gracefully
+	}
+};
+
+//------------------------------------------------------------------------------}
+void hexchar(unsigned char c, unsigned char &hex1, unsigned char &hex2)
+{
+	hex1 = c / 16;
+	hex2 = c % 16;
+	hex1 += hex1 <= 9 ? '0' : 'a' - 10;
+	hex2 += hex2 <= 9 ? '0' : 'a' - 10;
+}
+
+std::string UrlEncode(std::string s)
+{
+	const char *str = s.c_str();
+	std::vector<char> v(s.size());
+	v.clear();
+	for (size_t i = 0, l = s.size(); i < l; i++)
+	{
+		char c = str[i];
+		if ((c >= '0' && c <= '9') ||
+			(c >= 'a' && c <= 'z') ||
+			(c >= 'A' && c <= 'Z') ||
+			c == '-' || c == '_' || c == '.' || c == '!' || c == '~' ||
+			c == '*' || c == '\'' || c == '(' || c == ')')
+		{
+			v.push_back(c);
+		}
+		else if (c == ' ')
+		{
+			v.push_back('+');
+		}
+		else
+		{
+			v.push_back('%');
+			unsigned char d1, d2;
+			hexchar(c, d1, d2);
+			v.push_back(d1);
+			v.push_back(d2);
+		}
+	}
+
+	return std::string(v.cbegin(), v.cend());
+}
+int main(int argc, char** argv)
+{
+	// Check command line arguments.
+	auto const host = "filterad.sanguosha.com";
+	auto const port = "80";
+	auto const target = "/v1/query";
+	int version = argc == 5 && !std::strcmp("1.0", argv[4]) ? 10 : 11;
+
+	// The io_context is required for all I/O
+	boost::asio::io_context ioc;
+
+	std::string content("appid=2&q=");
+	std::string aa("\"Ã«Ö÷Ï¯\"");
+
+	std::make_shared<session>(ioc)->run(host, port, target, content+UrlEncode(aa) , version);
+
+	// Run the I/O service. The call will return when
+	// the get operation is complete.
+	ioc.run();
+
 	return 0;
 }
