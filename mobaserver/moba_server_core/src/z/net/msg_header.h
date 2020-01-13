@@ -46,8 +46,8 @@ struct SMsgHeader
 	int32    src_server_id;        // 消息来源 服务器id 
 	int32    dst_server_id;        // 为gate 登录sessionid
 	uint32    session_id;        // 为gate 登录sessionid
-	char    async_seq[UIDLen];
-	char    player_id[UIDLen];   // 玩家未登录时，player_id为0
+	char    async_seq[UIDLen];   //结尾并不是 '\0'
+	char    player_id[UIDLen];   // 玩家未登录时，player_id为0,结尾并不是 '\0'
 };
 
 
