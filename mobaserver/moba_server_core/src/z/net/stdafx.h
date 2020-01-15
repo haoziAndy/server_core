@@ -21,9 +21,6 @@
 
 #include <google/protobuf/message.h>
 
-#include <pugiconfig.hpp>
-#include <pugixml.hpp>
-
 #include <map>
 #include <list>
 #include <vector>
