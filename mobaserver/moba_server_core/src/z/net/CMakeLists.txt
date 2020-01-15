@@ -60,8 +60,15 @@ ENDMACRO()
 
 
 if(CMAKE_COMPILER_IS_GNUCXX)
-    add_definitions(-std=c++11 -g -Wall -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs)
+	if(CMAKE_BUILD_TYPE MATCHES Debug)
+		  add_definitions( -DDEBUG -g  )
+	else(CMAKE_BUILD_TYPE MATCHES Release)
+		add_definitions( -O3 )
+	endif()
+	add_definitions(-std=c++11 -Wall -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs)
+	#add_definitions(-std=c++11  -g -Wall -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs)
 endif()
+
 
 add_library(${build_target} STATIC ${SRC_FILES})
 #add_executable(${build_target} ./net.cpp)
