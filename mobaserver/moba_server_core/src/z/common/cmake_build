@@ -1,9 +1,5 @@
 #!/bin/sh
 /bin/sh git_version
-rm -rf builds
-mkdir -p builds
-cd builds
 #cmake -DCMAKE_BUILD_TYPE=Release ../src/
-cmake -DCMAKE_BUILD_TYPE=Debug ../
+cmake -DCMAKE_BUILD_TYPE=Debug  CMakeLists.txt 
 make -j2
-
