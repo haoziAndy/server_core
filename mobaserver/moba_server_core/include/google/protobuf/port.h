@@ -1,6 +1,6 @@
 // Protocol Buffers - Google's data interchange format
 // Copyright 2008 Google Inc.  All rights reserved.
-// http://code.google.com/p/protobuf/
+// https://developers.google.com/protocol-buffers/
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -28,45 +28,16 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// Author: kenton@google.com (Kenton Varda)
-//  Based on original Protocol Buffers design by
-//  Sanjay Ghemawat, Jeff Dean, and others.
-//
-// Generates Java nano code for a given .proto file.
+// A common header that is included across all protobuf headers.  We do our best
+// to avoid #defining any macros here; instead we generally put macros in
+// port_def.inc and port_undef.inc so they are not visible from outside of
+// protobuf.
 
-#ifndef GOOGLE_PROTOBUF_COMPILER_JAVANANO_NANO_GENERATOR_H__
-#define GOOGLE_PROTOBUF_COMPILER_JAVANANO_NANO_GENERATOR_H__
+#ifndef GOOGLE_PROTOBUF_PORT_H__
+#define GOOGLE_PROTOBUF_PORT_H__
 
-#include <string>
-#include <google/protobuf/compiler/code_generator.h>
 
-namespace google {
-namespace protobuf {
-namespace compiler {
-namespace javanano {
+#include <google/protobuf/stubs/port.h>
 
-// CodeGenerator implementation which generates Java nano code.  If you create your
-// own protocol compiler binary and you want it to support Java output for the
-// nano runtime, you can do so by registering an instance of this CodeGenerator with
-// the CommandLineInterface in your main() function.
-class LIBPROTOC_EXPORT JavaNanoGenerator : public CodeGenerator {
- public:
-  JavaNanoGenerator();
-  ~JavaNanoGenerator();
 
-  // implements CodeGenerator ----------------------------------------
-  bool Generate(const FileDescriptor* file,
-                const string& parameter,
-                GeneratorContext* output_directory,
-                string* error) const;
-
- private:
-  GOOGLE_DISALLOW_EVIL_CONSTRUCTORS(JavaNanoGenerator);
-};
-
-}  // namespace javanano
-}  // namespace compiler
-}  // namespace protobuf
-
-}  // namespace google
-#endif  // GOOGLE_PROTOBUF_COMPILER_JAVANANO_NANO_GENERATOR_H__
+#endif  // GOOGLE_PROTOBUF_PORT_H__
