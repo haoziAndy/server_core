@@ -23,6 +23,7 @@ namespace z {
 				const int version,
 			    std::function<void(const std::string&, bool)> callback)
 		{
+
 			// Set up an HTTP GET request message
 			req_.version(version);
 			req_.method(boost::beast::http::verb::post);
