@@ -88,7 +88,7 @@ int ZSender::Send( SMsgHeader* header, const google::protobuf::Message* protobuf
     header->src_server_id = ZSERVER.server_id();
     header->dst_server_id = sendto_server_id_;
 
-    int byte_size = protobuf_msg->ByteSize();
+    int byte_size = protobuf_msg->ByteSizeLong();
     header->length = byte_size;
 
     int ret;    
