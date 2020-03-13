@@ -36,7 +36,7 @@ int ZServer::Init(int server_id, int server_type, const std::string& server_name
 #endif // defined(SIGQUIT)
     signals_.async_wait(boost::bind(&ZServer::Stop, this));
 
-    server_status_ = z::net::ZServerStatus_INIT;
+	this->set_server_status(ZServerStatus::ZServerStatus_INIT);
 
     return 0;
 }
@@ -64,10 +64,10 @@ int ZServer::Destroy()
     for (Senders::iterator it=senders_.begin();
             it!=senders_.end(); ++it)
     {
-        if (*it != nullptr)
+        if (it->second != nullptr)
         {
-            delete *it;
-            *it = nullptr;
+            delete it->second;
+			it->second = nullptr;
         }
     }
     senders_.clear();
@@ -143,22 +143,15 @@ ZSender* ZServer::AddSender( const int sendto_server_id, const std::string& conn
         sender = nullptr;
         return nullptr;
     }
-    if (static_cast<uint32>(sendto_server_id) >= senders_.size())
-    {
-        senders_.resize(sendto_server_id + 1);
-    }
+
+	if (senders_[sendto_server_id] != nullptr) {
+		LOG_ERR("Sender = %d already own", sendto_server_id);
+	}
     senders_[sendto_server_id] = sender;
 
     if (server_type != 0)
-    {
-        if (static_cast<uint32>(server_type) >= type_senders_.size())
-        {
-            type_senders_.resize(server_type + 1);
-        }
-        if (type_senders_[server_type] == nullptr)
-        {
-            type_senders_[server_type] = sender;
-        }
+	{
+		type_senders_[server_type] = sender;
     }
     if (need_verify)
         check_sender_flags_.push_back(std::make_pair(sendto_server_id, 0));
@@ -173,17 +166,18 @@ const std::vector<ZSender*> ZServer::GetSendersByType(uint32 server_type) const
     {
         return result;
     }
-    for (int i = 0; i < static_cast<int>(senders_.size()); ++i)
-    {
-        if (SERVER_TYPE(i)== server_type)
-        {
-            if (senders_[i] == nullptr)
-            {
-                continue;
-            }
-            result.push_back(senders_[i]);
-        }
-    }
+	for (auto it = senders_.begin(); it != senders_.end(); ++it)
+	{
+		if (SERVER_TYPE(it->first) == server_type)
+		{
+			if (it->second == nullptr)
+			{
+				continue;
+			}
+			result.push_back(it->second);
+		}
+	}
+
     return result;
 }
 
@@ -260,7 +254,7 @@ void ZServer::Stop()
 
         for (auto it = senders_.begin(); it != senders_.end(); ++it)
         {
-            ZSender* sender = *it;
+            ZSender* sender = it->second;
             if (sender)
                 sender->Close(true);
         }
@@ -271,6 +265,7 @@ void ZServer::Stop()
             if (receiver)
                 receiver->Destroy();
         }
+		this->set_server_status(ZServerStatus::ZServerStatus_STOP);
     }
 
     return;
@@ -282,7 +277,7 @@ void ZServer::ForceStop()
     {
         for (auto it = senders_.begin(); it != senders_.end(); ++it)
         {
-            ZSender* sender = *it;
+            ZSender* sender = it->second;
             if (!sender)
                 continue;
             sender->Close(true);
@@ -295,7 +290,7 @@ void ZServer::ForceStop()
 
 int ZServer::SendMsg( const int sendto_server_id, SMsgHeader* header, const google::protobuf::Message* msg )
 {
-    if (sendto_server_id < 0 || static_cast<uint32>(sendto_server_id) >= senders_.size())
+    if (sendto_server_id < 0 )
     {
         LOG_ERR("Wrong sendto_server_id %d. OUT OF index %d.", sendto_server_id, static_cast<int>(senders_.size()));
         return -1;
@@ -311,16 +306,6 @@ int ZServer::SendMsg( const int sendto_server_id, SMsgHeader* header, const goog
         LOG_ERR("found NULL ZSender by sendto_server_id %d.", sendto_server_id);
         return -1;
     }
-}
-
-/// 发送给某个类型的单个服务器(随机取)
-int SendMsgToOneByType(const int sendto_server_type, SMsgHeader* msg)
-{
-    return -1;
-}
-int SendMsgToOneByType(const int sendto_server_type, SMsgHeader* header, const google::protobuf::Message* msg)
-{
-    return -1;
 }
 
 int ZServer::SendMsgByType( const int sendto_server_type, SMsgHeader* header, const google::protobuf::Message* msg )
@@ -373,7 +358,7 @@ int ZServer::SendMsg( ZSender* sender, SMsgHeader* header, const google::protobu
 
 int ZServer::SendMsg( const int sendto_server_id, SMsgHeader* msg )
 {
-    if (sendto_server_id < 0 || static_cast<uint32>(sendto_server_id) >= senders_.size())
+    if (sendto_server_id < 0 )
     {
         LOG_ERR("Wrong sendto_server_id %d. OUT OF index %d.", sendto_server_id, static_cast<int>(senders_.size()));
         return -1;
@@ -566,7 +551,6 @@ bool ZServer::CheckHandShakeServers( const boost::system::error_code& ec )
             }
         }
         LOG_INFO("%s %d handshake check success.", server_name().c_str(), server_id());
-        ZSERVER.set_server_status(z::net::ZServerStatus_NET_LOAD);
 
         on_finish_handshake_func_();
 
@@ -695,6 +679,20 @@ bool ZServer::HttpPostReq(char const* host, char const*port, char const*target, 
 	}
 	http->run(host, port, target, content, version, callback);
 	return true;
+}
+
+void ZServer::RecodRevTime(const int sender_id)
+{
+	const int32 src_sender_id = sender_id;
+	const auto src_sender = this->GetSender(src_sender_id);
+	if (src_sender == nullptr)
+	{
+		LOG_FATAL(" Sender %d ,server_type = %d == null ", src_sender_id, SERVER_TYPE(src_sender_id));
+		return;
+	}
+	else {
+		src_sender->set_rev_msg_time(TIME_ENGINE.time());
+	}
 }
 
 void TimeEngine::Init()

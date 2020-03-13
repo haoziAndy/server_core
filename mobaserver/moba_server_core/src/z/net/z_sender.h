@@ -33,8 +33,8 @@ public:
     ZSocket* socket() const {return socket_;}
     const std::string& name() const {return sender_name_;}
 
-    void set_status(int32 status) { status_ = status;}
-    int32 status() const {return status_;}
+    void set_rev_msg_time(int64 rev_msg_time) { rev_msg_time_ = rev_msg_time;}
+	int64 last_rev_msg_time() const {return rev_msg_time_;}
 
 	int32 get_sendto_server_id() const { return sendto_server_id_; }
 private:
@@ -42,7 +42,9 @@ private:
     int sendto_server_id_; 
     std::string sender_name_;
 
-    int32 status_;
+	int64 rev_msg_time_;
+
+	
 };
 
 }; //namespace net

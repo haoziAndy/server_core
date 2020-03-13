@@ -96,11 +96,13 @@ int ZReceiver::HandlerReceived()
 	SMsgHeader* msg = reinterpret_cast<SMsgHeader*>(zmq_msg_data(&zmsg_));
 	if (!msg)
         return -1;
-
+	
 	ZSERVER.PrintMsg(msg,false);
 
-    int ret = handler_->OnMessage(msg, TIME_ENGINE.time());
-    
+	int ret = handler_->OnMessage(msg, TIME_ENGINE.time());
+
+	ZSERVER.RecodRevTime(msg->src_server_id);
+
     zmq_msg_close(&zmsg_);
     
     return ret;

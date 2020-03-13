@@ -42,11 +42,7 @@ enum ZServerStatus
 {
     ZServerStatus_DEFAULT = 0,
     ZServerStatus_INIT,          // 启动
-    ZServerStatus_PREPARE,       // 待机
-    ZServerStatus_HANDSHAKE,     // 握手
-    ZServerStatus_NET_LOAD,      // 载入数据
     ZServerStatus_WORKING,       // 工作
-    ZServerStatus_SWITCH,        // 维护
     ZServerStatus_STOP,          // 停止
 
 };
@@ -102,7 +98,7 @@ private:
 class ZServer
 {
     typedef std::map<int, ZReceiver*> Receivers;
-    typedef std::vector<ZSender*> Senders;
+    typedef std::map<int, ZSender*> Senders;
 
     enum {server_time_piece_ms = 10};
     ZServer()
@@ -164,9 +160,6 @@ public:
     /// 发送给某个类型服务器
     int SendMsgByType(const int sendto_server_type, SMsgHeader* header, const google::protobuf::Message* msg);    
     int SendMsg(ZSender* sender, SMsgHeader* header, const google::protobuf::Message* msg);
-    /// 发送给某个类型的单个服务器(随机取)
-    int SendMsgToOneByType(const int sendto_server_type, SMsgHeader* msg);
-    int SendMsgToOneByType(const int sendto_server_type, SMsgHeader* header, const google::protobuf::Message* msg);
 
     /// 转发消息, 已经序列化
     int SendMsg(const int sendto_server_id, SMsgHeader* msg);
@@ -182,11 +175,16 @@ public:
     ZSender* AddSender(const int sendto_server_id, const std::string& connect_str, int server_type, const std::string& server_name, bool need_verify = false);
     ZSender* GetSender(const int sendto_server_id) const
     {
-        if (sendto_server_id < 0 || static_cast<uint32>(sendto_server_id) >= senders_.size())
-            return nullptr;
-        return senders_[sendto_server_id];
+		auto tem = senders_.find(sendto_server_id);
+		if (sendto_server_id < 0 || tem == senders_.end())
+			return nullptr;
+		return tem->second;
     };
     const std::vector<ZSender*> GetSendersByType(uint32 server_type) const;
+
+	const std::map<int,ZSender*> GetAllSenders() const {
+		return senders_;
+	}
 
     int server_id() const {return server_id_;}
     int server_type() const {return server_type_;}
@@ -208,6 +206,8 @@ public:
 
 	void PrintMsg(SMsgHeader* s_msg,const bool IsSend);
 	void PrintMsg(SMsgHeader* header, const google::protobuf::Message* protobuf_msg, const bool IsSend);
+
+	void RecodRevTime(const int sender_id);
 
 	void set_trace_msg_flag(bool trace_msg_flag) { trace_msg_flag_ = trace_msg_flag; }
 	bool trace_msg_flag() const { return trace_msg_flag_; }
