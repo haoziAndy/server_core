@@ -310,7 +310,7 @@ int ZServer::SendMsg( const int sendto_server_id, SMsgHeader* header, const goog
 
 int ZServer::SendMsgByType( const int sendto_server_type, SMsgHeader* header, const google::protobuf::Message* msg )
 {
-    if (sendto_server_type < 0 || static_cast<uint32>(sendto_server_type) >= type_senders_.size())
+    if (sendto_server_type < 0)
     {
         LOG_ERR("Wrong sendto_server_type %d. OUT OF index %d.", sendto_server_type,
             static_cast<int>(type_senders_.size()));
@@ -378,7 +378,7 @@ int ZServer::SendMsg( const int sendto_server_id, SMsgHeader* msg )
 
 int ZServer::SendMsgByType( const int sendto_server_type, SMsgHeader* msg )
 {
-    if (sendto_server_type < 0 || static_cast<uint32>(sendto_server_type) >= type_senders_.size())
+    if (sendto_server_type < 0)
     {
         LOG_ERR("Wrong sendto_server_type %d. OUT OF index %d.", 
                     sendto_server_type, static_cast<int>(type_senders_.size()));
