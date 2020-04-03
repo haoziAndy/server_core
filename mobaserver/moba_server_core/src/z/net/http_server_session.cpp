@@ -60,7 +60,7 @@ namespace z {
 				std::size_t bytes_transferred)
 		{
 			boost::ignore_unused(bytes_transferred);
-			std::cout << bytes_transferred << std::endl;
+			//std::cout << bytes_transferred << std::endl;
 			// This means they closed the connection
 			if (ec == boost::beast::http::error::end_of_stream)
 				return do_close();
