@@ -30,6 +30,8 @@
     <ClCompile Include="..\..\src\z\net\c_connection.cpp" />
     <ClCompile Include="..\..\src\z\net\c_server.cpp" />
     <ClCompile Include="..\..\src\z\net\http_client_session.cpp" />
+    <ClCompile Include="..\..\src\z\net\http_server.cpp" />
+    <ClCompile Include="..\..\src\z\net\http_server_session.cpp" />
     <ClCompile Include="..\..\src\z\net\i_connection.cpp" />
     <ClCompile Include="..\..\src\z\net\i_server.cpp" />
     <ClCompile Include="..\..\src\z\net\net.cpp" />
@@ -54,6 +56,8 @@
     <ClInclude Include="..\..\src\z\net\c_connection.h" />
     <ClInclude Include="..\..\src\z\net\c_server.h" />
     <ClInclude Include="..\..\src\z\net\http_client_session.h" />
+    <ClInclude Include="..\..\src\z\net\http_server.h" />
+    <ClInclude Include="..\..\src\z\net\http_server_session.h" />
     <ClInclude Include="..\..\src\z\net\i_connection.h" />
     <ClInclude Include="..\..\src\z\net\i_server.h" />
     <ClInclude Include="..\..\src\z\net\msg_handler.h" />

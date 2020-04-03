@@ -74,6 +74,12 @@
     <ClCompile Include="..\..\src\z\net\http_client_session.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\z\net\http_server.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\z\net\http_server_session.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\z\net\i_connection.h">
@@ -137,6 +143,12 @@
       <Filter>Source Files\asio_kcp</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\z\net\http_client_session.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\z\net\http_server.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\z\net\http_server_session.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

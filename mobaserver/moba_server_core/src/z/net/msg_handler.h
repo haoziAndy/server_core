@@ -48,7 +48,7 @@ public:
     virtual ~IHttpRequestHandler()
     {}
 
-    virtual int OnRequest(HConnection* conn, const http::RequestUri& request_uri) = 0;
+    virtual std::string OnRequest(const std::string& request_body) = 0;
 };
 
 /// 客户端消息处理器接口,

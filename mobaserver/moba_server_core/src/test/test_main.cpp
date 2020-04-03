@@ -9,138 +9,213 @@
 
 //------------------------------------------------------------------------------
 //
-// Example: HTTP client, asynchronous
+// Example: HTTP server, asynchronous
 //
 //------------------------------------------------------------------------------
 #include "stdafx.h"
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
-#include <boost/asio/connect.hpp>
+#include <boost/asio/bind_executor.hpp>
 #include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/strand.hpp>
+#include <boost/config.hpp>
+#include <algorithm>
 #include <cstdlib>
 #include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
-#include <cstdlib>
-#include <cstring>
-#include <cctype>
-#include <iomanip>
-#include <sstream>
-#include <string>
+#include <thread>
+#include <vector>
 
 using tcp = boost::asio::ip::tcp;       // from <boost/asio/ip/tcp.hpp>
 namespace http = boost::beast::http;    // from <boost/beast/http.hpp>
 
-										//------------------------------------------------------------------------------
+										// Return a reasonable mime type based on the extension of a file.
 
-										// Report a failure
+// This function produces an HTTP response for the given
+// request. The type of the response object depends on the
+// contents of the request, so the interface requires the
+// caller to pass a generic lambda for receiving the response.
+template<
+	class Body, class Allocator,
+	class Send>
+	void
+	handle_request(
+		http::request<Body, http::basic_fields<Allocator>>&& req,
+		Send&& send)
+{
+	// Returns a bad request response
+	auto const bad_request =
+		[&req](boost::beast::string_view why)
+	{
+		http::response<http::string_body> res{ http::status::bad_request, req.version() };
+		res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+		res.set(http::field::content_type, "application/json");
+		res.keep_alive(req.keep_alive());
+		res.body() = why.to_string();
+		res.prepare_payload();
+		return res;
+	};
+
+	// Returns a not found response
+	auto const not_found =
+		[&req](boost::beast::string_view target)
+	{
+		http::response<http::string_body> res{ http::status::not_found, req.version() };
+		res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+		res.set(http::field::content_type, "application/json");
+		res.keep_alive(req.keep_alive());
+		res.body() = "The resource '" + target.to_string() + "' was not found.";
+		res.prepare_payload();
+		return res;
+	};
+
+	// Returns a server error response
+	auto const server_error =
+		[&req](boost::beast::string_view what)
+	{
+		http::response<http::string_body> res{ http::status::internal_server_error, req.version() };
+		res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+		res.set(http::field::content_type, "application/json");
+		res.keep_alive(req.keep_alive());
+		res.body() = "An error occurred: '" + what.to_string() + "'";
+		res.prepare_payload();
+		return res;
+	};
+
+	// Make sure we can handle the method
+	if (req.method() != http::verb::post &&
+		req.method() != http::verb::head)
+		return send(bad_request("Unknown HTTP-method,Need POST"));
+
+	http::string_body::value_type body("AAAAAAAAAAAAAAAAAAA");
+	
+	// Cache the size since we need it after the move
+	auto const size = body.size();
+
+	// Respond to HEAD request
+	if (req.method() == http::verb::head)
+	{
+		http::response<http::empty_body> res{ http::status::ok, req.version() };
+		res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+		res.set(http::field::content_type, "application/json");
+		res.content_length(size);
+		res.keep_alive(req.keep_alive());
+		return send(std::move(res));
+	}
+
+	// Respond to GET request
+	http::response<http::string_body> res{
+		std::piecewise_construct,
+		std::make_tuple(std::move(body)),
+		std::make_tuple(http::status::ok, req.version()) };
+	res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
+	res.set(http::field::content_type, "application/json");
+	res.content_length(size);
+	res.keep_alive(req.keep_alive());
+	return send(std::move(res));
+}
+
+//------------------------------------------------------------------------------
+
+// Report a failure
 void
 fail(boost::system::error_code ec, char const* what)
 {
 	std::cerr << what << ": " << ec.message() << "\n";
 }
 
-// Performs an HTTP GET and prints the response
+// Handles an HTTP server connection
 class session : public std::enable_shared_from_this<session>
 {
-	tcp::resolver resolver_;
+	// This is the C++11 equivalent of a generic lambda.
+	// The function object is used to send an HTTP message.
+	struct send_lambda
+	{
+		session& self_;
+
+		explicit
+			send_lambda(session& self)
+			: self_(self)
+		{
+		}
+
+		template<bool isRequest, class Body, class Fields>
+		void
+			operator()(http::message<isRequest, Body, Fields>&& msg) const
+		{
+			// The lifetime of the message has to extend
+			// for the duration of the async operation so
+			// we use a shared_ptr to manage it.
+			auto sp = std::make_shared<
+				http::message<isRequest, Body, Fields>>(std::move(msg));
+
+			// Store a type-erased version of the shared
+			// pointer in the class to keep it alive.
+			self_.res_ = sp;
+
+			// Write the response
+			http::async_write(
+				self_.socket_,
+				*sp,
+				boost::asio::bind_executor(
+					self_.strand_,
+					std::bind(
+						&session::on_write,
+						self_.shared_from_this(),
+						std::placeholders::_1,
+						std::placeholders::_2,
+						sp->need_eof())));
+		}
+	};
+
 	tcp::socket socket_;
-	boost::beast::flat_buffer buffer_; // (Must persist between reads)
+	boost::asio::strand<
+		boost::asio::io_context::executor_type> strand_;
+	boost::beast::flat_buffer buffer_;
+	std::shared_ptr<std::string const> doc_root_;
 	http::request<http::string_body> req_;
-	http::response<http::string_body> res_;
+	std::shared_ptr<void> res_;
+	send_lambda lambda_;
 
 public:
-	// Resolver and socket require an io_context
+	// Take ownership of the socket
 	explicit
-		session(boost::asio::io_context& ioc)
-		: resolver_(ioc)
-		, socket_(ioc)
+		session(
+			tcp::socket socket,
+			std::shared_ptr<std::string const> const& doc_root)
+		: socket_(std::move(socket))
+		, strand_(socket_.get_executor())
+		, doc_root_(doc_root)
+		, lambda_(*this)
 	{
 	}
 
 	// Start the asynchronous operation
 	void
-		run(
-			char const* host,
-			char const* port,
-			char const* target,
-			std::string &body,
-			int version)
+		run()
 	{
-		// Set up an HTTP GET request message
-		req_.version(version);
-		req_.method(http::verb::post);
-		req_.target(target);
-		req_.set(http::field::host, host);
-		req_.set(http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-		req_.set(http::field::content_type, "application/x-www-form-urlencoded; charset=utf-8");
-		req_.body() = body;
-		req_.prepare_payload();
-		std::cout << req_ << std::endl;
-		// Look up the domain name
-		resolver_.async_resolve(
-			host,
-			port,
-			std::bind(
-				&session::on_resolve,
-				shared_from_this(),
-				std::placeholders::_1,
-				std::placeholders::_2));
+		do_read();
 	}
 
 	void
-		on_resolve(
-			boost::system::error_code ec,
-			tcp::resolver::results_type results)
+		do_read()
 	{
-		if (ec)
-			return fail(ec, "resolve");
+		// Make the request empty before reading,
+		// otherwise the operation behavior is undefined.
+		req_ = {};
 
-		// Make the connection on the IP address we get from a lookup
-		boost::asio::async_connect(
-			socket_,
-			results.begin(),
-			results.end(),
-			std::bind(
-				&session::on_connect,
-				shared_from_this(),
-				std::placeholders::_1));
-	}
-
-	void
-		on_connect(boost::system::error_code ec)
-	{
-		if (ec)
-			return fail(ec, "connect");
-
-		// Send the HTTP request to the remote host
-		http::async_write(socket_, req_,
-			std::bind(
-				&session::on_write,
-				shared_from_this(),
-				std::placeholders::_1,
-				std::placeholders::_2));
-	}
-
-	void
-		on_write(
-			boost::system::error_code ec,
-			std::size_t bytes_transferred)
-	{
-		boost::ignore_unused(bytes_transferred);
-
-		if (ec)
-			return fail(ec, "write");
-
-		// Receive the HTTP response
-		http::async_read(socket_, buffer_, res_,
-			std::bind(
-				&session::on_read,
-				shared_from_this(),
-				std::placeholders::_1,
-				std::placeholders::_2));
+		// Read a request
+		http::async_read(socket_, buffer_, req_,
+			boost::asio::bind_executor(
+				strand_,
+				std::bind(
+					&session::on_read,
+					shared_from_this(),
+					std::placeholders::_1,
+					std::placeholders::_2)));
 	}
 
 	void
@@ -149,84 +224,178 @@ public:
 			std::size_t bytes_transferred)
 	{
 		boost::ignore_unused(bytes_transferred);
+		std::cout << bytes_transferred << std::endl;
+		// This means they closed the connection
+		if (ec == http::error::end_of_stream)
+			return do_close();
 
 		if (ec)
 			return fail(ec, "read");
 
-		// Write the message to standard out
-		std::cout << res_.body().data() << std::endl;
+		// Send the response
+		handle_request(std::move(req_), lambda_);
+	}
 
-		// Gracefully close the socket
-		socket_.shutdown(tcp::socket::shutdown_both, ec);
+	void
+		on_write(
+			boost::system::error_code ec,
+			std::size_t bytes_transferred,
+			bool close)
+	{
+		boost::ignore_unused(bytes_transferred);
 
-		// not_connected happens sometimes so don't bother reporting it.
-		if (ec && ec != boost::system::errc::not_connected)
-			return fail(ec, "shutdown");
+		if (ec)
+			return fail(ec, "write");
 
-		// If we get here then the connection is closed gracefully
+		if (close)
+		{
+			// This means we should close the connection, usually because
+			// the response indicated the "Connection: close" semantic.
+			return do_close();
+		}
+
+		// We're done with the response so delete it
+		res_ = nullptr;
+
+		// Read another request
+		do_read();
+	}
+
+	void
+		do_close()
+	{
+		// Send a TCP shutdown
+		boost::system::error_code ec;
+		socket_.shutdown(tcp::socket::shutdown_send, ec);
+
+		// At this point the connection is closed gracefully
 	}
 };
 
-//------------------------------------------------------------------------------}
-void hexchar(unsigned char c, unsigned char &hex1, unsigned char &hex2)
-{
-	hex1 = c / 16;
-	hex2 = c % 16;
-	hex1 += hex1 <= 9 ? '0' : 'a' - 10;
-	hex2 += hex2 <= 9 ? '0' : 'a' - 10;
-}
+//------------------------------------------------------------------------------
 
-std::string UrlEncode(std::string s)
+// Accepts incoming connections and launches the sessions
+class listener : public std::enable_shared_from_this<listener>
 {
-	const char *str = s.c_str();
-	std::vector<char> v(s.size());
-	v.clear();
-	for (size_t i = 0, l = s.size(); i < l; i++)
+	tcp::acceptor acceptor_;
+	tcp::socket socket_;
+	std::shared_ptr<std::string const> doc_root_;
+
+public:
+	listener(
+		boost::asio::io_context& ioc,
+		tcp::endpoint endpoint,
+		std::shared_ptr<std::string const> const& doc_root)
+		: acceptor_(ioc)
+		, socket_(ioc)
+		, doc_root_(doc_root)
 	{
-		char c = str[i];
-		if ((c >= '0' && c <= '9') ||
-			(c >= 'a' && c <= 'z') ||
-			(c >= 'A' && c <= 'Z') ||
-			c == '-' || c == '_' || c == '.' || c == '!' || c == '~' ||
-			c == '*' || c == '\'' || c == '(' || c == ')')
+		boost::system::error_code ec;
+
+		// Open the acceptor
+		acceptor_.open(endpoint.protocol(), ec);
+		if (ec)
 		{
-			v.push_back(c);
+			fail(ec, "open");
+			return;
 		}
-		else if (c == ' ')
+
+		// Allow address reuse
+		acceptor_.set_option(boost::asio::socket_base::reuse_address(true), ec);
+		if (ec)
 		{
-			v.push_back('+');
+			fail(ec, "set_option");
+			return;
 		}
-		else
+
+		// Bind to the server address
+		acceptor_.bind(endpoint, ec);
+		if (ec)
 		{
-			v.push_back('%');
-			unsigned char d1, d2;
-			hexchar(c, d1, d2);
-			v.push_back(d1);
-			v.push_back(d2);
+			fail(ec, "bind");
+			return;
+		}
+
+		// Start listening for connections
+		acceptor_.listen(
+			boost::asio::socket_base::max_listen_connections, ec);
+		if (ec)
+		{
+			fail(ec, "listen");
+			return;
 		}
 	}
 
-	return std::string(v.cbegin(), v.cend());
-}
-int main(int argc, char** argv)
+	// Start accepting incoming connections
+	void
+		run()
+	{
+		if (!acceptor_.is_open())
+			return;
+		do_accept();
+	}
+
+	void
+		do_accept()
+	{
+		acceptor_.async_accept(
+			socket_,
+			std::bind(
+				&listener::on_accept,
+				shared_from_this(),
+				std::placeholders::_1));
+	}
+
+	void
+		on_accept(boost::system::error_code ec)
+	{
+		if (ec)
+		{
+			fail(ec, "accept");
+		}
+		else
+		{
+			// Create the session and run it
+			std::make_shared<session>(
+				std::move(socket_),
+				doc_root_)->run();
+		}
+
+		// Accept another connection
+		do_accept();
+	}
+};
+
+//------------------------------------------------------------------------------
+
+int main(int argc, char* argv[])
 {
 	// Check command line arguments.
-	auto const host = "filterad.sanguosha.com";
-	auto const port = "80";
-	auto const target = "/v1/query";
-	int version = argc == 5 && !std::strcmp("1.0", argv[4]) ? 10 : 11;
+
+	auto const address = boost::asio::ip::make_address("127.0.0.1");
+	auto const port = static_cast<unsigned short>(std::atoi("8080"));
+	auto const doc_root = std::make_shared<std::string>("");
+	auto const threads = std::max<int>(1, std::atoi("1"));
 
 	// The io_context is required for all I/O
-	boost::asio::io_context ioc;
+	boost::asio::io_context ioc{ threads };
 
-	std::string content("appid=2&q=");
-	std::string aa("\"Ã«Ö÷Ï¯\"");
+	// Create and launch a listening port
+	std::make_shared<listener>(
+		ioc,
+		tcp::endpoint{ address, port },
+		doc_root)->run();
 
-	std::make_shared<session>(ioc)->run(host, port, target, content+UrlEncode(aa) , version);
-
-	// Run the I/O service. The call will return when
-	// the get operation is complete.
+	// Run the I/O service on the requested number of threads
+	std::vector<std::thread> v;
+	v.reserve(threads - 1);
+	for (auto i = threads - 1; i > 0; --i)
+		v.emplace_back(
+			[&ioc]
+	{
+		ioc.run();
+	});
 	ioc.run();
 
-	return 0;
+	return EXIT_SUCCESS;
 }
