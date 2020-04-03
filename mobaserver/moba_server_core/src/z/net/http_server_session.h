@@ -22,7 +22,7 @@ namespace z {
 			};
 
 			// Returns a not found response
-			auto const not_found =
+			/*auto const not_found =
 				[&req](boost::beast::string_view target)
 			{
 				boost::beast::http::response<boost::beast::http::string_body> res{ boost::beast::http::status::not_found, req.version() };
@@ -32,7 +32,7 @@ namespace z {
 				res.body() = "The resource '" + target.to_string() + "' was not found.";
 				res.prepare_payload();
 				return res;
-			};
+			};*/
 
 			// Returns a server error response
 			auto const server_error =
