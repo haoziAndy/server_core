@@ -35,7 +35,6 @@
     <ClCompile Include="..\..\src\z\net\i_connection.cpp" />
     <ClCompile Include="..\..\src\z\net\i_server.cpp" />
     <ClCompile Include="..\..\src\z\net\net.cpp" />
-    <ClCompile Include="..\..\src\z\net\session_mgr.cpp" />
     <ClCompile Include="..\..\src\z\net\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
     </ClCompile>
@@ -62,7 +61,6 @@
     <ClInclude Include="..\..\src\z\net\i_server.h" />
     <ClInclude Include="..\..\src\z\net\msg_handler.h" />
     <ClInclude Include="..\..\src\z\net\msg_header.h" />
-    <ClInclude Include="..\..\src\z\net\session_mgr.h" />
     <ClInclude Include="..\..\src\z\net\stdafx.h" />
     <ClInclude Include="..\..\src\z\net\udp_server.h" />
     <ClInclude Include="..\..\src\z\net\u_connection.h" />

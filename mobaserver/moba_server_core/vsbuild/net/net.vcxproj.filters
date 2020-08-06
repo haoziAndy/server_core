@@ -50,9 +50,6 @@
     <ClCompile Include="..\..\src\z\net\u_connection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\z\net\session_mgr.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\z\net\asio_kcp\connect_packet.cpp">
       <Filter>Source Files\asio_kcp</Filter>
     </ClCompile>
@@ -119,9 +116,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\z\net\u_connection.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\z\net\session_mgr.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\z\net\asio_kcp\connect_packet.hpp">

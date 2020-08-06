@@ -3,7 +3,6 @@
 #include "msg_header.h"
 #include "msg_handler.h"
 #include "c_server.h"
-#include "session_mgr.h"
 
 namespace z {
 namespace net {
@@ -71,26 +70,6 @@ int32 CConnection::OnRead( char* data, int32 length )
             CMsgHeaderHton(msg);
             break;
         }
-#if NON_PERSISTANCE_MODE
-        // 短连接 
-        if (msg->openid != 0)
-        {
-            // 校验 header 
-            if (!SESSION_MGR.IsChecksumValid(msg->openid, msg->checksum, std::string(msg->key, sizeof(msg->key))))
-            {
-                return -1;
-            }
-            // 直接跳过SetLoginStatus一步一步检查
-            // SetLoginStatus(LoginStatus_PLAY_GAME);
-            status_ = LoginStatus_PLAY_GAME;
-            // 登录的timer取消, 开始keepalive timer
-            StartKeepAliveTimer();
-            // 设置相关数据
-            session_data_ = SESSION_MGR.GetSessionData(msg->openid);
-            set_user_id(session_data_->openid);
-            set_server_group_id(session_data_->sid);
-        }
-#endif
         int h_ret = CSERVER.request_handler()->OnMessage(this, msg);
         // 消息处理 返回-1, 表明应该断开连接
         if (h_ret < 0)
@@ -159,19 +138,6 @@ void CConnection::OnKeepAliveTimeOut( const boost::system::error_code& ec )
     --op_count_;
     if (!ec)
     {
-#if NON_PERSISTANCE_MODE
-        // 如果是短连接, 直接关闭, 未完成的发送会发送完成
-        if (session_data_ != nullptr && session_data_->persistence_mode == 0)
-        {
-            // 短连接 1秒直接断开
-            // if (session_data_->last_active_sec < TIME_ENGINE.time_sec64())
-            {
-                AsyncClose();
-                return;
-            }
-            
-        }
-#endif
         // 判断连接5分钟没有消息就断开
         auto timeout_sec = CSERVER.keepalive_time_out_sec();
         if (idle_count_ >= timeout_sec)

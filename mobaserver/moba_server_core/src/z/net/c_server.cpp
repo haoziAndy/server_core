@@ -4,7 +4,6 @@
 #include "msg_header.h"
 #include "msg_handler.h"
 #include "z_server.h"
-#include "session_mgr.h"
 
 namespace z {
 namespace net {
@@ -24,7 +23,6 @@ bool CCServer::Init( const std::string& address, const std::string& port, ICMsgH
     login_time_out_sec_ = 1;
     // 默认超时设置为300秒
     keepalive_time_out_sec_ = 300;
-    ZSERVER.RegisterTimerFunctor(boost::bind(&SessionMgr::RemoveExpiredSessionData, &SESSION_MGR));
 
     return true;
 }

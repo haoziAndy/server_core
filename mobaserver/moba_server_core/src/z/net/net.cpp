@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "session_mgr.h"
 
 #ifdef _WIN32
 #ifdef _DEBUG
@@ -31,8 +30,8 @@ int main()
 //         std::cout << SESSION_MGR.GenerateSessionKey() << std::endl;
 //     }
 //     
-    auto session_data = SESSION_MGR.CreateSessionData(111);
-    auto str = session_data->session_key.substr(0, 32);
-    std::string str2(str.c_str(), 2);
+ //   auto session_data = SESSION_MGR.CreateSessionData(111);
+  //  auto str = session_data->session_key.substr(0, 32);
+  //  std::string str2(str.c_str(), 2);
     return EXIT_SUCCESS;
 }
