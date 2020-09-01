@@ -42,6 +42,7 @@ enum ZServerStatus
 {
     ZServerStatus_DEFAULT = 0,
     ZServerStatus_INIT,          // 启动
+	ZServerStatus_LOAD_DATA,     //加载数据
     ZServerStatus_WORKING,       // 工作
     ZServerStatus_STOP,          // 停止
 
