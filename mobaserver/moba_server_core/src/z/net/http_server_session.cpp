@@ -59,7 +59,7 @@ namespace z {
 
 		void
 			HServerSession::on_read(
-				boost::system::error_code ec,
+				boost::beast::error_code ec,
 				std::size_t bytes_transferred)
 		{
 			boost::ignore_unused(bytes_transferred);
@@ -110,7 +110,7 @@ namespace z {
 			HServerSession::do_close()
 		{
 			// Send a TCP shutdown
-			boost::system::error_code ec;
+			boost::beast::error_code ec;
 			stream_.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
 
 			// At this point the connection is closed gracefully

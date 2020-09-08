@@ -21,7 +21,7 @@ namespace z {
 			}
 
 			msg_handler_ = msg_handler;
-			boost::system::error_code ec;
+			boost::beast::error_code ec;
 
 			// Open the acceptor
 			acceptor_.open(endpoint.protocol(), ec);
