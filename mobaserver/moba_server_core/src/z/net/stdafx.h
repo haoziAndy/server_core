@@ -1,7 +1,8 @@
 #ifndef NET_STDAFX_H
 #define NET_STDAFX_H
 
-#include <boost/timer.hpp>
+#include <boost/timer/timer.hpp>
+#include <boost/timer/progress_display.hpp>
 #include <boost/date_time.hpp>
 #include <boost/asio.hpp>
 #include <boost/bind.hpp>

@@ -20,20 +20,24 @@
 namespace z {
 	namespace net {
 
+
 			HServerSession::HServerSession(
-				boost::asio::ip::tcp::socket socket, IHttpRequestHandler* msg_handler)
-			: socket_(std::move(socket))
-			, strand_(socket_.get_executor())
-			, lambda_(*this)
-		{
+				boost::asio::ip::tcp::socket&& socket,
+				IHttpRequestHandler* msg_handler)
+				: stream_(std::move(socket))
+				, lambda_(*this)
+			{
 				msg_handler_ = msg_handler;
-		}
+			}
 
 		// Start the asynchronous operation
 		void
 			HServerSession::run()
 		{
-			do_read();
+			boost::asio::dispatch(stream_.get_executor(),
+				boost::beast::bind_front_handler(
+					&HServerSession::do_read,
+					shared_from_this()));
 		}
 
 		void
@@ -43,15 +47,14 @@ namespace z {
 			// otherwise the operation behavior is undefined.
 			req_ = {};
 
+			// Set the timeout.
+			stream_.expires_after(std::chrono::seconds(30));
+
 			// Read a request
-			boost::beast::http::async_read(socket_, buffer_, req_,
-				boost::asio::bind_executor(
-					strand_,
-					std::bind(
-						&HServerSession::on_read,
-						shared_from_this(),
-						std::placeholders::_1,
-						std::placeholders::_2)));
+			boost::beast::http::async_read(stream_, buffer_, req_,
+				boost::beast::bind_front_handler(
+					&HServerSession::on_read,
+					shared_from_this()));
 		}
 
 		void
@@ -77,9 +80,9 @@ namespace z {
 
 		void
 			HServerSession::on_write(
-				boost::system::error_code ec,
-				std::size_t bytes_transferred,
-				bool close)
+				bool close,
+				boost::beast::error_code ec,
+				std::size_t bytes_transferred)
 		{
 			boost::ignore_unused(bytes_transferred);
 
@@ -108,7 +111,7 @@ namespace z {
 		{
 			// Send a TCP shutdown
 			boost::system::error_code ec;
-			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
+			stream_.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
 
 			// At this point the connection is closed gracefully
 		}

@@ -7,8 +7,8 @@
 namespace z {
 	namespace net {
 
-		HServer::HServer() : acceptor_(TIME_ENGINE)
-			, socket_(TIME_ENGINE)
+		HServer::HServer(boost::asio::io_context& ioc) : ioc_(ioc)
+			, acceptor_(boost::asio::make_strand(ioc))
 		{
 			
 		}
@@ -80,15 +80,14 @@ namespace z {
 			HServer::do_accept()
 		{
 			acceptor_.async_accept(
-				socket_,
-				std::bind(
+				boost::asio::make_strand(ioc_),
+				boost::beast::bind_front_handler(
 					&HServer::on_accept,
-					this,
-					std::placeholders::_1));
+					shared_from_this()));
 		}
 
 		void
-			HServer::on_accept(boost::system::error_code ec)
+			HServer::on_accept(boost::beast::error_code ec, boost::asio::ip::tcp::socket socket)
 		{
 			if (ec)
 			{
@@ -98,7 +97,7 @@ namespace z {
 			{
 				// Create the session and run it
 				std::make_shared<HServerSession>(
-					std::move(socket_), msg_handler_)->run();
+					std::move(socket), msg_handler_)->run();
 			}
 
 			// Accept another connection

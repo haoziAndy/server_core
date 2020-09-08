@@ -87,7 +87,7 @@ connection_manager::connection_manager(boost::asio::io_service& io_service) :
 
 bool connection_manager::connection_manager_init( const std::string& address, int udp_port)
 {
-	boost::asio::ip::udp::resolver resolver(udp_socket_.get_io_service());
+	boost::asio::ip::udp::resolver resolver(udp_socket_.get_executor());
 	boost::asio::ip::udp::resolver::query query(address, std::to_string(udp_port));
 
 	boost::system::error_code ec;

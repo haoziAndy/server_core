@@ -667,7 +667,7 @@ void ZServer::PrintMsg(SMsgHeader* header, const google::protobuf::Message* prot
 
 bool ZServer::HttpPostReq(char const* host, char const*port, char const*target, const std::string &content, std::function<void(const std::string&, bool)> callback)
 {
-	if (host == nullptr or port == nullptr or target == nullptr)
+	if (host == nullptr || port == nullptr || target == nullptr)
 	{
 		LOG_FATAL("Http Post host == nullptr or port == nullptr or target == nullptr ");
 		return false;

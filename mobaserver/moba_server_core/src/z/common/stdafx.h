@@ -16,8 +16,8 @@
 
 #include <google/protobuf/message.h>
 
-#include <boost/timer.hpp>
-#include <boost/progress.hpp>
+#include <boost/timer/timer.hpp>
+#include <boost/timer/progress_display.hpp>
 #include <boost/date_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/asio.hpp>
