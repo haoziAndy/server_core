@@ -49,7 +49,7 @@ private:
     /// The UDP
     void handle_udp_receive_from(const boost::system::error_code& error, size_t bytes_recvd);
     void hook_udp_async_receive(void);
-    void handle_kcp_time(void);
+    void handle_kcp_time(const boost::system::error_code& ec);
     void hook_kcp_timer(void);
 
     void handle_connect_packet();

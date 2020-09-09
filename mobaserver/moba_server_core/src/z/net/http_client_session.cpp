@@ -23,7 +23,6 @@ namespace z {
 				const int version,
 			    std::function<void(const std::string&, bool)> callback)
 		{
-
 			// Set up an HTTP GET request message
 			req_.version(version);
 			req_.method(boost::beast::http::verb::post);
@@ -38,16 +37,14 @@ namespace z {
 			resolver_.async_resolve(
 				host,
 				port,
-				std::bind(
+				boost::beast::bind_front_handler(
 					&HttpClientSession::on_resolve,
-					shared_from_this(),
-					std::placeholders::_1,
-					std::placeholders::_2));
+					shared_from_this()));
 		}
 
 		void
 			HttpClientSession::on_resolve(
-				boost::system::error_code ec,
+				boost::beast::error_code ec,
 				boost::asio::ip::tcp::resolver::results_type results)
 		{
 			if (ec)
@@ -58,20 +55,18 @@ namespace z {
 				}
 				return;
 			}
-
+			// Set a timeout on the operation
+			stream_.expires_after(std::chrono::seconds(30));
 			// Make the connection on the IP address we get from a lookup
-			boost::asio::async_connect(
-				socket_,
-				results.begin(),
-				results.end(),
-				std::bind(
+			stream_.async_connect(
+				results,
+				boost::beast::bind_front_handler(
 					&HttpClientSession::on_connect,
-					shared_from_this(),
-					std::placeholders::_1));
+					shared_from_this()));
 		}
 
 		void
-			HttpClientSession::on_connect(boost::system::error_code ec)
+			HttpClientSession::on_connect(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type::endpoint_type)
 		{
 			if (ec)
 			{
@@ -82,18 +77,19 @@ namespace z {
 				return;
 			}
 
+			// Set a timeout on the operation
+			stream_.expires_after(std::chrono::seconds(30));
+
 			// Send the HTTP request to the remote host
-			boost::beast::http::async_write(socket_, req_,
-				std::bind(
+			boost::beast::http::async_write(stream_, req_,
+				boost::beast::bind_front_handler(
 					&HttpClientSession::on_write,
-					shared_from_this(),
-					std::placeholders::_1,
-					std::placeholders::_2));
+					shared_from_this()));
 		}
 
 		void
 			HttpClientSession::on_write(
-				boost::system::error_code ec,
+				boost::beast::error_code ec,
 				std::size_t bytes_transferred)
 		{
 			boost::ignore_unused(bytes_transferred);
@@ -108,17 +104,15 @@ namespace z {
 			}
 
 			// Receive the HTTP response
-			boost::beast::http::async_read(socket_, buffer_, res_,
-				std::bind(
+			boost::beast::http::async_read(stream_, buffer_, res_,
+				boost::beast::bind_front_handler(
 					&HttpClientSession::on_read,
-					shared_from_this(),
-					std::placeholders::_1,
-					std::placeholders::_2));
+					shared_from_this()));
 		}
 
 		void
 			HttpClientSession::on_read(
-				boost::system::error_code ec,
+				boost::beast::error_code ec,
 				std::size_t bytes_transferred)
 		{
 			boost::ignore_unused(bytes_transferred);
@@ -139,7 +133,7 @@ namespace z {
 			//std::cout << res_.body().data() << std::endl;
 
 			// Gracefully close the socket
-			socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
+			stream_.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_both, ec);
 
 			// not_connected happens sometimes so don't bother reporting it.
 			if (ec && ec != boost::system::errc::not_connected)

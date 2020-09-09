@@ -17,7 +17,7 @@ namespace z {
 		class HttpClientSession : public std::enable_shared_from_this<HttpClientSession>
 		{
 			boost::asio::ip::tcp::resolver resolver_;
-			boost::asio::ip::tcp::socket socket_;
+			boost::beast::tcp_stream stream_;
 			boost::beast::flat_buffer buffer_; // (Must persist between reads)
 			boost::beast::http::request<boost::beast::http::string_body> req_;
 			boost::beast::http::response<boost::beast::http::string_body> res_;
@@ -27,8 +27,8 @@ namespace z {
 			// Resolver and socket require an io_context
 			explicit
 				HttpClientSession(boost::asio::io_context& ioc)
-				: resolver_(ioc)
-				, socket_(ioc)
+				: resolver_(boost::asio::make_strand(ioc))
+				, stream_(boost::asio::make_strand(ioc))
 			{
 			}
 
@@ -44,21 +44,21 @@ namespace z {
 
 			void
 				on_resolve(
-					boost::system::error_code ec,
+					boost::beast::error_code ec,
 					boost::asio::ip::tcp::resolver::results_type results);
 
 
 			void
-				on_connect(boost::system::error_code ec);
+				on_connect(boost::beast::error_code ec, boost::asio::ip::tcp::resolver::results_type::endpoint_type);
 
 			void
 				on_write(
-					boost::system::error_code ec,
+					boost::beast::error_code ec,
 					std::size_t bytes_transferred);
 
 			void
 				on_read(
-					boost::system::error_code ec,
+					boost::beast::error_code ec,
 					std::size_t bytes_transferred);
 		};
 	}

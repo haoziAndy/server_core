@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "connection_container.hpp"
 #include <algorithm>
-#include <boost/bind.hpp>
 
 #include "ikcp.h"
 #include <cstdlib>

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "connection_manager.hpp"
 #include <algorithm>
-#include <boost/bind.hpp>
 
 #include <cstdlib>
 #include <iostream>
@@ -223,7 +222,7 @@ void connection_manager::hook_udp_async_receive(void)
         return;
     udp_socket_.async_receive_from(
           boost::asio::buffer(udp_data_, sizeof(udp_data_)), udp_remote_endpoint_,
-          boost::bind(&connection_manager::handle_udp_receive_from, this,
+          boost::bind(&connection_manager::handle_udp_receive_from, shared_from_this(),
               boost::asio::placeholders::error,
               boost::asio::placeholders::bytes_transferred));
 }
@@ -233,10 +232,11 @@ void connection_manager::hook_kcp_timer(void)
     if (stopped_)
         return;
     kcp_timer_.expires_from_now(boost::posix_time::milliseconds(5));
-    kcp_timer_.async_wait(std::bind(&connection_manager::handle_kcp_time, this));
+	kcp_timer_.async_wait(boost::bind(&connection_manager::handle_kcp_time, shared_from_this(), boost::asio::placeholders::error));
+	
 }
 
-void connection_manager::handle_kcp_time(void)
+void connection_manager::handle_kcp_time(const boost::system::error_code& ec)
 {
     //std::cout << "."; std::cout.flush();
     hook_kcp_timer();

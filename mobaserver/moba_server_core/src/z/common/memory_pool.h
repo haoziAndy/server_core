@@ -6,7 +6,6 @@ namespace z
 {
 namespace common
 {
-
 /// MEM POOL 
 /// 作为object_pool 使用时候, 最多支持9个参数的构造函数
 class GlobalMemPool
@@ -385,7 +384,7 @@ public:
         T* p = reinterpret_cast<T*>(data);
         new(p)T();
 
-        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, _1, file, line, func));
+        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, boost::placeholders::_1, file, line, func));
     }
     template <typename T, typename Arg1>
     boost::shared_ptr<T> NewShared(const char* file, const int line, const char* func, Arg1 arg1)
@@ -397,7 +396,7 @@ public:
         T* p = reinterpret_cast<T*>(data);
         new(p)T(arg1);
 
-        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, _1, file, line, func));
+        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, boost::placeholders::_1, file, line, func));
     }
     template <typename T, typename Arg1, typename Arg2>
     boost::shared_ptr<T> NewShared(const char* file, const int line, const char* func, Arg1 arg1, Arg2 arg2)
@@ -409,7 +408,7 @@ public:
         T* p = reinterpret_cast<T*>(data);
         new(p)T(arg1, arg2);
 
-        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, _1, file, line, func));
+        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, boost::placeholders::_1, file, line, func));
     }
     template <typename T, typename Arg1, typename Arg2, typename Arg3>
     boost::shared_ptr<T> NewShared(const char* file, const int line, const char* func, Arg1 arg1, Arg2 arg2, Arg3 arg3)
@@ -421,7 +420,7 @@ public:
         T* p = reinterpret_cast<T*>(data);
         new(p)T(arg1, arg2, arg3);
 
-        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, _1, file, line, func));
+        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, boost::placeholders::_1, file, line, func));
     }
     template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4>
     boost::shared_ptr<T> NewShared(const char* file, const int line, const char* func, Arg1 arg1, Arg2 arg2, Arg3 arg3, Arg4 arg4)
@@ -433,7 +432,7 @@ public:
         T* p = reinterpret_cast<T*>(data);
         new(p)T(arg1, arg2, arg3, arg4);
 
-        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, _1, file, line, func));
+        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, boost::placeholders::_1, file, line, func));
     }
     template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5>
     boost::shared_ptr<T> NewShared(const char* file, const int line, const char* func, 
@@ -446,7 +445,7 @@ public:
         T* p = reinterpret_cast<T*>(data);
         new(p)T(arg1, arg2, arg3, arg4, arg5);
 
-        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, _1, file, line, func));
+        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, boost::placeholders::_1, file, line, func));
     }
     template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, typename Arg5, typename Arg6>
     boost::shared_ptr<T> NewShared(const char* file, const int line, const char* func, 
@@ -459,7 +458,7 @@ public:
         T* p = reinterpret_cast<T*>(data);
         new(p)T(arg1, arg2, arg3, arg4, arg5, arg6);
 
-        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, _1, file, line, func));
+        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, boost::placeholders::_1, file, line, func));
     }
     template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
         typename Arg5, typename Arg6, typename Arg7>
@@ -473,7 +472,7 @@ public:
         T* p = reinterpret_cast<T*>(data);
         new(p)T(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
 
-        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, _1, file, line, func));
+        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, boost::placeholders::_1, file, line, func));
     }
     template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
         typename Arg5, typename Arg6, typename Arg7, typename Arg8>
@@ -487,7 +486,7 @@ public:
         T* p = reinterpret_cast<T*>(data);
         new(p)T(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
 
-        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, _1, file, line, func));
+        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, boost::placeholders::_1, file, line, func));
     }
     template <typename T, typename Arg1, typename Arg2, typename Arg3, typename Arg4, 
         typename Arg5, typename Arg6, typename Arg7, typename Arg8, typename Arg9>
@@ -501,7 +500,7 @@ public:
         T* p = reinterpret_cast<T*>(data);
         new(p)T(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 
-        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, _1, file, line, func));
+        return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this,boost::placeholders::_1, file, line, func));
     }
     //
     std::string PrintStats();

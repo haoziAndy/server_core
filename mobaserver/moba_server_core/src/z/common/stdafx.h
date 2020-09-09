@@ -21,7 +21,7 @@
 #include <boost/date_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/asio.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
@@ -45,8 +45,6 @@
 
 #include <z/common/types.h>
 #include <z/common/singleton.h>
-
-
 
 #ifdef _WIN32
 #define snprintf sprintf_s
