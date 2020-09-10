@@ -92,7 +92,7 @@ struct SCMsgHeader
 #define bswap64 __builtin_bswap64
 #endif 
 
-#ifdef BOOST_LITTLE_ENDIAN
+#ifdef BOOST_ENDIAN_LITTLE_BYTE
 # if NON_PERSISTANCE_MODE
 #  define CMsgHeaderNtoh(header) do {\
     header->length = boost::asio::detail::socket_ops::network_to_host_short(header->length);\
@@ -127,15 +127,6 @@ header->checksum = boost::asio::detail::socket_ops::host_to_network_short(header
 
 # endif // NON_PERSISTANCE_MODE
 
-#  define SCMsgHeaderNtoh(header) do {\
-    header->length = boost::asio::detail::socket_ops::network_to_host_short(header->length);\
-    header->msg_id = boost::asio::detail::socket_ops::network_to_host_short(header->msg_id);\
-} while (false)
-
-#  define SCMsgHeaderHton(header) do {\
-    header->length = boost::asio::detail::socket_ops::host_to_network_short(header->length);\
-    header->msg_id = boost::asio::detail::socket_ops::host_to_network_short(header->msg_id);\
-} while (false)
 
 #else
 #  define CMsgHeaderNtoh(header)
