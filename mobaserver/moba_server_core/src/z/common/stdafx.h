@@ -15,9 +15,9 @@
 #include "log4cplus/initializer.h"
 
 #include <google/protobuf/message.h>
-
 #include <boost/timer/timer.hpp>
 #include <boost/timer/progress_display.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/date_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/asio.hpp>
