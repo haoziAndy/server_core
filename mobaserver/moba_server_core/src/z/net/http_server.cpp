@@ -7,8 +7,8 @@
 namespace z {
 	namespace net {
 
-		HServer::HServer(boost::asio::io_context& ioc) : ioc_(ioc)
-			, acceptor_(boost::asio::make_strand(ioc))
+		HServer::HServer() : ioc_(TIME_ENGINE)
+			, acceptor_(boost::asio::make_strand(ioc_))
 		{
 			
 		}

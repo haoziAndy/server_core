@@ -8,7 +8,6 @@ namespace z {
 
 		public:
 			HServer();
-			HServer::HServer(boost::asio::io_context& ioc);
 			// Start accepting incoming connections
 			bool Init(boost::asio::ip::tcp::endpoint endpoint, IHttpRequestHandler* msg_handler);
 			void run();
