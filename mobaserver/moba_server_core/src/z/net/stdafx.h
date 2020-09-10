@@ -23,7 +23,6 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/config.hpp>
-#include <boost/predef/other/endian.h>
 
 
 #include <algorithm>
