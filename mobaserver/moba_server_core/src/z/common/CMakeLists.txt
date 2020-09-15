@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.12)
+project(libzcommon)
 # build libcommon library 
 
 set(build_target libzcommon)
