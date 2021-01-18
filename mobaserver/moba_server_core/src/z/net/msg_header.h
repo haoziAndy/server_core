@@ -64,8 +64,8 @@ struct CMsgHeader
         : length(0), msg_id(0)/*, send_tick(0), checksum(0)*/
     {}
 #endif
-	uint32 length;
-	uint32 msg_id;
+	uint16 length;
+	uint16 msg_id;
 #if NON_PERSISTANCE_MODE
     uint64 openid;      // 
     uint16 checksum;    // 防止重放攻击    
@@ -82,8 +82,8 @@ struct SCMsgHeader
         : length(0), msg_id(0)
     {}
 
-	uint32 length;
-	uint32 msg_id;
+	uint16 length;
+	uint16 msg_id;
 };
 
 #ifdef _WIN32
@@ -109,16 +109,16 @@ struct SCMsgHeader
 } while (false)
 # else
 #  define CMsgHeaderNtoh(header) do {\
-    header->length = boost::asio::detail::socket_ops::network_to_host_long(header->length);\
-    header->msg_id = boost::asio::detail::socket_ops::network_to_host_long(header->msg_id);\
+    header->length = boost::asio::detail::socket_ops::network_to_host_short(header->length);\
+    header->msg_id = boost::asio::detail::socket_ops::network_to_host_short(header->msg_id);\
 } while (false)
 
 /*header->send_tick = boost::asio::detail::socket_ops::network_to_host_short(header->send_tick);
 header->checksum = boost::asio::detail::socket_ops::network_to_host_short(header->checksum);*/
 
 #  define CMsgHeaderHton(header) do {\
-    header->length = boost::asio::detail::socket_ops::host_to_network_long(header->length);\
-    header->msg_id = boost::asio::detail::socket_ops::host_to_network_long(header->msg_id);\
+    header->length = boost::asio::detail::socket_ops::host_to_network_short(header->length);\
+    header->msg_id = boost::asio::detail::socket_ops::host_to_network_short(header->msg_id);\
 } while (false)
 
 /* header->send_tick = boost::asio::detail::socket_ops::host_to_network_short(header->send_tick);
