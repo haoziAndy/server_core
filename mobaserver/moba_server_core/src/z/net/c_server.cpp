@@ -64,13 +64,13 @@ void CCServer::SendToSession( int session_id, const std::string & user_id, CMsgH
         ZPOOL_FREE(msg);
         return;
     }
-   /* if (!user_id.empty() && conn->user_id() != user_id)
+    if (!user_id.empty() && conn->user_id() != user_id)
     {
         LOG_ERR("Stop SendMsg[%d] to session[%d]: user_id mismatched. need %s, get %s",
             msg->msg_id, session_id, user_id.c_str(), conn->user_id().c_str());
         ZPOOL_FREE(msg);
         return;
-    }*/
+    }
 
     auto length = msg->length + sizeof(*msg);
 

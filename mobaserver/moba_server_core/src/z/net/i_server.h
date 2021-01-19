@@ -39,6 +39,10 @@ public:
 
     IConnection* GetConnection(int32 session_id) const;
 
+	const std::unordered_map<int, IConnection*> GetALlConnection() const {
+		return connection_mgr_;
+	};
+
     boost::asio::io_service& io_service() { return master_io_service_; }
 
 protected:
