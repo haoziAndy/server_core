@@ -44,8 +44,8 @@ enum ZServerStatus
     ZServerStatus_INIT,          // 启动
 	ZServerStatus_LOAD_DATA,     //加载数据
     ZServerStatus_WORKING,       // 工作
+	ZServerStatus_Maintain,		//维护
     ZServerStatus_STOP,          // 停止
-
 };
 
 class TimeEngine : public boost::asio::io_service

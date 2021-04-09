@@ -83,7 +83,7 @@ namespace z {
 				boost::asio::make_strand(ioc_),
 				boost::beast::bind_front_handler(
 					&HServer::on_accept,
-					shared_from_this()));
+					this));
 		}
 
 		void

@@ -3,7 +3,7 @@
 namespace z {
 	namespace net {
 		
-		class HServer : public std::enable_shared_from_this<HServer>
+		class HServer
 		{
 
 		public:
