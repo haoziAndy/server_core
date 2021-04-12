@@ -250,8 +250,6 @@ void ZServer::Stop()
         LOG_INFO( "Server was stop" );
         is_server_shutdown_ = true;
 
-        time_engine_.stop();
-
         for (auto it = senders_.begin(); it != senders_.end(); ++it)
         {
             ZSender* sender = it->second;
@@ -265,6 +263,7 @@ void ZServer::Stop()
             if (receiver)
                 receiver->Destroy();
         }
+		time_engine_.stop();
 		this->set_server_status(ZServerStatus::ZServerStatus_STOP);
     }
 
