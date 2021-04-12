@@ -256,13 +256,14 @@ void ZServer::Stop()
             if (sender)
                 sender->Close();
         }
-
+		senders_.clear();
         for (auto it=receivers_.begin(); it!=receivers_.end(); ++it)
         {
             auto receiver = it->second;
             if (receiver)
                 receiver->Destroy();
         }
+		receivers_.clear();
 		time_engine_.stop();
 		this->set_server_status(ZServerStatus::ZServerStatus_STOP);
     }
