@@ -399,6 +399,11 @@ int ZServer::SendMsgByType( const int sendto_server_type, SMsgHeader* msg )
 
 int ZServer::SendMsg( ZSender* sender, SMsgHeader* msg )
 {
+	if (this->server_status() == ZServerStatus::ZServerStatus_STOP )
+	{
+		LOG_INFO("Failed to send msg,server already stop");
+		return -1;
+	}
     int ret = sender->Send(msg);
     if (ret < 0)
     {
