@@ -256,7 +256,7 @@ void ZServer::Stop()
         {
             ZSender* sender = it->second;
             if (sender)
-                sender->Close(true);
+                sender->Close();
         }
 
         for (auto it=receivers_.begin(); it!=receivers_.end(); ++it)
