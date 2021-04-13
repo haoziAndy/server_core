@@ -24,6 +24,7 @@ int Logger::Init( const std::string &server_name, const std::string &log_path, c
 
 	log4cplus::tstring pattern = LOG4CPLUS_TEXT("%D{%m/%d/%y  %H:%M:%S}  [%l] - %m%n");
 	log4cplus::SharedAppenderPtr  Console(new log4cplus::ConsoleAppender());
+	Console->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(pattern)));
 
 	log4cplus::SharedAppenderPtr TraceAppender(new log4cplus::RollingFileAppender(LOG4CPLUS_TEXT(file_name + ".trace.log"), rotating_size, SHRT_MAX, false, true));
 	TraceAppender->setLayout(std::unique_ptr<log4cplus::Layout>(new log4cplus::PatternLayout(pattern)));
