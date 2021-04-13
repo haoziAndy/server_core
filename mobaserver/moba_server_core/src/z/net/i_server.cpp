@@ -155,7 +155,7 @@ void IServer::HandleAccept( const boost::system::error_code& ec )
             if (ret.second)
             {
                 new_connection_->Start();
-                new_connection_ = nullptr;                
+                new_connection_ = nullptr;       
             }
             else
             {
@@ -170,6 +170,8 @@ void IServer::HandleAccept( const boost::system::error_code& ec )
             LOG_ERR("%d: %s", remote_ec.code().value(), remote_ec.what());
             boost::system::error_code t_ec;
             new_connection_->socket().close(t_ec);
+			ZPOOL_DELETE(new_connection_);
+			new_connection_ = nullptr;
         }
     }
     

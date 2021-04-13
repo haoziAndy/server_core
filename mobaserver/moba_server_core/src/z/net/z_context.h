@@ -19,6 +19,7 @@ public:
     }
 
     ZContext* context() { return context_;}
+	int ZContextS::stop();
 
 private:
     

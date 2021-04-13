@@ -55,21 +55,21 @@ int ZSender::Init( const int sendto_server_id, int zsocket_type, const std::stri
     return 0;
 }
 
-int ZSender::Close(bool force)
+int ZSender::Close()
 {
     if (socket_)
     {
-        if (force)
-        {
-            int wait_ms = 1;
+        //if (force)
+        //{
+            int wait_ms = 0;
             int ret = zmq_setsockopt(socket_, ZMQ_LINGER, &wait_ms, sizeof(wait_ms));
             if (ret)
             {
                 LOG_ERR("zmq_setsockopt() failed. %s", zmq_strerror(zmq_errno()));
                 return -1;
             }
-        }
-        int ret = zmq_close(socket_);
+        //}
+        ret = zmq_close(socket_);
         if (ret)
         {
             LOG_ERR("zmq_close() failed. %s", zmq_strerror(zmq_errno()));

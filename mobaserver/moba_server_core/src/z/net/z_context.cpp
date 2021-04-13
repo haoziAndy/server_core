@@ -39,6 +39,12 @@ int ZContextS::DestroyZContext()
     return 0;
 }
 
+int ZContextS::stop()
+{
+	return DestroyZContext();
+}
+
+
 
 }; // namespace net
 }; // namespace z

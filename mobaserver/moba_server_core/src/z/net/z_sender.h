@@ -23,7 +23,7 @@ public:
 
     int Init(const int sendto_server_id, int zsocket_type, const std::string& conn_str, const std::string& sender_name);
 
-    int Close(bool force = false);
+    int Close();
 
     /// 需要序列化再发送
     int Send(SMsgHeader* header, const google::protobuf::Message* msg);
