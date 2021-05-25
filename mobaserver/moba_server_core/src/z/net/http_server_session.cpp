@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include "http_server.h"
 #include <boost/beast/core.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
@@ -15,6 +14,8 @@
 #include <string>
 #include <vector>
 #include "http_server_session.h"
+#include "http_server.h"
+#include "z_server.h"
 
 
 namespace z {
@@ -23,11 +24,13 @@ namespace z {
 
 			HServerSession::HServerSession(
 				boost::asio::ip::tcp::socket&& socket,
-				IHttpRequestHandler* msg_handler)
+				IHttpRequestHandler* msg_handler,const uint32 session_id)
 				: stream_(std::move(socket))
-				, lambda_(*this)
+				, send_lambda_(*this)
+				, session_id_(session_id)
 			{
 				msg_handler_ = msg_handler;
+				start_handle_req_ts_ = 0;
 			}
 
 		// Start the asynchronous operation
@@ -47,6 +50,7 @@ namespace z {
 			// otherwise the operation behavior is undefined.
 			req_ = {};
 
+			start_handle_req_ts_ = 0;
 			// Set the timeout.
 			stream_.expires_after(std::chrono::seconds(30));
 
@@ -74,8 +78,10 @@ namespace z {
 				return do_close();
 			}
 
-			// Send the response
-			handle_request(msg_handler_, std::move(req_), lambda_);
+			request_version_ = req_.version();
+			request_keep_alive_ = req_.keep_alive();
+			handle_request(msg_handler_, std::move(req_), this->send_lambda_,this->session_id_);
+			start_handle_req_ts_ = TIME_ENGINE.time_sec();
 		}
 
 		void
@@ -114,6 +120,34 @@ namespace z {
 			stream_.socket().shutdown(boost::asio::ip::tcp::socket::shutdown_send, ec);
 
 			// At this point the connection is closed gracefully
+
+			HSERVER.remove_session(session_id_);
+		}
+
+		void HServerSession::response(const std::string &content)
+		{
+			boost::beast::http::string_body::value_type body(content);
+			auto const size = body.size();
+			// Respond to GET request
+			boost::beast::http::response<boost::beast::http::string_body> res{
+				std::piecewise_construct,
+				std::make_tuple(std::move(body)),
+				std::make_tuple(boost::beast::http::status::ok,request_version_ ) };
+			res.set(boost::beast::http::field::server, BOOST_BEAST_VERSION_STRING);
+			res.set(boost::beast::http::field::content_type, "application/json");
+			res.content_length(size);
+			res.keep_alive(request_keep_alive_);
+			this->send_lambda_(std::move(res));
+		}
+
+		bool HServerSession::handle_req_timeout()
+		{
+			if (start_handle_req_ts_ == 0)
+			{
+				return false;
+			}
+			const uint32 ts = TIME_ENGINE.time_sec();
+			return (ts - start_handle_req_ts_) >= 30;
 		}
 	}
 }

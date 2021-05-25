@@ -6,7 +6,7 @@ namespace z {
 			class Body, class Allocator,
 			class Send>
 			void handle_request(IHttpRequestHandler* msg_handler, boost::beast::http::request<Body, boost::beast::http::basic_fields<Allocator>>&& req,
-				Send&& send)
+				Send&& send, const uint32 http_session_id)
 		{
 			// Returns a bad request response
 			auto const bad_request =
@@ -66,13 +66,14 @@ namespace z {
 				return send(server_error("msg_handler == nullptr"));
 			}
 
-			const std::string result = msg_handler->OnRequest(req.body());
-			boost::beast::http::string_body::value_type body(result);
+			msg_handler->OnRequest(req.body(), http_session_id);
+			//const std::string result = msg_handler->OnRequest(req.body());
+			//boost::beast::http::string_body::value_type body(result);
 
 			// Cache the size since we need it after the move
-			auto const size = body.size();
+			//auto const size = body.size();
 			// Respond to HEAD request
-			if (req.method() == boost::beast::http::verb::head)
+			/*if (req.method() == boost::beast::http::verb::head)
 			{
 				boost::beast::http::response<boost::beast::http::empty_body> res{ boost::beast::http::status::ok, req.version() };
 				res.set(boost::beast::http::field::server, BOOST_BEAST_VERSION_STRING);
@@ -80,10 +81,10 @@ namespace z {
 				res.content_length(size);
 				res.keep_alive(req.keep_alive());
 				return send(std::move(res));
-			}
+			}*/
 
 			// Respond to GET request
-			boost::beast::http::response<boost::beast::http::string_body> res{
+			/*boost::beast::http::response<boost::beast::http::string_body> res{
 				std::piecewise_construct,
 				std::make_tuple(std::move(body)),
 				std::make_tuple(boost::beast::http::status::ok, req.version()) };
@@ -91,7 +92,7 @@ namespace z {
 			res.set(boost::beast::http::field::content_type, "application/json");
 			res.content_length(size);
 			res.keep_alive(req.keep_alive());
-			return send(std::move(res));
+			return send(std::move(res));*/
 
 		}
 
@@ -139,7 +140,14 @@ namespace z {
 			boost::beast::flat_buffer buffer_;
 			boost::beast::http::request<boost::beast::http::string_body> req_;
 			std::shared_ptr<void> res_;
-			send_lambda lambda_;
+			send_lambda send_lambda_;
+			uint32 session_id_;
+
+		private:
+			bool request_keep_alive_;
+			unsigned request_version_;
+			uint32 start_handle_req_ts_;
+
 
 		private:
 			IHttpRequestHandler* msg_handler_;
@@ -149,7 +157,7 @@ namespace z {
 				// Take ownership of the socket
 				HServerSession(
 					boost::asio::ip::tcp::socket&& socket,
-					IHttpRequestHandler* msg_handler);
+					IHttpRequestHandler* msg_handler, const uint32 session_id);
 			// Start the asynchronous operation
 			void
 				run();
@@ -168,9 +176,13 @@ namespace z {
 					boost::beast::error_code ec,
 					std::size_t bytes_transferred);
 
+			void response(const std::string &content);
+
 
 			void
 				do_close();
+
+			bool handle_req_timeout();
 
 		};
 	}
