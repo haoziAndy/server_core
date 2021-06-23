@@ -550,7 +550,7 @@ private:
 
 #define ZPOOL_NEW_SHARED(typename, ...) ZPOOL.NewShared<typename>(__FILE__, __LINE__, __PRETTY_FUNCTION__, ##__VA_ARGS__)
 
-#define ZPOOL_DESTROY() //ZPOOL.PurgeMemory() // huang
+#define ZPOOL_DESTROY() ZPOOL.PurgeMemory()
 
 #else
 
