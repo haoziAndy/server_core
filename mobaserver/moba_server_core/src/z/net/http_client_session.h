@@ -22,6 +22,7 @@ namespace z {
 			boost::beast::http::request<boost::beast::http::string_body> req_;
 			boost::beast::http::response<boost::beast::http::string_body> res_;
 			std::function<void(const std::string&, bool)> res_callback_;
+			const uint16 timeout_ = 10;
 
 		public:
 			// Resolver and socket require an io_context
