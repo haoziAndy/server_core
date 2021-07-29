@@ -539,7 +539,12 @@ bool ZServer::CheckHandShakeServers( const boost::system::error_code& ec )
                 // TODO(zen): 5000 ? count
                 if (it->second >= -5000)
                 {
-                    LOG_INFO("Waiting server %d for %d times...", it->first, -it->second);
+					const uint32 server_type = SERVER_TYPE(it->first);
+					std::string server_name = "";
+					if (server_type_enum_descriptor_){
+						server_name = server_type_enum_descriptor_->FindValueByNumber(server_type)->name();
+					}
+                    LOG_INFO("Waiting server %d(%s) for %d times...", it->first, server_name.c_str(), -it->second);
                     deadline_timer_.expires_from_now(boost::posix_time::seconds(1));
                     deadline_timer_.async_wait(boost::bind(&ZServer::CheckHandShakeServers, this, boost::asio::placeholders::error));
                 }

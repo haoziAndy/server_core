@@ -213,6 +213,8 @@ public:
 	void set_trace_msg_flag(bool trace_msg_flag) { trace_msg_flag_ = trace_msg_flag; }
 	bool trace_msg_flag() const { return trace_msg_flag_; }
 
+	void set_server_type_enum_descriptor(const google::protobuf::EnumDescriptor *server_type_enum_descriptor) { server_type_enum_descriptor_ = server_type_enum_descriptor; }
+
     const std::unordered_map<int32, std::unordered_map<int32, std::pair<int32, int64>>>& send_msg_stats() const {return send_msg_stats_;}
     const std::unordered_map<int32, std::unordered_map<int32, std::pair<int32, int64>>>& recv_msg_stats() const {return recv_msg_stats_;}
 private:
@@ -281,6 +283,8 @@ private:
     std::unordered_map<int32, const std::string>* msg_names_;
 
     bool trace_msg_flag_;
+
+	const google::protobuf::EnumDescriptor *server_type_enum_descriptor_;
 
     DECLARE_SINGLETON(ZServer);
 };
