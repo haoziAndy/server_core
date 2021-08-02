@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include "http_client_session.h"
+#include "z_server.h"
 
 
 namespace z {
@@ -55,6 +56,7 @@ namespace z {
 				}
 				return;
 			}
+			const uint32 timeout_ = ZSERVER.get_http_client_timeout_ts();
 			// Set a timeout on the operation
 			stream_.expires_after(std::chrono::seconds(timeout_));
 			// Make the connection on the IP address we get from a lookup
@@ -76,7 +78,7 @@ namespace z {
 				}
 				return;
 			}
-
+			const uint32 timeout_ = ZSERVER.get_http_client_timeout_ts();
 			// Set a timeout on the operation
 			stream_.expires_after(std::chrono::seconds(timeout_));
 

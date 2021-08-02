@@ -217,6 +217,12 @@ public:
 
     const std::unordered_map<int32, std::unordered_map<int32, std::pair<int32, int64>>>& send_msg_stats() const {return send_msg_stats_;}
     const std::unordered_map<int32, std::unordered_map<int32, std::pair<int32, int64>>>& recv_msg_stats() const {return recv_msg_stats_;}
+	void set_http_client_timeout_ts(const uint32 ts) {
+		http_client_timeout_ = ts;
+	}
+	uint32 get_http_client_timeout_ts() {
+		return http_client_timeout_;
+	}
 private:
     int AddPollItem(ZReceiver* receiver);    
 
@@ -285,6 +291,8 @@ private:
     bool trace_msg_flag_;
 
 	const google::protobuf::EnumDescriptor *server_type_enum_descriptor_;
+
+	uint32 http_client_timeout_ = 5;
 
     DECLARE_SINGLETON(ZServer);
 };

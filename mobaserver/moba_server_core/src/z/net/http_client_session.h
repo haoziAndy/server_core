@@ -1,14 +1,4 @@
-#include "stdafx.h"
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
-#include <boost/beast/version.hpp>
-#include <boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
-#include <cstdlib>
-#include <functional>
-#include <iostream>
-#include <memory>
-#include <string>
+#pragma once
 
 
 namespace z {
@@ -22,7 +12,6 @@ namespace z {
 			boost::beast::http::request<boost::beast::http::string_body> req_;
 			boost::beast::http::response<boost::beast::http::string_body> res_;
 			std::function<void(const std::string&, bool)> res_callback_;
-			const uint16 timeout_ = 5;
 
 		public:
 			// Resolver and socket require an io_context
