@@ -190,7 +190,7 @@ void IServer::CloseConnection( int32 session_id )
     }
     else
     {
-        LOG_ERR("not found session %d on CloseConnection", session_id);
+        LOG_DEBUG("not found session %d on CloseConnection", session_id);
     }
 }
 
