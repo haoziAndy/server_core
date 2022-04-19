@@ -29,11 +29,15 @@ bool CCServer::Init( const std::string& address, const std::string& port, ICMsgH
 
 void CCServer::SendToSession( int session_id, const std::string & user_id, SMsgHeader* msg )
 {
-    if (msg->length > 0xffff)
+   // if (msg->length > 0xffff)
+	if (msg->length > 1048576) //包体大于1M
     {
         auto msg_names = ZSERVER.msg_names();
-        if (msg_names != nullptr)
-            LOG_ERR("client msg length > 0xffff, id %d %s", msg->msg_id, (*msg_names)[msg->msg_id].c_str());
+		if (msg_names != nullptr)
+		{
+			//LOG_ERR("client msg length > 0xffff, id %d %s", msg->msg_id, (*msg_names)[msg->msg_id].c_str());
+			LOG_ERR("client msg length > 1048576, id %d %s", msg->msg_id, (*msg_names)[msg->msg_id].c_str());
+		}
         return;
     }
     z::net::CMsgHeader* cmsg;
