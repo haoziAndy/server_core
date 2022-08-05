@@ -42,6 +42,7 @@ void CCServer::SendToSession( int session_id, const std::string & user_id, SMsgH
     cmsg = reinterpret_cast<z::net::CMsgHeader*>(buff);
     cmsg->length = msg->length;
     cmsg->msg_id = msg->msg_id;
+	cmsg->msg_stream_id = msg->msg_stream_id;
     memcpy(cmsg+1, msg+1, msg->length);
 
     SendToSession(session_id, user_id, cmsg);
