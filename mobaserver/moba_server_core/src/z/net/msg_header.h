@@ -36,7 +36,7 @@ namespace net
 struct SMsgHeader
 {
 	SMsgHeader()
-		: msg_id(0), length(0),  src_server_id(0), dst_server_id(0), session_id(0), msg_stream_id(0)
+		: msg_id(0), length(0),  src_server_id(0), dst_server_id(0), msg_stream_id(0), session_id(0)
 	{
 		async_seq[0] = '\0';
 		player_id[0] = '\0';
