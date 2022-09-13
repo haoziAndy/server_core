@@ -36,7 +36,7 @@ namespace net
 struct SMsgHeader
 {
 	SMsgHeader()
-		: msg_id(0), length(0),  src_server_id(0), dst_server_id(0), msg_stream_id(0), session_id(0)
+		: msg_id(0), length(0),  src_server_id(0), dst_server_id(0), srv_msg_stream_id(0), cli_msg_stream_id(0), session_id(0)
 	{
 		async_seq[0] = '\0';
 		player_id[0] = '\0';
@@ -45,7 +45,8 @@ struct SMsgHeader
 	uint32    length;
 	int32    src_server_id;        // 消息来源 服务器id 
 	int32    dst_server_id;        // 消息目的
-	uint32   msg_stream_id;			//用于发给前端的消息流ID
+	uint32   srv_msg_stream_id;			//用于发给前端的消息流ID
+	uint32	 cli_msg_stream_id;		//用于前端上传的ID 重新发给前端 让前端知道哪些请求已经收到了
 	uint32    session_id;        // 为gate 登录sessionid
 	char    async_seq[UIDLen];   //结尾并不是 '\0'
 	char    player_id[UIDLen];   // 玩家未登录时，player_id为0,结尾并不是 '\0'
@@ -62,12 +63,13 @@ struct CMsgHeader
     }
 #else
     CMsgHeader()
-        : length(0), msg_id(0), msg_stream_id(0)/*, send_tick(0), checksum(0)*/
+        : length(0), msg_id(0), srv_msg_stream_id(0), cli_msg_stream_id(0)/*, send_tick(0), checksum(0)*/
     {}
 #endif
 	uint16 length;
 	uint16 msg_id;
-	uint32 msg_stream_id;			//用于发给前端的消息流ID
+	uint32 srv_msg_stream_id;			//用于发给前端的消息流ID
+	uint32 cli_msg_stream_id;		//用于前端上传的ID 重新发给前端 让前端知道哪些请求已经收到了
 #if NON_PERSISTANCE_MODE
     uint64 openid;      // 
     uint16 checksum;    // 防止重放攻击    
@@ -113,7 +115,8 @@ struct SCMsgHeader
 #  define CMsgHeaderNtoh(header) do {\
     header->length = boost::asio::detail::socket_ops::network_to_host_short(header->length);\
     header->msg_id = boost::asio::detail::socket_ops::network_to_host_short(header->msg_id);\
-	header->msg_stream_id = boost::asio::detail::socket_ops::network_to_host_long(header->msg_stream_id);\
+	header->srv_msg_stream_id = boost::asio::detail::socket_ops::network_to_host_long(header->srv_msg_stream_id);\
+	header->cli_msg_stream_id = boost::asio::detail::socket_ops::network_to_host_long(header->cli_msg_stream_id);\
 } while (false)
 
 /*header->send_tick = boost::asio::detail::socket_ops::network_to_host_short(header->send_tick);
@@ -122,7 +125,8 @@ header->checksum = boost::asio::detail::socket_ops::network_to_host_short(header
 #  define CMsgHeaderHton(header) do {\
     header->length = boost::asio::detail::socket_ops::host_to_network_short(header->length);\
     header->msg_id = boost::asio::detail::socket_ops::host_to_network_short(header->msg_id);\
-	header->msg_stream_id = boost::asio::detail::socket_ops::host_to_network_long(header->msg_stream_id);\
+	header->srv_msg_stream_id = boost::asio::detail::socket_ops::host_to_network_long(header->srv_msg_stream_id);\
+	header->cli_msg_stream_id = boost::asio::detail::socket_ops::network_to_host_long(header->cli_msg_stream_id);\
 } while (false)
 
 /* header->send_tick = boost::asio::detail::socket_ops::host_to_network_short(header->send_tick);
