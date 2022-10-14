@@ -58,6 +58,8 @@ public:
 
     void PurgeMemory();
 
+	void ReleaseMemory();
+
     void* Malloc_r(const char* file, const int line, const char* func, int size)
     {
         boost::mutex::scoped_lock lock(mutex_);

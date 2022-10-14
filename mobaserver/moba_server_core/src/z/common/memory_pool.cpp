@@ -216,6 +216,18 @@ void GlobalMemPool::PurgeMemory()
     }
 }
 
+void GlobalMemPool::ReleaseMemory()
+{
+	for (int i = 0; i < max_array_size; ++i)
+	{
+		if (pools_[i])
+		{
+			pools_[i]->release_memory();
+		}
+	}
+}
+
+
 void GlobalMemPool::AddStats( const AllocFrom& alloced, int alloced_size )
 {
     auto it = alloced_stats_data_.find(alloced);
