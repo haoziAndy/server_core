@@ -40,6 +40,7 @@
     </ClCompile>
     <ClCompile Include="..\..\src\z\net\udp_server.cpp" />
     <ClCompile Include="..\..\src\z\net\u_connection.cpp" />
+    <ClCompile Include="..\..\src\z\net\websocket_server.cpp" />
     <ClCompile Include="..\..\src\z\net\z_context.cpp" />
     <ClCompile Include="..\..\src\z\net\z_receiver.cpp" />
     <ClCompile Include="..\..\src\z\net\z_sender.cpp" />
@@ -64,6 +65,7 @@
     <ClInclude Include="..\..\src\z\net\stdafx.h" />
     <ClInclude Include="..\..\src\z\net\udp_server.h" />
     <ClInclude Include="..\..\src\z\net\u_connection.h" />
+    <ClInclude Include="..\..\src\z\net\websocket_server.h" />
     <ClInclude Include="..\..\src\z\net\z_context.h" />
     <ClInclude Include="..\..\src\z\net\z_receiver.h" />
     <ClInclude Include="..\..\src\z\net\z_sender.h" />
@@ -102,7 +104,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Boost\include;$(Solutiondir)\..\include;$(Solutiondir)\..\src;$(Solutiondir)\..\src\net;$(Solutiondir)\..\src\contrib;$(Solutiondir)\..\include\snappy;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Boost\include;$(Solutiondir)\..\include;$(Solutiondir)\..\src;$(Solutiondir)\..\src\net;$(Solutiondir)\..\src\contrib;$(Solutiondir)\..\include\snappy;$(IncludePath)</IncludePath>
     <OutDir>..\..\lib\</OutDir>
     <LibraryPath>$(Solutiondir)\..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>

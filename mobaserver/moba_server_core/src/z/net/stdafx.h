@@ -23,6 +23,8 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/config.hpp>
+#include <boost/beast/websocket.hpp>
+#include <boost/asio/dispatch.hpp>
 
 
 #include <algorithm>

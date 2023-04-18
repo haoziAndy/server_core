@@ -68,7 +68,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(Solutiondir)\..\include\snappy;C:\Boost\include\;$(Solutiondir)\..\include;$(Solutiondir)\..\include\google_breakpad;$(Solutiondir)\..\src;$(IncludePath)</IncludePath>
+    <IncludePath>$(Solutiondir)\..\include\snappy;E:\Boost\include\;$(Solutiondir)\..\include;$(Solutiondir)\..\include\google_breakpad;$(Solutiondir)\..\src;$(IncludePath)</IncludePath>
     <OutDir>..\..\lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
