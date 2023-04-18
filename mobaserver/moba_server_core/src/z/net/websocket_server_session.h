@@ -16,6 +16,22 @@ namespace z {
 		private:
 			IHttpRequestHandler* msg_handler_;
 
+			int session_id_;
+			std::string user_id_;
+
+			char read_data_[recv_buff_length];
+			int32 read_size_;
+
+			std::atomic_uint op_count_;
+
+			bool is_reading_;
+			bool is_writing_;
+			bool is_closing_;
+
+
+			std::vector<boost::asio::const_buffer> send_queue_;
+			std::vector<boost::asio::const_buffer> pending_send_queue_;
+
 		public:
 			explicit
 				// Take ownership of the socket
@@ -44,6 +60,9 @@ namespace z {
 
 			void
 				do_close();
+
+
+			DISALLOW_COPY_AND_ASSIGN(WSServerSession);
 
 		};
 	}
