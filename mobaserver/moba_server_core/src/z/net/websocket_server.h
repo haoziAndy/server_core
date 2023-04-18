@@ -17,7 +17,7 @@ namespace z {
 			boost::asio::io_context& ioc_;
 			boost::asio::ip::tcp::acceptor acceptor_;
 			IHttpRequestHandler* msg_handler_;
-			std::unordered_map<uint32, std::shared_ptr<HServerSession>> connection_mgr_;
+			std::unordered_map<uint32, std::shared_ptr<WSServerSession>> connection_mgr_;
 			boost::asio::deadline_timer deadline_timer_;
 
 		private:
