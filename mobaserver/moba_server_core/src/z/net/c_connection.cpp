@@ -7,16 +7,29 @@
 namespace z {
 namespace net {
 
+#ifdef USE_WEBSOCKET
+	CConnection::CConnection(IServer* server, int conn_index,boost::asio::ip::tcp::socket& socket)
+		: IConnection(server, conn_index,std::move(socket))
+		, status_(LoginStatus_DEFAULT)
+		, account_id_("")
+		, idle_count_(0)
+		, msg_count_(0)
+	{
 
-CConnection::CConnection( IServer* server, int conn_index )
-    : IConnection(server, conn_index)
-    , status_(LoginStatus_DEFAULT)
-    , account_id_("")
-    , idle_count_(0)
-    , msg_count_(0)
-{
+	}
+#else
+	CConnection::CConnection(IServer* server, int conn_index)
+		: IConnection(server, conn_index)
+		, status_(LoginStatus_DEFAULT)
+		, account_id_("")
+		, idle_count_(0)
+		, msg_count_(0)
+	{
 
-}
+	}
+#endif // WEB_SOCKET
+
+
 
 CConnection::~CConnection()
 {

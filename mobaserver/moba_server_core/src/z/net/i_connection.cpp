@@ -6,26 +6,86 @@
 namespace z {
 namespace net {
 
-IConnection::IConnection( IServer* server, int conn_index )
-    : server_(server)
-    , socket_(server->io_service())
-    , deadline_timer_(server->io_service())
-    , session_id_(conn_index)
-    , user_id_("")
-    , read_size_(0)
-    , is_reading_(false)
-    , is_writing_(false)
-    , is_closing_(false)
-    , pending_send_queue_(send_queue_)
-{
-    op_count_ = 0;
-}
+#ifndef USE_WEBSOCKET
+	IConnection::IConnection(IServer* server, int conn_index)
+		: server_(server)
+		, socket_(server->io_service())
+		, deadline_timer_(server->io_service())
+		, session_id_(conn_index)
+		, user_id_("")
+		, read_size_(0)
+		, is_reading_(false)
+		, is_writing_(false)
+		, is_closing_(false)
+		, pending_send_queue_(send_queue_)
+	{
+		op_count_ = 0;
+	}
+#endif // !USE_WEBSOCKET
+
+#ifdef USE_WEBSOCKET
+	IConnection::IConnection(IServer* server, int conn_index, boost::asio::ip::tcp::socket &&socket)
+		: server_(server)
+		, web_socket_(std::move(socket))
+		, deadline_timer_(server->io_service())
+		, session_id_(conn_index)
+		, user_id_("")
+		, read_size_(0)
+		, is_reading_(false)
+		, is_writing_(false)
+		, is_closing_(false)
+		, pending_send_queue_(send_queue_)
+	{
+		op_count_ = 0;
+	}
+#endif // USE_WEBSOCKET
 
 IConnection::~IConnection()
 {
     boost::system::error_code ignored_ec;
     deadline_timer_.cancel(ignored_ec);
 }
+#ifdef USE_WEBSOCKET
+void IConnection::Run()
+{
+	boost::beast::net::dispatch(web_socket_.get_executor(),
+		boost::beast::bind_front_handler(
+			&IConnection::OnRun,
+			this));
+}
+
+void IConnection::OnRun()
+{
+	web_socket_.set_option(
+		boost::beast::websocket::stream_base::timeout::suggested(
+			boost::beast::role_type::server));
+
+	// Set a decorator to change the Server of the handshake
+	web_socket_.set_option(boost::beast::websocket::stream_base::decorator(
+		[](boost::beast::websocket::response_type& res)
+	{
+		res.set(boost::beast::http::field::server,
+			std::string(BOOST_BEAST_VERSION_STRING) +
+			" websocket-server-async");
+	}));
+
+	// Accept the websocket handshake
+	web_socket_.async_accept(
+		boost::beast::bind_front_handler(
+			&IConnection::OnWebAccept,
+			this));
+}
+
+void IConnection::OnWebAccept(boost::beast::error_code ec)
+{
+	if (ec)
+	{
+		AsyncClose();
+		return;
+	}
+	Start();
+}
+#endif
 
 void IConnection::Start()
 {
@@ -34,6 +94,7 @@ void IConnection::Start()
 
 void IConnection::DoStart()
 {
+#ifndef USE_WEBSOCKET
     boost::system::error_code set_option_err;
     boost::asio::ip::tcp::no_delay no_delay(true);
     socket_.set_option(no_delay, set_option_err);
@@ -44,6 +105,7 @@ void IConnection::DoStart()
         AsyncClose();
         return;
     }
+#endif
 
     StartRead();
     return;
@@ -121,10 +183,19 @@ void IConnection::StartRead()
     is_reading_ = true;
 
     ++op_count_;
+
+#ifdef USE_WEBSOCKET
+	web_socket_.async_read_some(boost::asio::buffer(read_data_ + read_size_, sizeof(read_data_) - read_size_),
+		boost::bind(&IConnection::HandleRead, this,
+			boost::asio::placeholders::error,
+			boost::asio::placeholders::bytes_transferred));
+#else
     socket_.async_read_some(boost::asio::buffer(read_data_ + read_size_, sizeof(read_data_) - read_size_),
         boost::bind(&IConnection::HandleRead, this,
         boost::asio::placeholders::error,
         boost::asio::placeholders::bytes_transferred));
+#endif
+
 }
 
 void IConnection::HandleRead( const boost::system::error_code& ec, size_t bytes_transferred )
@@ -190,10 +261,20 @@ void IConnection::StartWrite()
     is_writing_ = true;
 
     ++op_count_;
-    boost::asio::async_write(socket_,
-        send_queue_,
-        boost::bind(&IConnection::HandleWrite, this, 
-        boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+
+#ifdef USE_WEBSOCKET
+	web_socket_.text(web_socket_.got_text());
+	web_socket_.async_write(send_queue_,
+		boost::bind(&IConnection::HandleWrite, this,
+			boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+#else
+	//使用tcp
+	boost::asio::async_write(socket_,
+		send_queue_,
+		boost::bind(&IConnection::HandleWrite, this,
+			boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+
+#endif
 }
 
 void IConnection::HandleWrite( const boost::system::error_code& ec, size_t bytes_transferred )
@@ -233,9 +314,13 @@ void IConnection::Close()
     {
         is_closing_ = true;
         
-        boost::system::error_code ignored_ec;
+		boost::system::error_code ignored_ec;
+#ifdef USE_WEBSOCKET
+		web_socket_.close(boost::beast::websocket::close_code::normal);
+#else
         socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
         socket_.close(ignored_ec);
+#endif
         deadline_timer_.cancel(ignored_ec);
 
         OnClosed();

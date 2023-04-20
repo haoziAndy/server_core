@@ -33,7 +33,14 @@ public:
 
     void HandleAccept(const boost::system::error_code& ec);
 
-    virtual IConnection* CreateConnection(int32 session_id) = 0;
+	void HandleWebsocketAccept(const boost::system::error_code& ec, boost::asio::ip::tcp::socket socket);
+
+#ifdef USE_WEBSOCKET
+	virtual IConnection* CreateWebsocketConnection(int32 session_id, boost::asio::ip::tcp::socket&& socket) = 0;
+#else
+	virtual IConnection* CreateConnection(int32 session_id) = 0;
+#endif // USE_WEBSOCKET
+
 
     void CloseConnection(int32 session_id);
 
@@ -44,6 +51,8 @@ public:
 	};
 
     boost::asio::io_service& io_service() { return master_io_service_; }
+
+private:
 
 protected:
     boost::asio::io_service& master_io_service_;

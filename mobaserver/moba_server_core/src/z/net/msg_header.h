@@ -3,7 +3,9 @@
 
 // 短连接模式
 #define NON_PERSISTANCE_MODE 0 //修改了很多 此版本永远不要开这个模式
+
 #define UIDLen 22
+
 
 
 #define INNER_MSG_START_ID 50000

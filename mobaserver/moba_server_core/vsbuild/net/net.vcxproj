@@ -40,8 +40,6 @@
     </ClCompile>
     <ClCompile Include="..\..\src\z\net\udp_server.cpp" />
     <ClCompile Include="..\..\src\z\net\u_connection.cpp" />
-    <ClCompile Include="..\..\src\z\net\websocket_server.cpp" />
-    <ClCompile Include="..\..\src\z\net\websocket_server_session.cpp" />
     <ClCompile Include="..\..\src\z\net\z_context.cpp" />
     <ClCompile Include="..\..\src\z\net\z_receiver.cpp" />
     <ClCompile Include="..\..\src\z\net\z_sender.cpp" />
@@ -66,8 +64,6 @@
     <ClInclude Include="..\..\src\z\net\stdafx.h" />
     <ClInclude Include="..\..\src\z\net\udp_server.h" />
     <ClInclude Include="..\..\src\z\net\u_connection.h" />
-    <ClInclude Include="..\..\src\z\net\websocket_server.h" />
-    <ClInclude Include="..\..\src\z\net\websocket_server_session.h" />
     <ClInclude Include="..\..\src\z\net\z_context.h" />
     <ClInclude Include="..\..\src\z\net\z_receiver.h" />
     <ClInclude Include="..\..\src\z\net\z_sender.h" />

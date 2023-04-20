@@ -14,7 +14,13 @@ class CConnection : public IConnection
 {    
     enum {recv_client_message_max_length = 8192 };
 public:
-    CConnection(IServer* server, int conn_index);
+#ifdef USE_WEBSOCKET
+	CConnection(IServer* server, int conn_index, boost::asio::ip::tcp::socket& socket);
+#else
+	CConnection(IServer* server, int conn_index);
+#endif // USE_WEBSOCKET
+
+
     virtual ~CConnection();
 
     virtual void Start();

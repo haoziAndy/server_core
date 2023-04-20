@@ -16,7 +16,13 @@ class IConnection
     enum {recv_buff_length = 8192 };
 
 public:
+
+#ifdef USE_WEBSOCKET
+	IConnection(IServer* server, int conn_index,boost::asio::ip::tcp::socket&& socket);
+#else
     IConnection(IServer* server, int conn_index);
+#endif
+
     virtual ~IConnection();
     // thread-safe start from other thread
     virtual void Start();
@@ -28,8 +34,11 @@ public:
     /// 
     void Close();
     void AsyncClose();
-
+#ifdef USE_WEBSOCKET
+	boost::beast::websocket::stream<boost::beast::tcp_stream>& socket() { return web_socket_; }
+#else
     boost::asio::ip::tcp::socket& socket() { return socket_;}
+#endif
     int session_id() const { return session_id_; }
 	std::string user_id() const { return user_id_; }
     void set_user_id(const std::string &user_id) {user_id_ = user_id;}
@@ -42,6 +51,17 @@ public:
     virtual void OnWrite(int32 length) {};
     /// all async operation end
     virtual void OnClosed() {};
+
+#ifdef USE_WEBSOCKET
+public :
+	void Run();
+private :
+	void OnRun();
+
+	void OnWebAccept(boost::beast::error_code ec);
+
+#endif // USE_WEBSOCKET
+
 
 protected:
     void StartRead();
@@ -58,9 +78,17 @@ protected:
 
     void Destroy();
 
+#ifdef USE_WEBSOCKET
+private:
+	boost::beast::websocket::stream<boost::beast::tcp_stream> web_socket_;
+#endif
+
 protected:
     IServer* server_;
-    boost::asio::ip::tcp::socket socket_;
+
+#ifndef USE_WEBSOCKET
+	boost::asio::ip::tcp::socket socket_;
+#endif // !USE_WEBSOCKET
 
     boost::asio::deadline_timer deadline_timer_; 
 

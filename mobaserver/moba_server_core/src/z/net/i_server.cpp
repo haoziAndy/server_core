@@ -122,21 +122,58 @@ void IServer::StartAccept()
 {
     if (is_server_shutdown_)
         return;
-    static int s_conn_index = 0;
-    if (!new_connection_)
-    {
-//         new_connection_ = ZPOOL_NEW(CConnection, std::ref(*workers_[next_work_index_]), conn_index++, 
-//             c_in_msg_handler_, c_out_msg_handler_);
-        auto conn_index = ((++s_conn_index) << 1) | 0x1;
-        new_connection_ = CreateConnection(conn_index++);
-        
-        // 42亿个id, 应该不会被占满, 做个保护, 最大循环100
-        for (int i=0; connection_mgr_.find(conn_index) != connection_mgr_.end() && i<100; ++i)
-            ++ conn_index;
-    }
-    acceptor_.async_accept(new_connection_->socket(), 
-        boost::bind(&IServer::HandleAccept, this, boost::asio::placeholders::error));
+   
+
+#ifdef USE_WEBSOCKET
+	acceptor_.async_accept(
+		boost::beast::net::make_strand(master_io_service_),
+		boost::beast::bind_front_handler(
+			&IServer::HandleWebsocketAccept,
+			this));
+#else
+	static int s_conn_index = 0;
+	if (!new_connection_)
+	{
+		//         new_connection_ = ZPOOL_NEW(CConnection, std::ref(*workers_[next_work_index_]), conn_index++, 
+		//             c_in_msg_handler_, c_out_msg_handler_);
+		auto conn_index = ((++s_conn_index) << 1) | 0x1;
+		new_connection_ = CreateConnection(conn_index++);
+
+		// 42亿个id, 应该不会被占满, 做个保护, 最大循环100
+		for (int i = 0; connection_mgr_.find(conn_index) != connection_mgr_.end() && i<100; ++i)
+			++conn_index;
+	}
+	acceptor_.async_accept(new_connection_->socket(),
+		boost::bind(&IServer::HandleAccept, this, boost::asio::placeholders::error));
+#endif // !USE_WEBSOCKET
+
+
+
 }
+
+#ifdef USE_WEBSOCKET
+void IServer::HandleWebsocketAccept(const boost::system::error_code& ec, boost::asio::ip::tcp::socket socket)
+{
+	if (is_server_shutdown_)
+		return;
+	static int s_conn_index = 0;
+	if (!ec)
+	{
+		if (new_connection_)
+		{
+			LOG_FATAL("new_connection_ is not null");
+		}
+		auto conn_index = ((++s_conn_index) << 1) | 0x1;
+		new_connection_ = CreateWebsocketConnection(conn_index++, std::move(socket));
+
+		// 42亿个id, 应该不会被占满, 做个保护, 最大循环100
+		for (int i = 0; connection_mgr_.find(conn_index) != connection_mgr_.end() && i<100; ++i)
+			++conn_index;
+	}
+	
+	HandleAccept(ec);
+}
+#endif
 
 void IServer::HandleAccept( const boost::system::error_code& ec )
 {
@@ -148,9 +185,9 @@ void IServer::HandleAccept( const boost::system::error_code& ec )
         try
         {
             int32 session_id = new_connection_->session_id();
-            LOG_DEBUG("Client[%d] addr %s[%d] connected.", session_id,
+            /*LOG_DEBUG("Client[%d] addr %s[%d] connected.", session_id,
                 new_connection_->socket().remote_endpoint().address().to_string().c_str(),
-                new_connection_->socket().remote_endpoint().port());
+                new_connection_->socket().remote_endpoint().port());*/
             auto ret = connection_mgr_.insert(std::make_pair(session_id, new_connection_));
             if (ret.second)
             {
@@ -168,8 +205,14 @@ void IServer::HandleAccept( const boost::system::error_code& ec )
         catch(boost::system::system_error& remote_ec)
         {
             LOG_ERR("%d: %s", remote_ec.code().value(), remote_ec.what());
-            boost::system::error_code t_ec;
-            new_connection_->socket().close(t_ec);
+#ifdef USE_WEBSOCKET
+			new_connection_->socket().close(boost::beast::websocket::close_code::normal);
+#else
+			boost::system::error_code t_ec;
+			new_connection_->socket().close(t_ec);
+#endif // USE_WEBSOCKET
+
+          
 			ZPOOL_DELETE(new_connection_);
 			new_connection_ = nullptr;
         }

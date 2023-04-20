@@ -77,12 +77,6 @@
     <ClCompile Include="..\..\src\z\net\http_server_session.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\z\net\websocket_server.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\z\net\websocket_server_session.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\z\net\i_connection.h">
@@ -149,12 +143,6 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\z\net\http_server_session.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\z\net\websocket_server.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\z\net\websocket_server_session.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
