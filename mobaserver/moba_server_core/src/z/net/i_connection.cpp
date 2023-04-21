@@ -263,7 +263,7 @@ void IConnection::StartWrite()
     ++op_count_;
 
 #ifdef USE_WEBSOCKET
-	web_socket_.text(web_socket_.got_text());
+	web_socket_.binary(web_socket_.got_binary());
 	web_socket_.async_write(send_queue_,
 		boost::bind(&IConnection::HandleWrite, this,
 			boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
@@ -316,7 +316,7 @@ void IConnection::Close()
         
 		boost::system::error_code ignored_ec;
 #ifdef USE_WEBSOCKET
-		web_socket_.close(boost::beast::websocket::close_code::normal);
+		web_socket_.close(boost::beast::websocket::close_code::normal,ignored_ec);
 #else
         socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
         socket_.close(ignored_ec);

@@ -205,10 +205,10 @@ void IServer::HandleAccept( const boost::system::error_code& ec )
         catch(boost::system::system_error& remote_ec)
         {
             LOG_ERR("%d: %s", remote_ec.code().value(), remote_ec.what());
-#ifdef USE_WEBSOCKET
-			new_connection_->socket().close(boost::beast::websocket::close_code::normal);
-#else
 			boost::system::error_code t_ec;
+#ifdef USE_WEBSOCKET
+			new_connection_->socket().close(boost::beast::websocket::close_code::normal,t_ec);
+#else
 			new_connection_->socket().close(t_ec);
 #endif // USE_WEBSOCKET
 
