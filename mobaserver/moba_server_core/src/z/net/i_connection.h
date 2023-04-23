@@ -54,7 +54,7 @@ public:
 
 #ifdef USE_WEBSOCKET
 public :
-	void Run();
+	void WebRun();
 private :
 	void OnRun();
 

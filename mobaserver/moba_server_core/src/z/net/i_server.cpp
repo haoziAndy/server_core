@@ -191,7 +191,11 @@ void IServer::HandleAccept( const boost::system::error_code& ec )
             auto ret = connection_mgr_.insert(std::make_pair(session_id, new_connection_));
             if (ret.second)
             {
-                new_connection_->Start();
+#ifdef USE_WEBSOCKET
+                new_connection_->WebRun();
+#else
+				new_connection_->Start();
+#endif
                 new_connection_ = nullptr;       
             }
             else

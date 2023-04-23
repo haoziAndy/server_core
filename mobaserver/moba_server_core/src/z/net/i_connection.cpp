@@ -46,7 +46,7 @@ IConnection::~IConnection()
     deadline_timer_.cancel(ignored_ec);
 }
 #ifdef USE_WEBSOCKET
-void IConnection::Run()
+void IConnection::WebRun()
 {
 	boost::beast::net::dispatch(web_socket_.get_executor(),
 		boost::beast::bind_front_handler(
