@@ -78,17 +78,15 @@ protected:
 
     void Destroy();
 
-#ifdef USE_WEBSOCKET
-private:
-	boost::beast::websocket::stream<boost::beast::tcp_stream> web_socket_;
-#endif
 
 protected:
     IServer* server_;
 
-#ifndef USE_WEBSOCKET
+#ifdef USE_WEBSOCKET
+	boost::beast::websocket::stream<boost::beast::tcp_stream> web_socket_;
+#else
 	boost::asio::ip::tcp::socket socket_;
-#endif // !USE_WEBSOCKET
+#endif
 
     boost::asio::deadline_timer deadline_timer_; 
 
