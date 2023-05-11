@@ -102,7 +102,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>C:\Boost\include;$(Solutiondir)\..\include;$(Solutiondir)\..\src;$(Solutiondir)\..\src\net;$(Solutiondir)\..\src\contrib;$(Solutiondir)\..\include\snappy;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Boost\include;$(Solutiondir)\..\include;$(Solutiondir)\..\src;$(Solutiondir)\..\src\net;$(Solutiondir)\..\src\contrib;$(Solutiondir)\..\include\snappy;$(IncludePath)</IncludePath>
     <OutDir>..\..\lib\</OutDir>
     <LibraryPath>$(Solutiondir)\..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>

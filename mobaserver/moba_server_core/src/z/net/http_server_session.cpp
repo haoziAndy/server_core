@@ -74,7 +74,7 @@ namespace z {
 
 			if (ec)
 			{
-				LOG_ERR("Failed to read HServerSession,%s", ec.message().c_str());
+				LOG_DEBUG("Failed to read HServerSession,%s", ec.message().c_str());
 				return do_close();
 			}
 
@@ -94,7 +94,7 @@ namespace z {
 
 			if (ec)
 			{
-				LOG_ERR("Failed to read HServerSession,%s", ec.message().c_str());
+				LOG_DEBUG("Failed to write HServerSession,%s", ec.message().c_str());
 				return do_close();
 			}
 
