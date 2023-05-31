@@ -1,8 +1,6 @@
 #ifndef Z_NET_Z_CONTEXT_H
 #define Z_NET_Z_CONTEXT_H
 
-#define USE_WEBSOCKET
-
 namespace z
 {
 namespace net

@@ -26,6 +26,9 @@
 #include <boost/beast/websocket.hpp>
 #include <boost/asio/dispatch.hpp>
 
+#include <boost/beast/ssl.hpp>
+#include <boost/beast/websocket/ssl.hpp>
+
 
 #include <algorithm>
 #include <cstdlib>
@@ -70,6 +73,10 @@
 #include "asio_kcp/server.hpp"
 #include "udp_server.h"
 #include "u_connection.h"
+
+#ifdef USE_WEBSOCKET
+#define OPENSSL_NO_ENGINE
+#endif // USE_WEBSOCKET
 
 #ifdef _WIN32
 #define snprintf sprintf_s

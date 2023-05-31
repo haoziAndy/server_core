@@ -102,7 +102,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>E:\Boost\include;$(Solutiondir)\..\include;$(Solutiondir)\..\src;$(Solutiondir)\..\src\net;$(Solutiondir)\..\src\contrib;$(Solutiondir)\..\include\snappy;$(IncludePath)</IncludePath>
+    <IncludePath>E:\Boost\include;$(Solutiondir)\..\include;$(Solutiondir)\..\src;$(Solutiondir)\..\src\net;$(Solutiondir)\..\src\contrib;$(Solutiondir)\..\include\snappy;D:\Program Files (x86)\OpenSSL-Win32\include;$(IncludePath)</IncludePath>
     <OutDir>..\..\lib\</OutDir>
     <LibraryPath>$(Solutiondir)\..\lib;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
@@ -115,7 +115,7 @@
       <Optimization>Disabled</Optimization>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <AdditionalOptions>-Zm256 -D_SCL_SECURE_NO_WARNINGS %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-Zm256 -D_SCL_SECURE_NO_WARNINGS -DUSE_WEBSOCKET -DUSE_WEBSOCKET_WITH_SSL %(AdditionalOptions)</AdditionalOptions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>

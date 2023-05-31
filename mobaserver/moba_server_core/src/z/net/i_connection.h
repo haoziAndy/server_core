@@ -18,7 +18,7 @@ class IConnection
 public:
 
 #ifdef USE_WEBSOCKET
-	IConnection(IServer* server, int conn_index,boost::asio::ip::tcp::socket&& socket);
+	IConnection(IServer* server, int conn_index, boost::asio::ip::tcp::socket&& socket);
 #else
     IConnection(IServer* server, int conn_index);
 #endif
@@ -35,7 +35,14 @@ public:
     void Close();
     void AsyncClose();
 #ifdef USE_WEBSOCKET
+
+#ifdef USE_WEBSOCKET_WITH_SSL
+	boost::beast::websocket::stream<boost::beast::ssl_stream<boost::beast::tcp_stream>>& socket() { return web_socket_; }
+#else
 	boost::beast::websocket::stream<boost::beast::tcp_stream>& socket() { return web_socket_; }
+#endif // USE_WEBSOCKET_WITH_SSL
+
+	
 #else
     boost::asio::ip::tcp::socket& socket() { return socket_;}
 #endif
@@ -60,6 +67,8 @@ private :
 
 	void OnWebAccept(boost::beast::error_code ec);
 
+	void OnWebHandShake(boost::beast::error_code ec);
+
 #endif // USE_WEBSOCKET
 
 
@@ -83,7 +92,13 @@ protected:
     IServer* server_;
 
 #ifdef USE_WEBSOCKET
+
+#ifdef USE_WEBSOCKET_WITH_SSL
+	boost::beast::websocket::stream<boost::beast::ssl_stream<boost::beast::tcp_stream>> web_socket_;
+#else
 	boost::beast::websocket::stream<boost::beast::tcp_stream> web_socket_;
+#endif // !USE_WEBSOCKET_WITH_SSL
+
 #else
 	boost::asio::ip::tcp::socket socket_;
 #endif

@@ -37,6 +37,13 @@ public:
 
 #ifdef USE_WEBSOCKET
 	virtual IConnection* CreateWebsocketConnection(int32 session_id, boost::asio::ip::tcp::socket&& socket) = 0;
+
+	bool SetWebsocketSSL(const std::string &cert, std::string &key);
+
+	boost::asio::ssl::context &GetSSlCtx(){ return ssl_ctx_; }
+
+	bool IsUseWebsocketSSL() { return use_websocket_with_ssl_; }
+
 #else
 	virtual IConnection* CreateConnection(int32 session_id) = 0;
 #endif // USE_WEBSOCKET
@@ -69,6 +76,12 @@ protected:
     IConnection* new_connection_;
 
     std::unordered_map<int, IConnection*> connection_mgr_;
+
+
+#ifdef USE_WEBSOCKET
+	boost::asio::ssl::context ssl_ctx_;
+	bool use_websocket_with_ssl_;
+#endif
 
     DISALLOW_COPY_AND_ASSIGN(IServer);
 };

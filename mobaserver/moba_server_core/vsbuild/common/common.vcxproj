@@ -68,7 +68,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(Solutiondir)\..\include\snappy;E:\Boost\include\;$(Solutiondir)\..\include;$(Solutiondir)\..\include\google_breakpad;$(Solutiondir)\..\src;$(IncludePath)</IncludePath>
+    <IncludePath>$(Solutiondir)\..\include\snappy;E:\Boost\include\;$(Solutiondir)\..\include;$(Solutiondir)\..\include\google_breakpad;$(Solutiondir)\..\src;D:\Program Files (x86)\OpenSSL-Win32\include;$(IncludePath)</IncludePath>
     <OutDir>..\..\lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -80,7 +80,7 @@
       <Optimization>Disabled</Optimization>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
-      <AdditionalOptions>-Zm256 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-Zm256 -DUSE_WEBSOCKET -DUSE_WEBSOCKET_WITH_SSL %(AdditionalOptions)</AdditionalOptions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <RuntimeTypeInfo>

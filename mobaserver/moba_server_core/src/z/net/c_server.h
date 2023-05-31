@@ -23,12 +23,13 @@ public:
 
     bool Init(const std::string& address, const std::string& port, ICMsgHandler* handler);
 
-
 #ifdef USE_WEBSOCKET
+
 	virtual IConnection* CreateWebsocketConnection(int32 session_id, boost::asio::ip::tcp::socket&& socket)
 	{
 		return ZPOOL_NEW(CConnection, this, session_id, std::move(socket));
 	}
+	
 #else
 	virtual IConnection* CreateConnection(int32 session_id)
 	{

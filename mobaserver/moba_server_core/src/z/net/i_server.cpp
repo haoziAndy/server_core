@@ -15,6 +15,12 @@ IServer::IServer()
     , signals_(master_io_service_)
     , is_server_shutdown_(false)
     , new_connection_(nullptr)
+
+#ifdef USE_WEBSOCKET
+	, ssl_ctx_(boost::asio::ssl::context::tlsv12)
+	, use_websocket_with_ssl_(false)
+#endif
+
 {}
 
 int IServer::Init(const std::string& address, const std::string& port)
@@ -164,6 +170,7 @@ void IServer::HandleWebsocketAccept(const boost::system::error_code& ec, boost::
 			LOG_FATAL("new_connection_ is not null");
 		}
 		auto conn_index = ((++s_conn_index) << 1) | 0x1;
+
 		new_connection_ = CreateWebsocketConnection(conn_index++, std::move(socket));
 
 		// 42亿个id, 应该不会被占满, 做个保护, 最大循环100
@@ -249,6 +256,21 @@ IConnection* IServer::GetConnection( int32 session_id ) const
     else
         return nullptr;
 }
+
+#ifdef USE_WEBSOCKET
+bool IServer::SetWebsocketSSL(const std::string &cert, std::string &key)
+{
+	ssl_ctx_.use_certificate_chain(
+		boost::asio::buffer(cert.data(), cert.size()));
+
+	ssl_ctx_.use_private_key(
+		boost::asio::buffer(key.data(), key.size()),
+		boost::asio::ssl::context::file_format::pem);
+
+	use_websocket_with_ssl_ = true;
+	return true;
+}
+#endif
 
 
 } //namespace net
