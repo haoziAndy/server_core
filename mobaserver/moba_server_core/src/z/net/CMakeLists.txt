@@ -64,6 +64,7 @@ ENDMACRO()
 
 if(CMAKE_COMPILER_IS_GNUCXX)
 	add_definitions(-std=c++11 -Wall -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs)
+	add_definitions(-DUSE_WEBSOCKET -DUSE_WEBSOCKET_WITH_SSL )
 	#add_definitions(-std=c++11  -g -Wall -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs)
 endif()
 
