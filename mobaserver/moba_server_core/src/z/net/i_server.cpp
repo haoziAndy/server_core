@@ -258,7 +258,7 @@ IConnection* IServer::GetConnection( int32 session_id ) const
 }
 
 #ifdef USE_WEBSOCKET
-bool IServer::SetWebsocketSSL(const std::string &cert, std::string &key)
+bool IServer::SetWebsocketSSL(const std::string &cert, const std::string &key)
 {
 	ssl_ctx_.use_certificate_chain(
 		boost::asio::buffer(cert.data(), cert.size()));

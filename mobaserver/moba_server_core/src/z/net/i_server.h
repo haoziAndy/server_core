@@ -38,7 +38,7 @@ public:
 #ifdef USE_WEBSOCKET
 	virtual IConnection* CreateWebsocketConnection(int32 session_id, boost::asio::ip::tcp::socket&& socket) = 0;
 
-	bool SetWebsocketSSL(const std::string &cert, std::string &key);
+	bool SetWebsocketSSL(const std::string &cert,const std::string &key);
 
 	boost::asio::ssl::context &GetSSlCtx(){ return ssl_ctx_; }
 
