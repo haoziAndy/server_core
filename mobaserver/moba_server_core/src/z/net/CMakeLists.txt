@@ -49,7 +49,7 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
 			GET_DIRECTORY_PROPERTY(_directory_flags DEFINITIONS)
 		   	LIST(APPEND _compiler_FLAGS ${_directory_flags})
 			SEPARATE_ARGUMENTS(_compiler_FLAGS)
-		   	MESSAGE("${CMAKE_CXX_COMPILER} -DPCHCOMPILE ${_compiler_FLAGS} -x c++-header -o {_output} ${_source}")
+		   	MESSAGE("${CMAKE_CXX_COMPILER} -DPCHCOMPILE -DUSE_WEBSOCKET -DUSE_WEBSOCKET_WITH_SSL ${_compiler_FLAGS} -x c++-header -o {_output} ${_source}")
 			ADD_CUSTOM_COMMAND(
 				OUTPUT ${_output}
 				COMMAND ${CMAKE_CXX_COMPILER} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}
@@ -64,8 +64,6 @@ ENDMACRO()
 
 if(CMAKE_COMPILER_IS_GNUCXX)
 	add_definitions(-std=c++11 -Wall -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs)
-	add_compile_definitions(USE_WEBSOCKET)
-    add_compile_definitions(USE_WEBSOCKET_WITH_SSL)
 	#add_definitions(-std=c++11  -g -Wall -Wno-unused-variable -Wno-unused-function -Wno-unused-local-typedefs)
 endif()
 
