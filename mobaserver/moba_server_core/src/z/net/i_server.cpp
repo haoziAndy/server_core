@@ -258,15 +258,21 @@ IConnection* IServer::GetConnection( int32 session_id ) const
 }
 
 #ifdef USE_WEBSOCKET
-bool IServer::SetWebsocketSSL(const std::string &cert, const std::string &key)
+bool IServer::SetWebsocketSSL(const std::string &cert_filename, const std::string &key_filename)
 {
-	ssl_ctx_.use_certificate_chain(
-		boost::asio::buffer(cert.data(), cert.size()));
+	boost::filesystem::path path_file(cert_filename);
+	if (!boost::filesystem::exists(path_file) ) {
+		LOG_ERR("%s not exist", cert_filename.c_str());
+		return false;
+	}
 
-	ssl_ctx_.use_private_key(
-		boost::asio::buffer(key.data(), key.size()),
-		boost::asio::ssl::context::file_format::pem);
-
+	boost::filesystem::path path_file2(key_filename);
+	if (!boost::filesystem::exists(path_file2)) {
+		LOG_ERR("%s not exist", key_filename.c_str());
+		return false;
+	}
+	ssl_ctx_.use_certificate_file(cert_filename, boost::asio::ssl::context::pem);
+	ssl_ctx_.use_private_key_file(key_filename, boost::asio::ssl::context::pem);
 	use_websocket_with_ssl_ = true;
 	return true;
 }
