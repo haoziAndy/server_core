@@ -9,8 +9,8 @@ set(BOOST_INCLUDEDIR "/usr/local/include")
 set(BOOST_LIBRARYDIR "/usr/local/lib")
 set(CMAKE_INCLUDE_PATH ${CMAKE_INCLUDE_PATH} "/usr/local/include")
 set(CMAKE_LIBRARY_PATH ${CMAKE_LIBRARY_PATH} "/usr/local/lib")
-SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb")
-SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall")
+SET(CMAKE_CXX_FLAGS_DEBUG "$ENV{CXXFLAGS} -O0 -Wall -g -ggdb  -DUSE_WEBSOCKET -DUSE_WEBSOCKET_WITH_SSL ")
+SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall  -DUSE_WEBSOCKET -DUSE_WEBSOCKET_WITH_SSL")
 
 
 include_directories(.)
@@ -49,7 +49,7 @@ MACRO(ADD_PRECOMPILED_HEADER _targetName _input)
 			GET_DIRECTORY_PROPERTY(_directory_flags DEFINITIONS)
 		   	LIST(APPEND _compiler_FLAGS ${_directory_flags})
 			SEPARATE_ARGUMENTS(_compiler_FLAGS)
-		   	MESSAGE("${CMAKE_CXX_COMPILER} -DPCHCOMPILE -DUSE_WEBSOCKET -DUSE_WEBSOCKET_WITH_SSL ${_compiler_FLAGS} -x c++-header -o {_output} ${_source}")
+		   	MESSAGE("${CMAKE_CXX_COMPILER} -DPCHCOMPILE ${_compiler_FLAGS} -x c++-header -o {_output} ${_source}")
 			ADD_CUSTOM_COMMAND(
 				OUTPUT ${_output}
 				COMMAND ${CMAKE_CXX_COMPILER} ${_compiler_FLAGS} -x c++-header -o ${_output} ${_source}
