@@ -19,6 +19,7 @@ include_directories(../../../include/log4cplus/)
 include_directories(../../)
 include_directories(../../contrib)
 include_directories(./asio_kcp)
+include_directories(/usr/local/openssl/include)
 
 aux_source_directory(. SRC_FILES)
 aux_source_directory(./asio_kcp SRC_FILES)
