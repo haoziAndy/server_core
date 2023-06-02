@@ -51,6 +51,7 @@ IConnection::~IConnection()
     boost::system::error_code ignored_ec;
     deadline_timer_.cancel(ignored_ec);
 }
+
 #ifdef USE_WEBSOCKET
 void IConnection::WebRun()
 {
@@ -62,7 +63,6 @@ void IConnection::WebRun()
 
 void IConnection::OnRun()
 {
-#ifdef USE_WEBSOCKET
 
 #ifdef USE_WEBSOCKET_WITH_SSL
 	// Set the timeout.
@@ -94,8 +94,6 @@ void IConnection::OnRun()
 			&IConnection::OnWebAccept,
 			this));
 #endif // USE_WEBSOCKET_WITH_SSL
-
-#endif
 
 }
 
