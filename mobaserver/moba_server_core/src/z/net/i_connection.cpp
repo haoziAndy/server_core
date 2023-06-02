@@ -74,7 +74,7 @@ void IConnection::OnRun()
 		boost::beast::bind_front_handler(
 			&IConnection::OnWebHandShake,
 			this));
-#elif
+#else
 	web_socket_.set_option(
 		boost::beast::websocket::stream_base::timeout::suggested(
 			boost::beast::role_type::server));
