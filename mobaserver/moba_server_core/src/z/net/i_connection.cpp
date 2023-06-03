@@ -102,6 +102,7 @@ void IConnection::OnWebHandShake(boost::beast::error_code ec)
 	if (ec)
 	{
 		LOG_DEBUG("Handshake,err %s", ec.message().c_str());
+		AsyncClose();
 		return;
 	}
 
