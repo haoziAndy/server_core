@@ -51,6 +51,7 @@ IConnection::~IConnection()
     boost::system::error_code ignored_ec;
     deadline_timer_.cancel(ignored_ec);
 }
+
 #ifdef USE_WEBSOCKET
 void IConnection::WebRun()
 {
@@ -62,39 +63,38 @@ void IConnection::WebRun()
 
 void IConnection::OnRun()
 {
-	if ( !server_->IsUseWebsocketSSL() ){
 
-		web_socket_.set_option(
-			boost::beast::websocket::stream_base::timeout::suggested(
-				boost::beast::role_type::server));
+#ifdef USE_WEBSOCKET_WITH_SSL
+	// Set the timeout.
+	boost::beast::get_lowest_layer(web_socket_).expires_after(std::chrono::seconds(30));
 
-		// Set a decorator to change the Server of the handshake
-		web_socket_.set_option(boost::beast::websocket::stream_base::decorator(
-			[](boost::beast::websocket::response_type& res)
-		{
-			res.set(boost::beast::http::field::server,
-				std::string(BOOST_BEAST_VERSION_STRING) +
-				" websocket-server-async");
-		}));
+	// Perform the SSL handshake
+	web_socket_.next_layer().async_handshake(
+		boost::asio::ssl::stream_base::server,
+		boost::beast::bind_front_handler(
+			&IConnection::OnWebHandShake,
+			this));
+#else
+	web_socket_.set_option(
+		boost::beast::websocket::stream_base::timeout::suggested(
+			boost::beast::role_type::server));
 
-		// Accept the websocket handshake
-		web_socket_.async_accept(
-			boost::beast::bind_front_handler(
-				&IConnection::OnWebAccept,
-				this));
-	}
-	else
+	// Set a decorator to change the Server of the handshake
+	web_socket_.set_option(boost::beast::websocket::stream_base::decorator(
+		[](boost::beast::websocket::response_type& res)
 	{
-		// Set the timeout.
-		boost::beast::get_lowest_layer(web_socket_).expires_after(std::chrono::seconds(30));
+		res.set(boost::beast::http::field::server,
+			std::string(BOOST_BEAST_VERSION_STRING) +
+			" websocket-server-async");
+	}));
 
-		// Perform the SSL handshake
-		web_socket_.next_layer().async_handshake(
-			boost::asio::ssl::stream_base::server,
-			boost::beast::bind_front_handler(
-				&IConnection::OnWebHandShake,
-				this));
-	}
+	// Accept the websocket handshake
+	web_socket_.async_accept(
+		boost::beast::bind_front_handler(
+			&IConnection::OnWebAccept,
+			this));
+#endif // USE_WEBSOCKET_WITH_SSL
+
 }
 
 void IConnection::OnWebHandShake(boost::beast::error_code ec)
@@ -102,6 +102,7 @@ void IConnection::OnWebHandShake(boost::beast::error_code ec)
 	if (ec)
 	{
 		LOG_DEBUG("Handshake,err %s", ec.message().c_str());
+		AsyncClose();
 		return;
 	}
 

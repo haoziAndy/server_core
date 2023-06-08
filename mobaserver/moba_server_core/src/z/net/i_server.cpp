@@ -271,7 +271,13 @@ bool IServer::SetWebsocketSSL(const std::string &cert_filename, const std::strin
 		LOG_ERR("%s not exist", key_filename.c_str());
 		return false;
 	}
-	ssl_ctx_.use_certificate_file(cert_filename, boost::asio::ssl::context::pem);
+	boost::system::error_code ec;
+	ssl_ctx_.use_certificate_chain_file(cert_filename, ec);
+	if (ec)
+	{
+		LOG_ERR("IServer::SetWebsocketSSL: %s,load fail", cert_filename.c_str());
+		return false;
+	}
 	ssl_ctx_.use_private_key_file(key_filename, boost::asio::ssl::context::pem);
 	use_websocket_with_ssl_ = true;
 	return true;
