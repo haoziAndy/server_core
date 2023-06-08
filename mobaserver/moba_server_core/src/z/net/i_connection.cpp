@@ -55,15 +55,16 @@ IConnection::~IConnection()
 #ifdef USE_WEBSOCKET
 void IConnection::WebRun()
 {
-	boost::beast::net::dispatch(web_socket_.get_executor(),
-		boost::beast::bind_front_handler(
-			&IConnection::OnRun,
-			this));
+	OnRun();
+	//boost::beast::net::dispatch(web_socket_.get_executor(),
+	//	boost::beast::bind_front_handler(
+	//		&IConnection::OnRun,
+	//		this));
 }
 
 void IConnection::OnRun()
 {
-
+	++op_count_;
 #ifdef USE_WEBSOCKET_WITH_SSL
 	// Set the timeout.
 	boost::beast::get_lowest_layer(web_socket_).expires_after(std::chrono::seconds(30));
@@ -99,13 +100,17 @@ void IConnection::OnRun()
 
 void IConnection::OnWebHandShake(boost::beast::error_code ec)
 {
+	--op_count_;
 	if (ec)
 	{
 		LOG_DEBUG("Handshake,err %s", ec.message().c_str());
 		AsyncClose();
 		return;
 	}
+	if (is_closing_)
+		return;
 
+	++op_count_;
 	boost::beast::get_lowest_layer(web_socket_).expires_never();
 
 	web_socket_.set_option(
@@ -131,6 +136,7 @@ void IConnection::OnWebHandShake(boost::beast::error_code ec)
 
 void IConnection::OnWebAccept(boost::beast::error_code ec)
 {
+	--op_count_;
 	if (ec)
 	{
 		AsyncClose();
@@ -398,6 +404,7 @@ void IConnection::HandleError( const boost::system::error_code& ec )
 
 void IConnection::Destroy()
 {
+	LOG_DEBUG("IConnection::Destroy");
     ZPOOL_DELETE(this);
 }
 
