@@ -171,11 +171,12 @@ void IServer::HandleWebsocketAccept(const boost::system::error_code& ec, boost::
 		}
 		auto conn_index = ((++s_conn_index) << 1) | 0x1;
 
-		new_connection_ = CreateWebsocketConnection(conn_index++, std::move(socket));
 
 		LOG_DEBUG("Client[%d] addr %s[%d] connected.", conn_index,
 			socket.remote_endpoint().address().to_string().c_str(),
 			socket.remote_endpoint().port());
+
+		new_connection_ = CreateWebsocketConnection(conn_index++, std::move(socket));
 
 		// 42亿个id, 应该不会被占满, 做个保护, 最大循环100
 		for (int i = 0; connection_mgr_.find(conn_index) != connection_mgr_.end() && i<100; ++i)
