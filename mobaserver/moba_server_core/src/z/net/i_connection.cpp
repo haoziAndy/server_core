@@ -133,6 +133,7 @@ void IConnection::OnWebAccept(boost::beast::error_code ec)
 {
 	if (ec)
 	{
+		LOG_DEBUG("OnWebAccept,err %s", ec.message().c_str());
 		AsyncClose();
 		return;
 	}
