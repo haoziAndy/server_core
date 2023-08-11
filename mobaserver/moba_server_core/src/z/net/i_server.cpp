@@ -173,9 +173,14 @@ void IServer::HandleWebsocketAccept(const boost::system::error_code& ec, boost::
 
 		new_connection_ = CreateWebsocketConnection(conn_index++, std::move(socket));
 
+		LOG_DEBUG("Client[%d] addr %s[%d] connected.", conn_index,
+			socket.remote_endpoint().address().to_string().c_str(),
+			socket.remote_endpoint().port());
+
 		// 42亿个id, 应该不会被占满, 做个保护, 最大循环100
 		for (int i = 0; connection_mgr_.find(conn_index) != connection_mgr_.end() && i<100; ++i)
 			++conn_index;
+		
 	}
 	
 	HandleAccept(ec);
@@ -192,9 +197,9 @@ void IServer::HandleAccept( const boost::system::error_code& ec )
         try
         {
             int32 session_id = new_connection_->session_id();
-            /*LOG_DEBUG("Client[%d] addr %s[%d] connected.", session_id,
-                new_connection_->socket().remote_endpoint().address().to_string().c_str(),
-                new_connection_->socket().remote_endpoint().port());*/
+			/*LOG_DEBUG("Client[%d] addr %s[%d] connected.", session_id,
+			new_connection_->socket().remote_endpoint().address().to_string().c_str(),
+			new_connection_->socket().remote_endpoint().port());*/
             auto ret = connection_mgr_.insert(std::make_pair(session_id, new_connection_));
             if (ret.second)
             {
