@@ -376,7 +376,11 @@ void IConnection::Close()
         
 		boost::system::error_code ignored_ec;
 #ifdef USE_WEBSOCKET
-		web_socket_.close(boost::beast::websocket::close_code::normal,ignored_ec);
+		++op_count_;
+		web_socket_.async_close(boost::beast::websocket::close_code::normal,
+			boost::beast::bind_front_handler(
+				&IConnection::OnWebClose,
+				this));
 #else
         socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
         socket_.close(ignored_ec);
@@ -385,6 +389,20 @@ void IConnection::Close()
 
         OnClosed();
     }
+}
+
+void IConnection::OnWebClose(boost::beast::error_code ec)
+{
+	--op_count_;
+	this->Close();
+	if (op_count_ != 0) {
+		LOG_FATAL("OnWebClose op_count_ != 0");
+	}
+	if (ec)
+	{
+		LOG_DEBUG("OnWebClose session[%d] error[%d]:%s", session_id(), ec.value(), ec.message().c_str());
+		return;
+	}
 }
 
 void IConnection::HandleError( const boost::system::error_code& ec )

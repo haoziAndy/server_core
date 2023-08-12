@@ -69,6 +69,8 @@ private :
 
 	void OnWebHandShake(boost::beast::error_code ec);
 
+	void OnWebClose(boost::beast::error_code ec);
+
 #endif // USE_WEBSOCKET
 
 
