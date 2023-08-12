@@ -393,6 +393,7 @@ void IConnection::Close()
 
 void IConnection::OnWebClose(boost::beast::error_code ec)
 {
+	LOG_DEBUG("IConnection::OnWebClose");
 	--op_count_;
 	this->Close();
 	if (op_count_ != 0) {
