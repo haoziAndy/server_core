@@ -393,12 +393,14 @@ void IConnection::Close()
 
 void IConnection::OnWebClose(boost::beast::error_code ec)
 {
-	LOG_DEBUG("IConnection::OnWebClose");
+	LOG_DEBUG("IConnection::OnWebClose session[%d]", session_id());
 	--op_count_;
-	this->Close();
 	if (op_count_ != 0) {
-		LOG_FATAL("OnWebClose op_count_ != 0");
+		LOG_DEBUG("OnWebClose session[%d] op_count_ != 0", session_id());
 	}
+
+	this->Close();
+
 	if (ec)
 	{
 		LOG_DEBUG("OnWebClose session[%d] error[%d]:%s", session_id(), ec.value(), ec.message().c_str());
@@ -424,7 +426,7 @@ void IConnection::HandleError( const boost::system::error_code& ec )
 
 void IConnection::Destroy()
 {
-	LOG_DEBUG("IConnection::Destroy");
+	LOG_DEBUG("IConnection::Destroy session[%d]", session_id());
     ZPOOL_DELETE(this);
 }
 
