@@ -101,49 +101,66 @@ void IConnection::OnRun()
 void IConnection::OnWebHandShake(boost::beast::error_code ec)
 {
 	--op_count_;
-	if (ec)
+	if (!ec)
+	{
+		if (is_closing_)
+			return;
+
+		++op_count_;
+		boost::beast::get_lowest_layer(web_socket_).expires_never();
+
+		web_socket_.set_option(
+			boost::beast::websocket::stream_base::timeout::suggested(
+				boost::beast::role_type::server));
+
+		// Set a decorator to change the Server of the handshake
+		web_socket_.set_option(boost::beast::websocket::stream_base::decorator(
+			[](boost::beast::websocket::response_type& res)
+		{
+			res.set(boost::beast::http::field::server,
+				std::string(BOOST_BEAST_VERSION_STRING) +
+				" websocket-server-async-ssl");
+		}));
+
+		// Accept the websocket handshake
+		web_socket_.async_accept(
+			boost::beast::bind_front_handler(
+				&IConnection::OnWebAccept,
+				this));
+	}
+	else
 	{
 		LOG_DEBUG("Handshake,err %s", ec.message().c_str());
-		AsyncClose();
-		return;
+		HandleError(ec);
 	}
-	if (is_closing_)
-		return;
 
-	++op_count_;
-	boost::beast::get_lowest_layer(web_socket_).expires_never();
-
-	web_socket_.set_option(
-		boost::beast::websocket::stream_base::timeout::suggested(
-			boost::beast::role_type::server));
-
-	// Set a decorator to change the Server of the handshake
-	web_socket_.set_option(boost::beast::websocket::stream_base::decorator(
-		[](boost::beast::websocket::response_type& res)
+	if (op_count_ == 0)
 	{
-		res.set(boost::beast::http::field::server,
-			std::string(BOOST_BEAST_VERSION_STRING) +
-			" websocket-server-async-ssl");
-	}));
+		AsyncClose();
+	}
 
-	// Accept the websocket handshake
-	web_socket_.async_accept(
-		boost::beast::bind_front_handler(
-			&IConnection::OnWebAccept,
-			this));
 
 }
 
 void IConnection::OnWebAccept(boost::beast::error_code ec)
 {
 	--op_count_;
-	if (ec)
+	if (!ec)
+	{
+		Start();
+	}
+	else
 	{
 		LOG_DEBUG("OnWebAccept,err %s", ec.message().c_str());
-		AsyncClose();
-		return;
+		HandleError(ec);
 	}
-	Start();
+
+	if (op_count_ == 0)
+	{
+		AsyncClose();
+	}
+
+	
 }
 #endif
 
