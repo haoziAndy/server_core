@@ -187,6 +187,9 @@ public:
 		return senders_;
 	}
 
+    //强中把某个发送器给断连
+    bool ForceShutdownSender(const int server_id);
+
     int server_id() const {return server_id_;}
     int server_type() const {return server_type_;}
     const std::string& server_name() const {return server_name_;}
@@ -224,8 +227,7 @@ public:
 		return http_client_timeout_;
 	}
 
-    //强中把某个发送器给断连
-    bool ZServer::ForceShutdownSender(const int server_id);
+  
 private:
     int AddPollItem(ZReceiver* receiver);    
 
