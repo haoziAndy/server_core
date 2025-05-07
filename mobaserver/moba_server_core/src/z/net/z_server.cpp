@@ -739,7 +739,7 @@ void ZServer::RecodRevTime(const int sender_id)
 	const auto src_sender = this->GetSender(src_sender_id);
 	if (src_sender == nullptr)
 	{
-		LOG_FATAL(" Sender %d ,server_type = %d == null ", src_sender_id, SERVER_TYPE(src_sender_id));
+		LOG_WARN("ZServer::RecodRevTime Sender %d ,server_type = %d == null ", src_sender_id, SERVER_TYPE(src_sender_id));
 		return;
 	}
 	else {
