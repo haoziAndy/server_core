@@ -159,6 +159,41 @@ ZSender* ZServer::AddSender( const int sendto_server_id, const std::string& conn
     return sender;
 }
 
+
+bool ZServer::ForceShutdownSender(const int server_id)
+{
+    const uint32 server_type = SERVER_TYPE(server_id);
+    LOG_INFO("Start ZServer::ForceShutdownSender server_id %d,server_type %d ", server_id, server_type);
+
+    ZSender* sender = GetSender(server_id);
+    if (sender == nullptr)
+    {
+        LOG_ERR("ZServer::ForceShutdownSender Not Found server_id %d", server_id);
+        return false;
+    }
+    sender->Close();
+
+    auto tem = senders_.find(server_id);
+    if (tem->second != nullptr)
+    {
+        delete tem->second;
+        tem->second = nullptr;
+    }
+    
+    senders_[server_id] = nullptr;
+
+    
+
+    if (type_senders_[server_type] == sender)
+    {
+        type_senders_[server_type] = nullptr;
+    }
+   
+    LOG_INFO("End ZServer::ForceShutdownSender server_id %d,server_type %d ", server_id, server_type);
+
+    return true;
+}
+
 const std::vector<ZSender*> ZServer::GetSendersByType(uint32 server_type) const
 {
     std::vector<ZSender*> result;

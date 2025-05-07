@@ -223,6 +223,9 @@ public:
 	uint32 get_http_client_timeout_ts() {
 		return http_client_timeout_;
 	}
+
+    //强中把某个发送器给断连
+    bool ZServer::ForceShutdownSender(const int server_id);
 private:
     int AddPollItem(ZReceiver* receiver);    
 
