@@ -173,6 +173,15 @@ bool ZServer::ForceShutdownSender(const int server_id)
     }
     sender->Close();
 
+
+    auto it = std::find_if(check_sender_flags_.begin(), check_sender_flags_.end(),
+        [=](const std::pair<int, int>& v) {return v.first == server_id;});
+    if (it != check_sender_flags_.end())
+    {
+        check_sender_flags_.erase(it);
+    }
+
+
     auto tem = senders_.find(server_id);
     if (tem->second != nullptr)
     {
