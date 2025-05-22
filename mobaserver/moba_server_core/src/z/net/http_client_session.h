@@ -29,6 +29,7 @@ namespace z {
 					char const* port,
 					char const* target,
 					const std::string &body,
+					const std::string &content_type,
 					const int version,
 					std::function<void(const std::string&, bool)> callback);
 

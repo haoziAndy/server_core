@@ -133,7 +133,7 @@ public:
     void Stop();
     void ForceStop();
 
-	bool HttpPostReq(char const* host, char const*port, char const*target, const std::string &content, std::function<void(const std::string&, bool)> callback);
+	bool HttpPostReq(char const* host, char const*port, char const*target, const std::string &content, const std::string &content_type, std::function<void(const std::string&, bool)> callback);
 
     void RegisterCleanFunctor(const boost::function<void()>&& functor)
     {

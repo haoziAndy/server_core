@@ -717,7 +717,9 @@ void ZServer::PrintMsg(SMsgHeader* header, const google::protobuf::Message* prot
 	}
 }
 
-bool ZServer::HttpPostReq(char const* host, char const*port, char const*target, const std::string &content, std::function<void(const std::string&, bool)> callback)
+bool ZServer::HttpPostReq(char const* host, char const*port, char const*target, 
+	const std::string &content, const std::string &content_type, 
+	std::function<void(const std::string&, bool)> callback)
 {
 	if (host == nullptr || port == nullptr || target == nullptr)
 	{
@@ -729,7 +731,7 @@ bool ZServer::HttpPostReq(char const* host, char const*port, char const*target, 
 	if (http == nullptr) {
 		return false;
 	}
-	http->run(host, port, target, content, version, callback);
+	http->run(host, port, target, content, content_type, version, callback);
 	return true;
 }
 

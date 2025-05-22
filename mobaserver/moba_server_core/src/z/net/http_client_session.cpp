@@ -21,6 +21,7 @@ namespace z {
 				char const* port,
 				char const* target,
 				const std::string &body,
+				const std::string &content_type,
 				const int version,
 			    std::function<void(const std::string&, bool)> callback)
 		{
@@ -30,7 +31,7 @@ namespace z {
 			req_.target(target);
 			req_.set(boost::beast::http::field::host, host);
 			req_.set(boost::beast::http::field::user_agent, BOOST_BEAST_VERSION_STRING);
-			req_.set(boost::beast::http::field::content_type, "application/x-www-form-urlencoded; charset=utf-8");
+			req_.set(boost::beast::http::field::content_type, content_type);
 			req_.body() = body;
 			req_.prepare_payload();
 			res_callback_ = callback;
