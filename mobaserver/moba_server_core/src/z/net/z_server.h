@@ -4,8 +4,8 @@
 #include "z/net/msg_header.h"
 
 
-#define SERVER_TYPE_BITS 6
-#define SERVER_INDEX_BITS 10
+#define SERVER_TYPE_BITS 5
+#define SERVER_INDEX_BITS 11
 #define MAX_SERVER_TYPE ((1 << (SERVER_TYPE_BITS)) - 1)
 #define MAX_SERVER_INDEX ((1 << (SERVER_INDEX_BITS)) - 1)
 #define MAX_SERVER_ID ((1 << (SERVER_TYPE_BITS + SERVER_INDEX_BITS)) - 1)
