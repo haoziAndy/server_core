@@ -8,28 +8,42 @@ namespace z {
 namespace net {
 
 
-CConnection::CConnection( IServer* server, int conn_index )
-    : IConnection(server, conn_index)
-    , status_(LoginStatus_DEFAULT)
-    , account_id_("")
+CConnection::CConnection( IServer* server, boost::asio::ip::tcp::socket&& sock, int conn_index )
+    : IConnection(server, std::move(sock), conn_index)
     , idle_count_(0)
     , msg_count_(0)
 {
 
 }
 
-CConnection::~CConnection()
-{
+CConnection::~CConnection(){
 }
 
 
 void CConnection::Start()
 {
-    ++op_count_;
     auto timeout_sec = CSERVER.login_time_out_sec();
     deadline_timer_.expires_from_now(boost::posix_time::seconds(timeout_sec));
-    deadline_timer_.async_wait(
-        boost::bind(&CConnection::OnLoginTimeOut, this, boost::asio::placeholders::error));
+    deadline_timer_.async_wait([this, self = shared_from_this()](const boost::system::error_code& ec)
+        {
+
+            if (!ec)
+            {
+                // timeout 还处于账户登录, 断开
+                if (status_ <= LoginStatus_ACCOUNT_LOGIN)
+                {
+                    LOG_DEBUG("session[%d] OnLoginTimeOut. close.", session_id());
+                    AsyncClose();
+                    return;
+                }
+                else
+                {
+                    idle_count_ = 0;
+                    msg_count_ = 0;
+                    StartKeepAliveTimer();
+                }
+            }
+        });
 
     IConnection::Start();
 }
@@ -89,129 +103,50 @@ int32 CConnection::OnRead( char* data, int32 length )
     return disposed_size;
 }
 
-void CConnection::OnWrite( int32 length )
+void CConnection::StartKeepAliveTimer()
 {
-    for (auto it = send_queue_.begin(); it != send_queue_.end(); ++it)
-    {
-        auto& buffer = *it;
-        const char* data = boost::asio::buffer_cast<const char*>(buffer);
-        ZPOOL_FREE(static_cast<void*>(const_cast<char*>(data)));
-    }
-}
+    deadline_timer_.expires_from_now(boost::posix_time::seconds(1));
+    deadline_timer_.async_wait([this, self = shared_from_this()](const boost::system::error_code& ec){
+        if (!ec)
+        {
+            // 判断连接5分钟没有消息就断开
+            auto timeout_sec = CSERVER.keepalive_time_out_sec();
+            if (idle_count_ >= timeout_sec)
+            {
+                LOG_DEBUG("session[%d] OnKeepAliveTimeOut. idle >= %d. close.", session_id(), timeout_sec);
+                AsyncClose();
+                return;
+            }
+            else
+            {
+                // 判断连接5分钟没有消息就断开
+                enum { idle_max_count = 300 };
+                if (idle_count_ >= idle_max_count)
+                {
+                    LOG_DEBUG("session[%d] OnKeepAliveTimeOut. idle >= %d. close.", session_id(), idle_max_count);
+                    AsyncClose();
+                    return;
+                }
+                // 消息过多, 断开 TODO(zen): 设置 数目
+                enum { max_msg_flood = 1024 };
+                if (msg_count_ >= max_msg_flood)
+                {
+                    LOG_DEBUG("session[%d] recv too many msgs. msg > %d per sec. close.", session_id(), max_msg_flood);
+                    AsyncClose();
+                    return;
+                }
+            }
 
-void CConnection::OnLoginTimeOut(const boost::system::error_code& ec)
-{
-    --op_count_;
-    if (!ec)
-    {
-        // timeout 还处于账户登录, 断开
-        if (status_ <= LoginStatus_ACCOUNT_LOGIN)
-        {
-            LOG_DEBUG("session[%d] OnLoginTimeOut. close.", session_id());
-            AsyncClose();
-            return;
-        }
-        else
-        {
-            idle_count_ = 0;
+            ++idle_count_;
             msg_count_ = 0;
             StartKeepAliveTimer();
         }
-    }
-
-    if (op_count_ == 0)
-    {
-        AsyncClose();
-    }
-}
-
-void CConnection::StartKeepAliveTimer()
-{
-    ++op_count_;
-    deadline_timer_.expires_from_now(boost::posix_time::seconds(1));
-    deadline_timer_.async_wait(
-        boost::bind(&CConnection::OnKeepAliveTimeOut, this, boost::asio::placeholders::error));
-}
-
-void CConnection::OnKeepAliveTimeOut( const boost::system::error_code& ec )
-{
-    --op_count_;
-    if (!ec)
-    {
-        // 判断连接5分钟没有消息就断开
-        auto timeout_sec = CSERVER.keepalive_time_out_sec();
-        if (idle_count_ >= timeout_sec)
-        {
-            LOG_DEBUG("session[%d] OnKeepAliveTimeOut. idle >= %d. close.", session_id(), timeout_sec);
-            AsyncClose();
-            return;
-        }        
-        else
-        {
-            // 判断连接5分钟没有消息就断开
-            enum {idle_max_count = 300};
-            if (idle_count_ >= idle_max_count)
-            {
-                LOG_DEBUG("session[%d] OnKeepAliveTimeOut. idle >= %d. close.", session_id(), idle_max_count);
-                AsyncClose();
-                return;
-            }
-            // 消息过多, 断开 TODO(zen): 设置 数目
-            enum { max_msg_flood = 1024 };
-            if (msg_count_ >= max_msg_flood)
-            {
-                LOG_DEBUG("session[%d] recv too many msgs. msg > %d per sec. close.", session_id(), max_msg_flood);
-                AsyncClose();
-                return;
-            }
-        }
-        
-        ++idle_count_;
-        msg_count_ = 0;
-        StartKeepAliveTimer();
-    }
-
-    if (op_count_ == 0)
-    {
-        AsyncClose();
-    }
-}
-
-int CConnection::SetLoginStatus( LoginStatus status )
-{
-    // 玩家可以跳过
-    if (static_cast<int>(status_) + 1 != static_cast<int>(status) 
-        && !(status_ == LoginStatus_PLAYER_CREATE && status == LoginStatus_PLAY_GAME))
-    {
-        LOG_ERR("Wrong status step != 1 and not player_login");
-        return -1;
-    }
-    if (status >= LoginStatus_CLOSING)
-    {
-        LOG_ERR("closing status could Only be set by AsyncClose() ");
-        return -1;
-    }
-    status_ = status;
-    return 0;
+    });
 }
 
 void CConnection::OnClosed()
 {
-    for (auto it = send_queue_.begin(); it != send_queue_.end(); ++it)
-    {
-        auto& buffer = *it;
-        const char* data = boost::asio::buffer_cast<const char*>(buffer);
-        ZPOOL_FREE(static_cast<void*>(const_cast<char*>(data)));
-    }
-    send_queue_.clear();
-
-    for (auto it = pending_send_queue_.begin(); it != pending_send_queue_.end(); ++it)
-    {
-        auto& buffer = *it;
-        const char* data = boost::asio::buffer_cast<const char*>(buffer);
-        ZPOOL_FREE(static_cast<void*>(const_cast<char*>(data)));
-    }
-    pending_send_queue_.clear();
+    IConnection::OnClosed();
 
     CSERVER.request_handler()->OnClientDisconnect(this);
 }

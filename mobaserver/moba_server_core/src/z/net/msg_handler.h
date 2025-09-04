@@ -6,7 +6,7 @@ namespace net {
 
 struct SMsgHeader;
 struct CMsgHeader;
-class CConnection;
+class IConnection;
 class HConnection;
 class UConnection;
 namespace http {
@@ -36,9 +36,9 @@ public:
     // 特殊消息处理, 像账户登录, 角色登录, 需要修改conn状态的一些消息. 
     // 触发在转发给zservice之后
     // -1 表示出错, 需要关闭客户端连接
-    virtual int OnMessage(CConnection* conn, CMsgHeader* msg) = 0;
+    virtual int OnMessage(IConnection* conn, CMsgHeader* msg) = 0;
     // 客户端断线
-    virtual void OnClientDisconnect(CConnection* conn) {}
+    virtual void OnClientDisconnect(IConnection* conn) {}
 };
 
 /// http 请求处理器接口

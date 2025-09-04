@@ -6,9 +6,9 @@
 namespace z {
 namespace net {
 
-IConnection::IConnection( IServer* server, int conn_index )
+IConnection::IConnection( IServer* server, boost::asio::ip::tcp::socket &&sock, int conn_index)
     : server_(server)
-    , socket_(server->io_service())
+    , socket_(std::move(sock))
     , deadline_timer_(server->io_service())
     , session_id_(conn_index)
     , user_id_("")
@@ -17,8 +17,9 @@ IConnection::IConnection( IServer* server, int conn_index )
     , is_writing_(false)
     , is_closing_(false)
     , pending_send_queue_(send_queue_)
+    , status_(LoginStatus_DEFAULT)
+    , account_id_("")
 {
-    op_count_ = 0;
 }
 
 IConnection::~IConnection()
@@ -120,60 +121,48 @@ void IConnection::StartRead()
         return;
     is_reading_ = true;
 
-    ++op_count_;
     socket_.async_read_some(boost::asio::buffer(read_data_ + read_size_, sizeof(read_data_) - read_size_),
-        boost::bind(&IConnection::HandleRead, this,
-        boost::asio::placeholders::error,
-        boost::asio::placeholders::bytes_transferred));
-}
-
-void IConnection::HandleRead( const boost::system::error_code& ec, size_t bytes_transferred )
-{
-    -- op_count_;
-    is_reading_ = false;
-    if (!ec)
-    {
-        /// @todo decryt
-
-        read_size_ += bytes_transferred;
-        int32 handled_size = 0;
-        while (handled_size < read_size_)
-        {
-            int len = OnRead(read_data_ + handled_size, read_size_ - handled_size);
-            if (len == 0)
+        [this, self = shared_from_this()](const boost::system::error_code& ec, size_t bytes_transferred){
+            is_reading_ = false;
+            if (!ec)
             {
-                break;
-            }
-            else if (len > 0)
-            {
-                handled_size += len;
+                /// @todo decryt
+
+                read_size_ += bytes_transferred;
+                int32 handled_size = 0;
+                while (handled_size < read_size_)
+                {
+                    int len = OnRead(read_data_ + handled_size, read_size_ - handled_size);
+                    if (len == 0)
+                    {
+                        break;
+                    }
+                    else if (len > 0)
+                    {
+                        handled_size += len;
+                    }
+                    else
+                    {
+                        AsyncClose();
+                        return;
+                    }
+                }
+
+                if (handled_size > 0 && handled_size < read_size_)
+                {
+                    memcpy(read_data_,
+                        read_data_ + handled_size, read_size_ - handled_size);
+                }
+                read_size_ -= handled_size;
+
+                // continue read
+                StartRead();
             }
             else
             {
-                AsyncClose();
-                return;
+                HandleError(ec);
             }
-        }
-
-        if (handled_size > 0 && handled_size < read_size_)
-        {
-            memcpy(read_data_, 
-                read_data_ + handled_size, read_size_ - handled_size);
-        }
-        read_size_ -= handled_size;
-
-        // continue read
-        StartRead();
-    }
-    else
-    {
-        HandleError(ec);
-    }
-
-    if (op_count_ == 0)
-    {
-        AsyncClose();
-    }
+        });
 }
 
 void IConnection::StartWrite()
@@ -189,58 +178,69 @@ void IConnection::StartWrite()
 
     is_writing_ = true;
 
-    ++op_count_;
     boost::asio::async_write(socket_,
-        send_queue_,
-        boost::bind(&IConnection::HandleWrite, this, 
-        boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+        send_queue_,[this, self = shared_from_this()](const boost::system::error_code& ec, size_t bytes_transferred)
+        {
+            is_writing_ = false;
+            if (!ec)
+            {
+                OnWrite(bytes_transferred);
+                send_queue_.clear();
+                if (!pending_send_queue_.empty())
+                {
+                    send_queue_.swap(pending_send_queue_);
+                    // continue write
+                    StartWrite();
+                }
+            }
+            else
+            {
+                HandleError(ec);
+            }
+        });
 }
 
-void IConnection::HandleWrite( const boost::system::error_code& ec, size_t bytes_transferred )
+void IConnection::OnWrite( int32 length )
 {
-    -- op_count_;
-    is_writing_ = false;
-    if (!ec)
+    for (auto it = send_queue_.begin(); it != send_queue_.end(); ++it)
     {
-        OnWrite(bytes_transferred);
-        send_queue_.clear();
-        if (!pending_send_queue_.empty())
-        {
-            send_queue_.swap(pending_send_queue_);
-            // continue write
-            StartWrite();
-        }
-    }
-    else
-    {
-        HandleError(ec);
-    }
-
-    if (op_count_ == 0)
-    {
-        AsyncClose();
+        auto& buffer = *it;
+        const char* data = boost::asio::buffer_cast<const char*>(buffer);
+        ZPOOL_FREE(static_cast<void*>(const_cast<char*>(data)));
     }
 }
 
 void IConnection::Close()
 {
-    if (is_closing_)
-    {
-        if (op_count_ == 0)
-            Destroy();
-    }
-    else
-    {
-        is_closing_ = true;
+    is_closing_ = true;
         
-        boost::system::error_code ignored_ec;
-        socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
-        socket_.close(ignored_ec);
-        deadline_timer_.cancel(ignored_ec);
+    boost::system::error_code ignored_ec;
+    socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, ignored_ec);
+    socket_.close(ignored_ec);
+    deadline_timer_.cancel(ignored_ec);
 
-        OnClosed();
-    }
+    OnClosed();
 }
+
+void IConnection::OnClosed()
+{
+    for (auto it = send_queue_.begin(); it != send_queue_.end(); ++it)
+    {
+        auto& buffer = *it;
+        const char* data = boost::asio::buffer_cast<const char*>(buffer);
+        ZPOOL_FREE(static_cast<void*>(const_cast<char*>(data)));
+    }
+    send_queue_.clear();
+
+    for (auto it = pending_send_queue_.begin(); it != pending_send_queue_.end(); ++it)
+    {
+        auto& buffer = *it;
+        const char* data = boost::asio::buffer_cast<const char*>(buffer);
+        ZPOOL_FREE(static_cast<void*>(const_cast<char*>(data)));
+    }
+    pending_send_queue_.clear();
+}
+
 
 void IConnection::HandleError( const boost::system::error_code& ec )
 {
@@ -258,21 +258,9 @@ void IConnection::HandleError( const boost::system::error_code& ec )
     AsyncClose();
 }
 
-void IConnection::Destroy()
-{
-    ZPOOL_DELETE(this);
-}
-
 void IConnection::AsyncClose()
 {
-    if (!is_closing_)
-    {
-        server_->CloseConnection(session_id());
-    }
-    else
-    {
-        Close();
-    }
+    server_->CloseConnection(session_id());
 }
 
 boost::asio::io_service& IConnection::io_service() const
@@ -281,7 +269,23 @@ boost::asio::io_service& IConnection::io_service() const
 }
 
 
-
+int IConnection::SetLoginStatus( LoginStatus status )
+{
+    // 玩家可以跳过
+    if (static_cast<int>(status_) + 1 != static_cast<int>(status) 
+        && !(status_ == LoginStatus_PLAYER_CREATE && status == LoginStatus_PLAY_GAME))
+    {
+        LOG_ERR("Wrong status step != 1 and not player_login");
+        return -1;
+    }
+    if (status >= LoginStatus_CLOSING)
+    {
+        LOG_ERR("closing status could Only be set by AsyncClose() ");
+        return -1;
+    }
+    status_ = status;
+    return 0;
+}
 
 
 } // namespace net

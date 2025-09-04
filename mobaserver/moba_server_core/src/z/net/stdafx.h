@@ -24,6 +24,14 @@
 #include <boost/asio/strand.hpp>
 #include <boost/config.hpp>
 
+#ifdef ENABLE_WEBSOCKET_SSL
+#include <boost/beast/ssl.hpp>
+#endif
+#include <boost/beast/websocket.hpp>
+#ifdef ENABLE_WEBSOCKET_SSL
+#include <boost/beast/websocket/ssl.hpp>
+#endif
+
 
 #include <algorithm>
 #include <cstdlib>

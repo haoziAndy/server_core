@@ -25,29 +25,34 @@ protected:
 public:
     void Destroy();
 
-    //void Run();
-
     void Stop();
 
-    void StartAccept();
+    virtual void StartAccept();
 
-    void HandleAccept(const boost::system::error_code& ec);
+    int GenNewConnectionIndex(){
+        static int s_conn_index = 0;
+        auto conn_index = ((++s_conn_index) << 1) | 0x1;
+        return conn_index;
+    }
 
-    virtual IConnection* CreateConnection(int32 session_id) = 0;
+    virtual std::shared_ptr<IConnection> CreateConnection(boost::asio::ip::tcp::socket&& sock, int32 session_id) = 0;
 
-    void CloseConnection(int32 session_id);
+    virtual void CloseConnection(int32 session_id);
 
-    IConnection* GetConnection(int32 session_id) const;
+    virtual std::shared_ptr<IConnection> GetConnection(int32 session_id) const;
 
-	const std::unordered_map<int, IConnection*> GetALlConnection() const {
+	const std::unordered_map<int, std::shared_ptr<IConnection>>& GetALlConnection() {
 		return connection_mgr_;
 	};
 
     boost::asio::io_service& io_service() { return master_io_service_; }
 
+    void SendToSession(int session_id, const std::string & user_id, SMsgHeader* msg);
+
 protected:
+    virtual void _SendToSession(int session_id, const std::string & user_id, CMsgHeader* msg);
+
     boost::asio::io_service& master_io_service_;
-    boost::asio::io_service::work work_;
 
     /// Acceptor used to listen for incoming connections.
     boost::asio::ip::tcp::acceptor acceptor_;
@@ -57,9 +62,7 @@ protected:
 
     bool is_server_shutdown_;
 
-    IConnection* new_connection_;
-
-    std::unordered_map<int, IConnection*> connection_mgr_;
+    static std::unordered_map<int, std::shared_ptr<IConnection>> connection_mgr_;
 
     DISALLOW_COPY_AND_ASSIGN(IServer);
 };

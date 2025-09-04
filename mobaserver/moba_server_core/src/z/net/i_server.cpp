@@ -10,12 +10,12 @@ namespace net {
 
 IServer::IServer()
     : master_io_service_(ZSERVER.time_engine())
-    , work_(master_io_service_)
     , acceptor_(master_io_service_)
     , signals_(master_io_service_)
     , is_server_shutdown_(false)
-    , new_connection_(nullptr)
 {}
+
+std::unordered_map<int, std::shared_ptr<IConnection>> IServer::connection_mgr_;
 
 int IServer::Init(const std::string& address, const std::string& port)
 {
@@ -101,20 +101,6 @@ void IServer::Stop()
     acceptor_.close(ec);
 
     //ZSERVER.Stop();
-
-    if (new_connection_ != nullptr)
-    {
-        ZPOOL_DELETE(new_connection_);
-        new_connection_ = nullptr;
-    }
-
-    for (auto it = connection_mgr_.begin(); it != connection_mgr_.end(); ++it)
-    {
-        if (it->second != nullptr)
-        {
-            ZPOOL_DELETE(it->second);
-        }
-    }
     connection_mgr_.clear();
 }
 
@@ -122,60 +108,37 @@ void IServer::StartAccept()
 {
     if (is_server_shutdown_)
         return;
-    static int s_conn_index = 0;
-    if (!new_connection_)
-    {
-//         new_connection_ = ZPOOL_NEW(CConnection, std::ref(*workers_[next_work_index_]), conn_index++, 
-//             c_in_msg_handler_, c_out_msg_handler_);
-        auto conn_index = ((++s_conn_index) << 1) | 0x1;
-        new_connection_ = CreateConnection(conn_index++);
-        
-        // 42亿个id, 应该不会被占满, 做个保护, 最大循环100
-        for (int i=0; connection_mgr_.find(conn_index) != connection_mgr_.end() && i<100; ++i)
-            ++ conn_index;
-    }
-    acceptor_.async_accept(new_connection_->socket(), 
-        boost::bind(&IServer::HandleAccept, this, boost::asio::placeholders::error));
-}
 
-void IServer::HandleAccept( const boost::system::error_code& ec )
-{
-    if (is_server_shutdown_)
-        return;
+    acceptor_.async_accept(master_io_service_, [this](const boost::system::error_code& ec, boost::asio::ip::tcp::socket new_socket) {
+        if (is_server_shutdown_)
+            return;
 
-    if (!ec)
-    {
-        try
+        if (!ec)
         {
-            int32 session_id = new_connection_->session_id();
-            LOG_DEBUG("Client[%d] addr %s[%d] connected.", session_id,
-                new_connection_->socket().remote_endpoint().address().to_string().c_str(),
-                new_connection_->socket().remote_endpoint().port());
-            auto ret = connection_mgr_.insert(std::make_pair(session_id, new_connection_));
-            if (ret.second)
+            try
             {
-                new_connection_->Start();
-                new_connection_ = nullptr;       
+                auto session_id = GenNewConnectionIndex();
+                LOG_DEBUG("Client[%d] addr %s[%d] connected.", session_id, new_socket.remote_endpoint().address().to_string().c_str(), new_socket.remote_endpoint().port());
+                auto new_conn = CreateConnection(std::move(new_socket), session_id);
+                auto ret = connection_mgr_.insert(std::make_pair(session_id, new_conn));
+                if (ret.second)
+                {
+                    new_conn->Start();
+                }
+                else
+                {
+                    LOG_ERR("%d session already used on client connected", session_id);
+                }
+
             }
-            else
+            catch (boost::system::system_error& remote_ec)
             {
-                LOG_ERR("%d session already used on client connected", session_id);
-                ZPOOL_DELETE(new_connection_);
-                new_connection_ = nullptr;
+                LOG_ERR("%d: %s", remote_ec.code().value(), remote_ec.what());
             }
-            
-        } 
-        catch(boost::system::system_error& remote_ec)
-        {
-            LOG_ERR("%d: %s", remote_ec.code().value(), remote_ec.what());
-            boost::system::error_code t_ec;
-            new_connection_->socket().close(t_ec);
-			ZPOOL_DELETE(new_connection_);
-			new_connection_ = nullptr;
         }
-    }
-    
-    StartAccept();
+
+        StartAccept();
+    });
 }
 
 void IServer::CloseConnection( int32 session_id )
@@ -184,8 +147,7 @@ void IServer::CloseConnection( int32 session_id )
     if (it != connection_mgr_.end())
     {
         LOG_DEBUG("session[%d] end.", session_id);
-        auto conn = it->second;
-        conn->Close();
+        it->second->Close();
         connection_mgr_.erase(it);
     }
     else
@@ -194,13 +156,66 @@ void IServer::CloseConnection( int32 session_id )
     }
 }
 
-IConnection* IServer::GetConnection( int32 session_id ) const
+std::shared_ptr<IConnection> IServer::GetConnection( int32 session_id ) const
 {
     auto it = connection_mgr_.find(session_id);
     if (it != connection_mgr_.end())
         return it->second;
     else
         return nullptr;
+}
+
+void IServer::SendToSession( int session_id, const std::string & user_id, SMsgHeader* msg )
+{
+	if (msg->length > 0xffff)
+	{
+		auto msg_names = ZSERVER.msg_names();
+		if (msg_names != nullptr)
+			LOG_ERR("client msg length > 0xffff, id %d %s", msg->msg_id, (*msg_names)[msg->msg_id].c_str());
+		return;
+	}
+    z::net::CMsgHeader* cmsg;
+    int buff_length = msg->length + sizeof(*cmsg);
+    char* buff = reinterpret_cast<char*> (ZPOOL_MALLOC(buff_length));
+    cmsg = reinterpret_cast<z::net::CMsgHeader*>(buff);
+    cmsg->length = msg->length;
+    cmsg->msg_id = msg->msg_id;
+	cmsg->srv_msg_stream_id = msg->srv_msg_stream_id;
+	cmsg->cli_msg_stream_id = msg->cli_msg_stream_id;
+    memcpy(cmsg+1, msg+1, msg->length);
+
+    _SendToSession(session_id, user_id, cmsg);
+}
+
+void IServer::_SendToSession(int session_id, const std::string& user_id, CMsgHeader* msg)
+{
+    auto it = connection_mgr_.find(session_id);
+    if (it == connection_mgr_.end())
+    {
+        LOG_DEBUG("Stop SendMsg[%d] to session[%d] user %s: not found client session",
+            msg->msg_id, session_id, user_id.c_str());
+        ZPOOL_FREE(msg);
+        return;
+    }
+    auto& conn = it->second;
+    if (!conn)
+    {
+        LOG_ERR("NULL connection by player %s", user_id.c_str());
+        ZPOOL_FREE(msg);
+        return;
+    }
+    if (!user_id.empty() && conn->user_id() != user_id)
+    {
+        LOG_DEBUG("Stop SendMsg[%d] to session[%d]: user_id mismatched. need %s, get %s",
+            msg->msg_id, session_id, user_id.c_str(), conn->user_id().c_str());
+        ZPOOL_FREE(msg);
+        return;
+    }
+
+    auto length = msg->length + sizeof(*msg);
+
+    CMsgHeaderHton(msg);
+    conn->AsyncSend(reinterpret_cast<const char*>(msg), length);
 }
 
 

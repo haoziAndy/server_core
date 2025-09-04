@@ -8,10 +8,10 @@ namespace z {
 namespace net {
 
 class ICMsgHandler;
-struct SMsgHeader;
 
 class CCServer : public IServer
 {
+public:
     CCServer()
         :request_handler_(nullptr)
         , login_time_out_sec_(0)
@@ -23,9 +23,9 @@ public:
 
     bool Init(const std::string& address, const std::string& port, ICMsgHandler* handler);
 
-    virtual IConnection* CreateConnection(int32 session_id)
+    virtual std::shared_ptr<IConnection> CreateConnection(boost::asio::ip::tcp::socket&& sock, int32 session_id)
     {
-        return ZPOOL_NEW(CConnection, this, session_id);
+        return std::shared_ptr<CConnection>(ZPOOL_NEW(CConnection, this, std::move(sock), session_id), [](CConnection* conn) {ZPOOL_DELETE(conn); });
     }
 
     z::net::ICMsgHandler* request_handler() const {return request_handler_;}
@@ -35,12 +35,6 @@ public:
 
     int32 keepalive_time_out_sec() const {return keepalive_time_out_sec_;}
     void set_keepalive_time_out_sec(int32 time_out_sec) { keepalive_time_out_sec_ = time_out_sec; }
-
-    void set_msg_names();
-
-    void SendToSession(int session_id, const std::string & user_id, SMsgHeader* msg);
-private:
-    void SendToSession(int session_id, const std::string & user_id, CMsgHeader* msg);
 
 private:
     z::net::ICMsgHandler* request_handler_;

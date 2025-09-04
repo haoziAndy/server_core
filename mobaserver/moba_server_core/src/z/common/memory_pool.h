@@ -139,7 +139,7 @@ public:
         if (data == nullptr)
             return nullptr;
         T* p = reinterpret_cast<T*>(data);
-        new(p)T(arg1, arg2, arg3);
+        new(p)T(arg1, std::forward<Arg2>(arg2), arg3);
 
         return p;
     }
@@ -420,7 +420,7 @@ public:
         if (data == nullptr)
             return nullptr;
         T* p = reinterpret_cast<T*>(data);
-        new(p)T(arg1, arg2, arg3);
+        new(p)T(arg1, arg2, std::forward<Arg3>(arg3));
 
         return boost::shared_ptr<T>(p, boost::bind(&GlobalMemPool::Delete<T>, this, boost::placeholders::_1, file, line, func));
     }

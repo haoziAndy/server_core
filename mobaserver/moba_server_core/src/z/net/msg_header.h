@@ -126,7 +126,7 @@ header->checksum = boost::asio::detail::socket_ops::network_to_host_short(header
     header->length = boost::asio::detail::socket_ops::host_to_network_short(header->length);\
     header->msg_id = boost::asio::detail::socket_ops::host_to_network_short(header->msg_id);\
 	header->srv_msg_stream_id = boost::asio::detail::socket_ops::host_to_network_long(header->srv_msg_stream_id);\
-	header->cli_msg_stream_id = boost::asio::detail::socket_ops::network_to_host_long(header->cli_msg_stream_id);\
+	header->cli_msg_stream_id = boost::asio::detail::socket_ops::host_to_network_long(header->cli_msg_stream_id);\
 } while (false)
 
 /* header->send_tick = boost::asio::detail::socket_ops::host_to_network_short(header->send_tick);
