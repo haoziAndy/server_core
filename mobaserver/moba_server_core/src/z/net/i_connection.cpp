@@ -11,14 +11,14 @@ IConnection::IConnection( IServer* server, boost::asio::ip::tcp::socket &&sock, 
     , socket_(std::move(sock))
     , deadline_timer_(server->io_service())
     , session_id_(conn_index)
+    , status_(LoginStatus_DEFAULT)
+    , account_id_("")
     , user_id_("")
     , read_size_(0)
     , is_reading_(false)
     , is_writing_(false)
     , is_closing_(false)
     , pending_send_queue_(send_queue_)
-    , status_(LoginStatus_DEFAULT)
-    , account_id_("")
 {
 }
 

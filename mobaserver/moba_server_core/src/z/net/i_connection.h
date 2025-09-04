@@ -73,15 +73,13 @@ protected:
 
     boost::asio::deadline_timer deadline_timer_; 
 
-    LoginStatus status_;
     int session_id_;
+    LoginStatus status_;
     std::string account_id_;
 	std::string user_id_;
 
     char read_data_[recv_buff_length];
     int32 read_size_;
-
-    //std::atomic_uint op_count_;
 
     bool is_reading_;
 	bool is_writing_;
