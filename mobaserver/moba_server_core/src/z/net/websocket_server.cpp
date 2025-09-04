@@ -8,7 +8,7 @@ namespace z {
 namespace net {
 
 bool WebsocketServer::Init( const std::string& address, const std::string& port, ICMsgHandler* handler){
-    if (CCServer::Init(address, port, handler) < 0){
+    if (!CCServer::Init(address, port, handler)){
         return false;
     }
 

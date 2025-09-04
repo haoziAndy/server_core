@@ -158,7 +158,7 @@ void WebsocketConnection::do_read(){
         auto buff_size = boost::asio::buffer_size(buffer_data);
         if (buff_size < sizeof(CMsgHeader)){
             AsyncClose();
-            LOG_ERR("WebsocketConnection::on_read received incomplete client package, buff_size: %u < msg_head_size: %u", buff_size, sizeof(CMsgHeader));
+            LOG_ERR("WebsocketConnection::on_read received incomplete client package, buff_size: %lu < msg_head_size: %lu", buff_size, sizeof(CMsgHeader));
             return;
         }
 
@@ -168,7 +168,7 @@ void WebsocketConnection::do_read(){
         CMsgHeader* msg = reinterpret_cast<CMsgHeader*>(byte_array.data());
         if(byte_array.size() != buff_size){
             AsyncClose();
-            LOG_ERR("WebsocketConnection::on_read copy data error, buff_size: %u != byte_array_size: %u", buff_size, byte_array.size());
+            LOG_ERR("WebsocketConnection::on_read copy data error, buff_size: %lu != byte_array_size: %lu", buff_size, byte_array.size());
             return;
         }
         CMsgHeaderNtoh(msg);
@@ -180,8 +180,8 @@ void WebsocketConnection::do_read(){
         }
 
         int msg_length = sizeof(*msg) + msg->length;
-        if (buff_size != msg_length){ // 不够一个完整的包
-            LOG_ERR("WebsocketConnection::on_read received incomplete client package, msg_length: %d != buff_size: %u", msg_length, buff_size);
+        if (msg_length < 0 || buff_size != static_cast<size_t>(msg_length)){ // 不够一个完整的包
+            LOG_ERR("WebsocketConnection::on_read received incomplete client package, msg_length: %d != buff_size: %lu", msg_length, buff_size);
             AsyncClose();
             return;
         }
