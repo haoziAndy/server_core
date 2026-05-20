@@ -39,13 +39,10 @@ void WebsocketConnection::Start(){
         }
     });
 
-    boost::asio::dispatch(ws_.get_executor(), [this, self = shared_from_this()](){
-        auto do_http_read = [this, self]() {
+    boost::asio::dispatch(ws_.get_executor(), [this, self = shared_from_this()]() mutable {
+        auto do_http_read = [this, self=std::move(self)]() mutable {
             // 设置读取 HTTP Upgrade 请求的临时超时（防止恶意死连接占用）
             boost::beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(15));
-
-            // 在堆上动态分配 http_req，利用智能指针捕获，握手完自动销毁
-            auto http_req = std::make_shared<boost::beast::http::request<boost::beast::http::string_body>>();
 
             // 【Boost 1.73 核心适配点】：WSS 和 WS 下统一安全地传入各自对应的紧邻下一层（Next Layer）
             auto& next_io_layer = ws_.next_layer(); 
@@ -54,8 +51,8 @@ void WebsocketConnection::Start(){
             boost::beast::http::async_read(
                 next_io_layer, 
                 buffer_, 
-                *http_req, 
-                [this, self, http_req](boost::beast::error_code ec, std::size_t) {
+                http_req_, 
+                [this, self=std::move(self)](boost::beast::error_code ec, std::size_t) mutable {
                     if (ec) {
                         LOG_ERR("session[%d] HTTP read error: %s", session_id(), ec.message().c_str());
                         AsyncClose();
@@ -63,7 +60,7 @@ void WebsocketConnection::Start(){
                     }
 
                     // 强校验：如果不是标准的 WebSocket 升级请求，直接拒绝
-                    if (!boost::beast::websocket::is_upgrade(*http_req)) {
+                    if (!boost::beast::websocket::is_upgrade(http_req_)) {
                         LOG_ERR("session[%d] Not a valid websocket upgrade request.", session_id());
                         AsyncClose();
                         return;
@@ -92,7 +89,7 @@ void WebsocketConnection::Start(){
                         }));
 
                     // Accept the websocket handshake
-                    ws_.async_accept(*http_req, [this, self, http_req](boost::beast::error_code ec) {
+                    ws_.async_accept(http_req_, [this, self=std::move(self)](boost::beast::error_code ec) {
                         if (ec) {
                             if (ec != boost::beast::websocket::error::closed) {
                                 LOG_ERR("WebsocketConnection::on_accept error, errorcode[%d]:%s", ec.value(), ec.message().c_str());
@@ -107,16 +104,16 @@ void WebsocketConnection::Start(){
 
                             // 【第一级：X-Real-IP】
                             // 很多云网关或 Nginx 会被配置为直接将客户端真实 IP 写入该字段（全小写查找）
-                            auto it_real = http_req->find("x-real-ip");
-                            if (it_real != http_req->end() && !it_real->value().empty()) {
+                            auto it_real = http_req_.find("x-real-ip");
+                            if (it_real != http_req_.end() && !it_real->value().empty()) {
                                 real_client_ip = std::string(it_real->value());
                             }
 
                             // 【第二级：X-Forwarded-For】
                             // 标准的反向代理链条头部。如果有多次代理，提取最左侧第一个非空 IP
                             if (real_client_ip.empty()) {
-                                auto it_xff = http_req->find("x-forwarded-for");
-                                if (it_xff != http_req->end() && !it_xff->value().empty()) {
+                                auto it_xff = http_req_.find("x-forwarded-for");
+                                if (it_xff != http_req_.end() && !it_xff->value().empty()) {
                                     std::string xff_value = std::string(it_xff->value());
                                     std::string::size_type comma_pos = xff_value.find(',');
                                     
@@ -145,7 +142,7 @@ void WebsocketConnection::Start(){
                             real_client_ip.erase(real_client_ip.find_last_not_of(" ") + 1); 
 
                             // 3. 将解析出来的真实 IP 赋值给你的成员变量（假设名为 client_ip_）
-                            client_ip_ = real_client_ip;
+                            client_ip_ = std::move(real_client_ip);
 
                             // 打印日志验证结果（如果你需要的话）
                             LOG_DEBUG("session[%d] Websocket upgrade success. Real Client IP: %s", session_id(), client_ip_.c_str());
@@ -162,7 +159,7 @@ void WebsocketConnection::Start(){
         // Set the timeout.
         boost::beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(30));
         // Perform the SSL handshake
-        ws_.next_layer().async_handshake(boost::asio::ssl::stream_base::server, [this, self, do_http_read](boost::beast::error_code ec) {
+        ws_.next_layer().async_handshake(boost::asio::ssl::stream_base::server, [this, self=std::move(self), do_http_read=std::move(do_http_read)](boost::beast::error_code ec) mutable  {
             if (ec) {
                 LOG_ERR("WebsocketConnection::on_handshake error, errorcode[%d]:%s", ec.value(), ec.message().c_str());
                 AsyncClose();

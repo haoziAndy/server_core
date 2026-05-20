@@ -39,6 +39,7 @@ private:
     boost::beast::websocket::stream<boost::beast::tcp_stream> ws_;
 #endif
     boost::beast::flat_buffer buffer_;
+    boost::beast::http::request<boost::beast::http::string_body> http_req_;
 
     int32 idle_count_;                  // 防止发呆, 每秒加1, 到某值就判定断开, 有消息读取置零
     int32 msg_count_;                   // 消息计数, 防止过多消息
