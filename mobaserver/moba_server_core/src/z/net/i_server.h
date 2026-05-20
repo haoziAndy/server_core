@@ -31,7 +31,7 @@ public:
 
     int GenNewConnectionIndex(){
         static int s_conn_index = 0;
-        auto conn_index = ((++s_conn_index) << 1) | 0x1;
+        auto conn_index = ++s_conn_index;
         return conn_index;
     }
 

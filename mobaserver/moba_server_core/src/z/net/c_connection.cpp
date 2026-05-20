@@ -19,31 +19,40 @@ CConnection::CConnection( IServer* server, boost::asio::ip::tcp::socket&& sock, 
 CConnection::~CConnection(){
 }
 
-
 void CConnection::Start()
 {
+    boost::system::error_code ec;
+    auto endpoint = socket_.remote_endpoint(ec);
+    if (ec)
+    {
+        LOG_ERR("Error getting remote endpoint");
+    }
+    else
+    {
+        client_ip_ = endpoint.address().to_string();
+        LOG_DEBUG("client_ip %s", client_ip_.c_str());
+    }
+
     auto timeout_sec = CSERVER.login_time_out_sec();
     deadline_timer_.expires_from_now(boost::posix_time::seconds(timeout_sec));
-    deadline_timer_.async_wait([this, self = shared_from_this()](const boost::system::error_code& ec)
+    deadline_timer_.async_wait([this, self = shared_from_this()](const boost::system::error_code& ec){
+        if (!ec)
         {
-
-            if (!ec)
+            // timeout 还处于账户登录, 断开
+            if (status_ <= LoginStatus_ACCOUNT_LOGIN)
             {
-                // timeout 还处于账户登录, 断开
-                if (status_ <= LoginStatus_ACCOUNT_LOGIN)
-                {
-                    LOG_DEBUG("session[%d] OnLoginTimeOut. close.", session_id());
-                    AsyncClose();
-                    return;
-                }
-                else
-                {
-                    idle_count_ = 0;
-                    msg_count_ = 0;
-                    StartKeepAliveTimer();
-                }
+                LOG_DEBUG("session[%d] OnLoginTimeOut. close.", session_id());
+                AsyncClose();
+                return;
             }
-        });
+            else
+            {
+                idle_count_ = 0;
+                msg_count_ = 0;
+                StartKeepAliveTimer();
+            }
+        }
+    });
 
     IConnection::Start();
 }

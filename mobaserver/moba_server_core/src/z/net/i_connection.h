@@ -29,7 +29,7 @@ public:
     virtual void Close();
     virtual void AsyncClose();
 
-    virtual boost::asio::ip::tcp::socket& socket() { return socket_;}
+    //virtual boost::asio::ip::tcp::socket& socket() { return socket_;}
     int session_id() const { return session_id_; }
 
     void set_account_id(const std::string &account_id) { account_id_ = account_id;}
@@ -58,6 +58,8 @@ public:
     /// all async operation end
     virtual void OnClosed();
 
+    virtual const std::string& client_ip() const{ return client_ip_;};
+
 protected:
     void StartRead();
 
@@ -70,6 +72,7 @@ protected:
 protected:
     IServer* server_;
     boost::asio::ip::tcp::socket socket_;
+    std::string client_ip_;
 
     boost::asio::deadline_timer deadline_timer_; 
 

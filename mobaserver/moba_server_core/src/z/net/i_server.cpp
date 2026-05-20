@@ -118,7 +118,18 @@ void IServer::StartAccept()
             try
             {
                 auto session_id = GenNewConnectionIndex();
-                LOG_DEBUG("Client[%d] addr %s[%d] connected.", session_id, new_socket.remote_endpoint().address().to_string().c_str(), new_socket.remote_endpoint().port());
+                {
+                    boost::system::error_code ec_endpoint;
+                    auto endpoint = new_socket.remote_endpoint(ec_endpoint);
+                    if (ec_endpoint)
+                    {
+                        LOG_ERR("Error getting remote endpoint");
+                    }
+                    else
+                    {
+                        LOG_DEBUG("Client[%d] addr %s[%d] connected.", session_id, endpoint.address().to_string().c_str(), endpoint.port());
+                    }
+                }
                 auto new_conn = CreateConnection(std::move(new_socket), session_id);
                 auto ret = connection_mgr_.insert(std::make_pair(session_id, new_conn));
                 if (ret.second)

@@ -9,6 +9,7 @@ namespace net {
 IConnection::IConnection( IServer* server, boost::asio::ip::tcp::socket &&sock, int conn_index)
     : server_(server)
     , socket_(std::move(sock))
+    , client_ip_("")
     , deadline_timer_(server->io_service())
     , session_id_(conn_index)
     , status_(LoginStatus_DEFAULT)

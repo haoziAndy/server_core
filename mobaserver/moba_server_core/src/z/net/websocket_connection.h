@@ -16,7 +16,7 @@ public:
     virtual ~WebsocketConnection();
 
     virtual void Start();
-    virtual boost::asio::ip::tcp::socket& socket() { return boost::beast::get_lowest_layer(ws_).socket();}
+    //virtual boost::asio::ip::tcp::socket& socket() { return boost::beast::get_lowest_layer(ws_).socket();}
 
     virtual void StartWrite();
 

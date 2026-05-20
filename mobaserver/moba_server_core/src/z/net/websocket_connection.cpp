@@ -40,70 +40,139 @@ void WebsocketConnection::Start(){
     });
 
     boost::asio::dispatch(ws_.get_executor(), [this, self = shared_from_this()](){
-        auto on_accept = [this, self](boost::beast::error_code ec) {
-            if (ec) {
-                if (ec != boost::beast::websocket::error::closed) {
-                    LOG_ERR("WebsocketConnection::on_accept error, errorcode[%d]:%s", ec.value(), ec.message().c_str());
-                }
+        auto do_http_read = [this, self]() {
+            // 设置读取 HTTP Upgrade 请求的临时超时（防止恶意死连接占用）
+            boost::beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(15));
 
-                AsyncClose();
-                return;
-            }
+            // 在堆上动态分配 http_req，利用智能指针捕获，握手完自动销毁
+            auto http_req = std::make_shared<boost::beast::http::request<boost::beast::http::string_body>>();
 
-            // Read a message
-            do_read();
+            // 【Boost 1.73 核心适配点】：WSS 和 WS 下统一安全地传入各自对应的紧邻下一层（Next Layer）
+            auto& next_io_layer = ws_.next_layer(); 
+
+            // 异步读取 HTTP 请求
+            boost::beast::http::async_read(
+                next_io_layer, 
+                buffer_, 
+                *http_req, 
+                [this, self, http_req](boost::beast::error_code ec, std::size_t) {
+                    if (ec) {
+                        LOG_ERR("session[%d] HTTP read error: %s", session_id(), ec.message().c_str());
+                        AsyncClose();
+                        return;
+                    }
+
+                    // 强校验：如果不是标准的 WebSocket 升级请求，直接拒绝
+                    if (!boost::beast::websocket::is_upgrade(*http_req)) {
+                        LOG_ERR("session[%d] Not a valid websocket upgrade request.", session_id());
+                        AsyncClose();
+                        return;
+                    }
+
+                    // 数据读取无误，进入 WebSocket 协议升级
+                    // Turn off the timeout on the tcp_stream, because
+                    // the websocket stream has its own timeout system.
+                    boost::beast::get_lowest_layer(ws_).expires_never();
+
+                    // Set suggested timeout settings for the websocket
+                    ws_.set_option(
+                        boost::beast::websocket::stream_base::timeout::suggested(
+                            boost::beast::role_type::server));
+
+                    // Set a decorator to change the Server of the handshake
+                    ws_.set_option(boost::beast::websocket::stream_base::decorator(
+                        [](boost::beast::websocket::response_type& res){
+#ifdef ENABLE_WEBSOCKET_SSL
+                            res.set(boost::beast::http::field::server,
+                                std::string(BOOST_BEAST_VERSION_STRING) + " websocket-server-async-ssl");
+#else
+                            res.set(boost::beast::http::field::server,
+                                std::string(BOOST_BEAST_VERSION_STRING) + " websocket-server-async");
+#endif
+                        }));
+
+                    // Accept the websocket handshake
+                    ws_.async_accept(*http_req, [this, self, http_req](boost::beast::error_code ec) {
+                        if (ec) {
+                            if (ec != boost::beast::websocket::error::closed) {
+                                LOG_ERR("WebsocketConnection::on_accept error, errorcode[%d]:%s", ec.value(), ec.message().c_str());
+                            }
+
+                            AsyncClose();
+                            return;
+                        }
+
+                        {
+                            std::string real_client_ip;
+
+                            // 【第一级：X-Real-IP】
+                            // 很多云网关或 Nginx 会被配置为直接将客户端真实 IP 写入该字段（全小写查找）
+                            auto it_real = http_req->find("x-real-ip");
+                            if (it_real != http_req->end() && !it_real->value().empty()) {
+                                real_client_ip = std::string(it_real->value());
+                            }
+
+                            // 【第二级：X-Forwarded-For】
+                            // 标准的反向代理链条头部。如果有多次代理，提取最左侧第一个非空 IP
+                            if (real_client_ip.empty()) {
+                                auto it_xff = http_req->find("x-forwarded-for");
+                                if (it_xff != http_req->end() && !it_xff->value().empty()) {
+                                    std::string xff_value = std::string(it_xff->value());
+                                    std::string::size_type comma_pos = xff_value.find(',');
+                                    
+                                    if (comma_pos != std::string::npos) {
+                                        real_client_ip = xff_value.substr(0, comma_pos);
+                                    } else {
+                                        real_client_ip = xff_value;
+                                    }
+                                }
+                            }
+
+                            // 【第三级：物理 Socket 终极兜底】
+                            // 如果以上头部全部为空，说明没有任何反向代理，属于客户端直接连接我们的服务器（如本地开发测试）
+                            if (real_client_ip.empty()) {
+                                boost::system::error_code ec_endpoint;
+                                auto ep = boost::beast::get_lowest_layer(ws_).socket().remote_endpoint(ec_endpoint);
+                                if (!ec_endpoint) {
+                                    real_client_ip = ep.address().to_string();
+                                } else {
+                                    real_client_ip = "127.0.0.1"; // 极端异常断开时的安全默认值
+                                }
+                            }
+
+                            // 【第四步：清洗首尾可能残留的空格】
+                            real_client_ip.erase(0, real_client_ip.find_first_not_of(" "));
+                            real_client_ip.erase(real_client_ip.find_last_not_of(" ") + 1); 
+
+                            // 3. 将解析出来的真实 IP 赋值给你的成员变量（假设名为 client_ip_）
+                            client_ip_ = real_client_ip;
+
+                            // 打印日志验证结果（如果你需要的话）
+                            LOG_DEBUG("session[%d] Websocket upgrade success. Real Client IP: %s", session_id(), client_ip_.c_str());
+                        }
+
+                        // Read a message
+                        buffer_.clear();
+                        do_read();
+                    });
+                });
             };
 
 #ifdef ENABLE_WEBSOCKET_SSL
         // Set the timeout.
         boost::beast::get_lowest_layer(ws_).expires_after(std::chrono::seconds(30));
         // Perform the SSL handshake
-        ws_.next_layer().async_handshake(boost::asio::ssl::stream_base::server, [this, self, on_accept](boost::beast::error_code ec) {
+        ws_.next_layer().async_handshake(boost::asio::ssl::stream_base::server, [this, self, do_http_read](boost::beast::error_code ec) {
             if (ec) {
                 LOG_ERR("WebsocketConnection::on_handshake error, errorcode[%d]:%s", ec.value(), ec.message().c_str());
                 AsyncClose();
                 return;
             }
-
-            // Turn off the timeout on the tcp_stream, because
-            // the websocket stream has its own timeout system.
-            boost::beast::get_lowest_layer(ws_).expires_never();
-
-            // Set suggested timeout settings for the websocket
-            ws_.set_option(
-                boost::beast::websocket::stream_base::timeout::suggested(
-                    boost::beast::role_type::server));
-
-            // Set a decorator to change the Server of the handshake
-            ws_.set_option(boost::beast::websocket::stream_base::decorator(
-                [](boost::beast::websocket::response_type& res)
-                {
-                    res.set(boost::beast::http::field::server,
-                        std::string(BOOST_BEAST_VERSION_STRING) +
-                        " websocket-server-async-ssl");
-                }));
-
-            // Accept the websocket handshake
-            ws_.async_accept(on_accept);
-            });
+            
+            do_http_read(); 
+        });
 #else
-        // Turn off the timeout on the tcp_stream, because
-        // the websocket stream has its own timeout system.
-        boost::beast::get_lowest_layer(ws_).expires_never();
-
-        ws_.set_option(
-            boost::beast::websocket::stream_base::timeout::suggested(boost::beast::role_type::server));
-
-        // Set a decorator to change the Server of the handshake
-        ws_.set_option(boost::beast::websocket::stream_base::decorator(
-            [](boost::beast::websocket::response_type& res)
-            {
-                res.set(boost::beast::http::field::server,
-                    std::string(BOOST_BEAST_VERSION_STRING) +
-                    " websocket-server-async");
-            }));
-        // Accept the websocket handshake
-        ws_.async_accept(on_accept);
+        do_http_read();
 #endif
     });
 }
@@ -242,7 +311,11 @@ void WebsocketConnection::StartWrite(){
 
 void WebsocketConnection::Close(){
     is_closing_ = true;
-    deadline_timer_.cancel();
+    {
+        boost::system::error_code ec;
+        deadline_timer_.cancel(ec);
+    }
+    
     if (ws_.is_open()) {
         //LOG_INFO("WebsocketConnection::Close async_close");
         ws_.async_close(boost::beast::websocket::close_code::normal, [this, self=shared_from_this()](boost::beast::error_code const &ec){
