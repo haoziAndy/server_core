@@ -101,50 +101,83 @@ void WebsocketConnection::Start(){
 
                         {
                             std::string real_client_ip;
+                            boost::beast::string_view raw_ip_view;
 
-                            // 【第一级：X-Real-IP】
-                            // 很多云网关或 Nginx 会被配置为直接将客户端真实 IP 写入该字段（全小写查找）
-                            auto it_real = http_req_.find("x-real-ip");
-                            if (it_real != http_req_.end() && !it_real->value().empty()) {
-                                real_client_ip = std::string(it_real->value());
+                            // 【第一级：X-Forwarded-For】
+                            auto it_xff = http_req_.find("x-forwarded-for");
+                            if (it_xff != http_req_.end() && !it_xff->value().empty()) {
+                                boost::beast::string_view xff_view = it_xff->value();
+                                auto comma_pos = xff_view.find(',');
+
+                                if (comma_pos != boost::beast::string_view::npos) {
+                                    raw_ip_view = xff_view.substr(0, comma_pos);
+                                } else {
+                                    raw_ip_view = xff_view;
+                                }
                             }
 
-                            // 【第二级：X-Forwarded-For】
-                            // 标准的反向代理链条头部。如果有多次代理，提取最左侧第一个非空 IP
-                            if (real_client_ip.empty()) {
-                                auto it_xff = http_req_.find("x-forwarded-for");
-                                if (it_xff != http_req_.end() && !it_xff->value().empty()) {
-                                    std::string xff_value = std::string(it_xff->value());
-                                    std::string::size_type comma_pos = xff_value.find(',');
-                                    
-                                    if (comma_pos != std::string::npos) {
-                                        real_client_ip = xff_value.substr(0, comma_pos);
-                                    } else {
-                                        real_client_ip = xff_value;
-                                    }
+                            // 【第二级：X-Real-IP】
+                            if (raw_ip_view.empty()) {
+                                auto it_real = http_req_.find("x-real-ip");
+                                if (it_real != http_req_.end() && !it_real->value().empty()) {
+                                    raw_ip_view = it_real->value();
+                                }
+                            }
+
+                            // 【标准化清洗】：在视图（View）层面上进行双端去空格，真正做到零内存开销
+                            if (!raw_ip_view.empty()) {
+                                auto first_not_space = raw_ip_view.find_first_not_of(' ');
+                                auto last_not_space = raw_ip_view.find_last_not_of(' ');
+
+                                if (first_not_space != boost::beast::string_view::npos && last_not_space != boost::beast::string_view::npos) {
+                                    raw_ip_view = raw_ip_view.substr(first_not_space, last_not_space - first_not_space + 1);
+                                    // 此时 raw_ip_view 已经是绝对干净的 IP 视图，安全执行唯一一次 assign
+                                    real_client_ip.assign(raw_ip_view.data(), raw_ip_view.size());
                                 }
                             }
 
                             // 【第三级：物理 Socket 终极兜底】
-                            // 如果以上头部全部为空，说明没有任何反向代理，属于客户端直接连接我们的服务器（如本地开发测试）
                             if (real_client_ip.empty()) {
                                 boost::system::error_code ec_endpoint;
                                 auto ep = boost::beast::get_lowest_layer(ws_).socket().remote_endpoint(ec_endpoint);
                                 if (!ec_endpoint) {
                                     real_client_ip = ep.address().to_string();
-                                } else {
-                                    real_client_ip = "127.0.0.1"; // 极端异常断开时的安全默认值
                                 }
                             }
 
-                            // 【第四步：清洗首尾可能残留的空格】
-                            real_client_ip.erase(0, real_client_ip.find_first_not_of(" "));
-                            real_client_ip.erase(real_client_ip.find_last_not_of(" ") + 1); 
+                            // 如果依然解析失败（极端情况），安全默认值
+                            if (real_client_ip.empty()) {
+                                real_client_ip = "127.0.0.1";
+                            }
 
-                            // 3. 将解析出来的真实 IP 赋值给你的成员变量（假设名为 client_ip_）
+                            //【跨平台/IPv6 额外防御】：拦截由于底层双栈或特定环境可能混入的 IPv6 区域识别符（如 fe80::1%eth0）
+                            // 因为 % 绝不是合法 IP 字符，必须在校验前裁切，避免 make_address 抛错
+                            auto percent_pos = real_client_ip.find('%');
+                            if (percent_pos != std::string::npos) {
+                                real_client_ip.resize(percent_pos);
+                            }
+
+                            // 验证 IP 格式是否合法（此时 real_client_ip 已经非常干净）
+                            boost::system::error_code ec_parse;
+                            boost::asio::ip::make_address(real_client_ip, ec_parse);
+                            if (ec_parse) {
+                                LOG_ERR("session[%d] Invalid IP format from headers: [%s]. Fallback to remote endpoint.", session_id(), real_client_ip.c_str());
+                                boost::system::error_code ec_endpoint;
+                                auto ep = boost::beast::get_lowest_layer(ws_).socket().remote_endpoint(ec_endpoint);
+                                if (!ec_endpoint) {
+                                    real_client_ip = ep.address().to_string();
+                                    // 兜底获取的物理 IP 如果包含 % 也做一次裁剪
+                                    auto pct = real_client_ip.find('%');
+                                    if (pct != std::string::npos) {
+                                        real_client_ip.resize(pct);
+                                    }
+                                } else {
+                                    real_client_ip = "127.0.0.1";
+                                }
+                            }
+
+                            // 完美写入成员变量
                             client_ip_ = std::move(real_client_ip);
-
-                            // 打印日志验证结果（如果你需要的话）
                             LOG_DEBUG("session[%d] Websocket upgrade success. Real Client IP: %s", session_id(), client_ip_.c_str());
                         }
 
@@ -224,7 +257,7 @@ void WebsocketConnection::do_read(){
         auto buff_size = boost::asio::buffer_size(buffer_data);
         if (buff_size < sizeof(CMsgHeader)){
             AsyncClose();
-            LOG_ERR("WebsocketConnection::on_read received incomplete client package, buff_size: %lu < msg_head_size: %lu", buff_size, sizeof(CMsgHeader));
+            LOG_ERR("WebsocketConnection::on_read received incomplete client package, buff_size: %llu < msg_head_size: %llu", (unsigned long long)buff_size, (unsigned long long)sizeof(CMsgHeader));
             return;
         }
 
@@ -234,7 +267,7 @@ void WebsocketConnection::do_read(){
         CMsgHeader* msg = reinterpret_cast<CMsgHeader*>(byte_array.data());
         if(byte_array.size() != buff_size){
             AsyncClose();
-            LOG_ERR("WebsocketConnection::on_read copy data error, buff_size: %lu != byte_array_size: %lu", buff_size, byte_array.size());
+            LOG_ERR("WebsocketConnection::on_read copy data error, buff_size: %llu != byte_array_size: %llu", (unsigned long long)buff_size, (unsigned long long)byte_array.size());
             return;
         }
         CMsgHeaderNtoh(msg);
@@ -245,9 +278,9 @@ void WebsocketConnection::do_read(){
             return;
         }
 
-        int msg_length = sizeof(*msg) + msg->length;
+        auto msg_length = sizeof(*msg) + msg->length;
         if (msg_length < 0 || buff_size != static_cast<size_t>(msg_length)){ // 不够一个完整的包
-            LOG_ERR("WebsocketConnection::on_read received incomplete client package, msg_length: %d != buff_size: %lu", msg_length, buff_size);
+            LOG_ERR("WebsocketConnection::on_read received incomplete client package, msg_length: %llu != buff_size: %llu", (unsigned long long)msg_length, (unsigned long long)buff_size);
             AsyncClose();
             return;
         }
@@ -291,7 +324,7 @@ void WebsocketConnection::StartWrite(){
         if(ec){
             AsyncClose();
             if(ec != boost::beast::websocket::error::closed && ec != boost::asio::error::eof){
-                LOG_ERR("WebsocketConnection::on_read error, errorcode[%d]:%s", ec.value(), ec.message().c_str());
+                LOG_ERR("async_write error, errorcode[%d]:%s", ec.value(), ec.message().c_str());
             }
             return;
         }
