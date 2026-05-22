@@ -23,7 +23,7 @@ public:
     virtual void Close();
 
     std::shared_ptr<WebsocketConnection> shared_from_this() {
-        return std::dynamic_pointer_cast<WebsocketConnection>(IConnection::shared_from_this());
+        return std::static_pointer_cast<WebsocketConnection>(IConnection::shared_from_this());
     };
 
 private:
