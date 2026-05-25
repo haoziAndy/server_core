@@ -54,7 +54,11 @@ void WebsocketConnection::Start(){
                 http_req_, 
                 [this, self=std::move(self)](boost::beast::error_code ec, std::size_t) mutable {
                     if (ec) {
-                        LOG_ERR("session[%d] HTTP read error: %s", session_id(), ec.message().c_str());
+                        if (ec == boost::beast::http::error::end_of_stream) {
+                            LOG_DEBUG("session[%d] HTTP read error[%d]: %s", session_id(), ec.value(), ec.message().c_str());
+                        }else {
+                            LOG_ERR("session[%d] HTTP read error[%d]: %s", session_id(), ec.value(), ec.message().c_str());
+                        }
                         AsyncClose();
                         return;
                     }
