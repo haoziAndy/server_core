@@ -182,7 +182,7 @@ void WebsocketConnection::Start(){
 
                             // 完美写入成员变量
                             client_ip_ = std::move(real_client_ip);
-                            LOG_DEBUG("session[%d] Websocket upgrade success. Real Client IP: %s", session_id(), client_ip_.c_str());
+                            LOG_DEBUG("session[%d] Websocket accept success. Real Client IP: %s", session_id(), client_ip_.c_str());
                         }
 
                         // Read a message
@@ -250,7 +250,9 @@ void WebsocketConnection::do_read(){
     ws_.async_read(buffer_, [this, self=shared_from_this()](boost::beast::error_code ec, std::size_t bytes_transferred){
         if(ec){
             AsyncClose();
-            if(ec != boost::beast::websocket::error::closed && ec != boost::asio::error::eof){
+            if(ec != boost::beast::websocket::error::closed 
+                && ec != boost::asio::error::eof 
+                && ec != boost::asio::error::operation_aborted){
                 LOG_ERR("WebsocketConnection::on_read error, errorcode[%d]:%s", ec.value(), ec.message().c_str());
             }
             return;
